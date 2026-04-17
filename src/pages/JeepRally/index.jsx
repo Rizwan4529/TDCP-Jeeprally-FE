@@ -1,9 +1,29 @@
-import React from 'react'
+import React from 'react';
+import Hero from './components/Hero';
+import Countdown from './components/Countdown';
+import AdventureSection from './components/AdventureSection';
+import SelectChallenge from './components/SelectChallenge';
+import EventsCompetitions from './components/EventsCompetitions';
+import RallyRules from './components/RallyRules';
+import TrackDetails from './components/TrackDetails';
+import Destinations from './components/Destinations';
+import RecentGallery from './components/RecentGallery';
+import { dummyData } from './data'
 
 const JeepRally = () => {
     return (
-        <div>JeepRally</div>
-    )
-}
+        <div className="bg-white">
+            <Hero />
+            <Countdown />
+            <AdventureSection />
+            <EventsCompetitions />
+            <SelectChallenge />
+            <RallyRules />
+            <TrackDetails />
+            <Destinations />
+            <RecentGallery data={dummyData.gallery} />
+        </div>
+    );
+};
 
-export default JeepRally
+export default JeepRally;

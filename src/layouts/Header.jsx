@@ -1,173 +1,27 @@
 import { useEffect, useState } from "react";
-import { LOGO_WHITE, LOGO_GREEN_EXCLUDED, CHEVRON_ARROW_DOWN, EMAIL_ICON, PHONE_ICON } from "../assets";
-import { FiX, FiAlignRight, FiUser, FiLogOut } from "react-icons/fi";
+import { LOGO_GREEN_EXCLUDED } from "../assets";
+import { FiX, FiAlignRight } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
 import Button from "../components/common/Button";
-import SearchBar from "../components/common/SearchBar";
 import AuthModal from "../components/auth/AuthModal";
-import { useAuth } from "../context/AuthContext";
 
-import { socialIcons, links, secondaryLinks } from "./data/data";
-import SmartLink from "../components/common/SmartLink";
-import {
-  useAvailableSitesLinksQuery,
-  useContentNamesListQuery,
-} from "../api/features/content/hooks";
-import { useResortsQuery } from "../api/features/events/hooks";
+import { socialIcons, links, contactInfo } from "./data/data";
 
 const Header = () => {
   const location = useLocation();
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  const { data: namesList } = useContentNamesListQuery();
-  const { data: resortsData } = useResortsQuery();
-  const { user, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-
-  const dynamicSecondaryLinks = [
-    {
-      title: "Top Regions",
-      path: "#",
-      icon: CHEVRON_ARROW_DOWN,
-      children:
-        // [
-        //   ...(namesList?.["attractions-by-destination"]?.map((name) => ({
-        //     title: name
-        //       .replace(/-/g, " ")
-        //       .replace(/\b\w/g, (l) => l.toUpperCase()),
-        //     path: `/districts/${name}`,
-        //   })) || []),
-        //   {
-        //     title: "Explore All",
-        //     path: "/top-destinations",
-        //   },
-        // ],
-        [
-          {
-            col: "By Districts",
-            items: [
-              ...(namesList?.["attractions-by-destination"]?.slice(0, 5)?.map((name) => ({
-                title: name
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase()),
-                path: `/districts/${name}`,
-              })) || []),
-              {
-                title: "Explore All",
-                path: "/explore-districts",
-              },
-            ],
-          },
-          {
-            col: "By Interests",
-            items: [
-              ...(namesList?.["attractions-by-category"]?.slice(0, 5)?.map((name) => ({
-                title: name
-                  .replace(/-/g, " ")
-                  .replace(/\b\w/g, (l) => l.toUpperCase()),
-                path: `/attractions/${name}`,
-              })) || []),
-              {
-                title: "Explore All",
-                path: "/top-destinations",
-              }
-            ],
-          },
-        ],
-    },
-    {
-      title: "Book Online",
-      path: "#",
-      icon: CHEVRON_ARROW_DOWN,
-      children: [
-        {
-          title: "Chairlift & Cable Car",
-          path: "https://chairlift.tdcp.gop.pk",
-        },
-        { title: "Sightseeing", path: "https://sightseeing.tdcp.gop.pk" },
-        { title: "Boating Facilities", path: "https://boating.tdcp.gop.pk" },
-        { title: "SoftWheel Train", path: "https://softwheel.tdcp.gop.pk" },
-        { title: "Fleet Transportation", path: "/fleet" },
-      ],
-    },
-    {
-      title: "Plan A Trip",
-      path: "/tours",
-    },
-    {
-      title: "TDCP Resorts",
-      path: "#",
-      icon: CHEVRON_ARROW_DOWN,
-      children: [
-        ...(resortsData
-          ?.filter((item) => {
-            const keywords = ["Patriata", "Charehan", "Kallar Kahar", "Khabeki", "Dharabi"];
-            return keywords.some((keyword) =>
-              item.name.toLowerCase().includes(keyword.toLowerCase())
-            );
-          })
-          ?.map((item) => {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(today.getDate() + 1);
-
-            const checkInDate = today.toISOString().split("T")[0];
-            const checkOutDate = tomorrow.toISOString().split("T")[0];
-
-            return {
-              title: item.name,
-              path: `https://resorts.tdcp.gop.pk/hoteldetail?AccommodationId=${item.id}&checkIn=${checkInDate}&checkOut=${checkOutDate}`,
-              external: true,
-            };
-          }) || []),
-        {
-          title: "Explore All",
-          path: "https://resorts.tdcp.gop.pk",
-          external: true,
-        },
-      ],
-    },
-    {
-      title: "News & Events",
-      path: "#",
-      icon: CHEVRON_ARROW_DOWN,
-      children: [
-        { title: "Cholistan Desert Rally", path: "https://cdr.tdcp.gop.pk" },
-        { title: "Thal Desert Rally", path: "https://thalrally.tdcp.gop.pk" },
-        { title: "Explore All News & Events", path: "/events" },
-      ],
-    },
-  ];
 
   const path = location.pathname;
-  const pathsToExclude = ["/contact", "/leadership"];
-  const isExcluded = pathsToExclude.includes(path);
-
-  const [expandedMenu, setExpandedMenu] = useState(null);
-
-  const toggleExpand = (menu) => {
-    setExpandedMenu(expandedMenu === menu ? null : menu);
-  };
 
   const isActive = (link) => {
     return link.path === path;
   };
 
-  // Scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Ensure mobile menu closes on desktop resize
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) setMobileOpen(false); // switched to lg
+      if (window.innerWidth >= 1024) setMobileOpen(false);
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -182,97 +36,79 @@ const Header = () => {
   }, [mobileOpen]);
 
   return (
-    <div
-      className={`fixed w-full top-0 z-50 transition-colors duration-300 bg-white`}
-    >
-      <div>
+    <div className="fixed w-full top-0 z-50 transition-colors duration-300 bg-white border-b border-gray-100">
+      <div className="flex flex-col">
         {/* Top Strip */}
-        <div className="bg-black text-white px-2 lg:px-20 py-1">
-          <div className="container flex items-center justify-between min-h-[40px]">
-            {/* Social Icons (Left) */}
-            <div className="flex gap-4 items-center">
-              {socialIcons.slice(0, 4).map((icon, index) => (
+        <div className="bg-black text-white py-2 overflow-hidden">
+          <div className="container flex items-center justify-end gap-4 md:gap-6 text-[10px] md:text-[12px] font-sans px-4">
+            <div className="hidden lg:flex gap-4 items-center">
+              {socialIcons.map((icon, index) => (
                 <a
                   key={index}
                   href={icon.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center rounded-full ring-1 ring-white/30 hover:ring-accent transition-all duration-300 size-6"
+                  className="hover:text-brand-green transition-all duration-300"
                 >
-                  <icon.icon className="text-white hover:text-accent transition-all duration-300 size-3" />
+                  <icon.icon className="size-4" />
                 </a>
               ))}
             </div>
-
-            {/* Contact Info (Right) */}
-            <div className="hidden md:flex items-center gap-8 text-xs lg:text-sm font-light">
-              <a href="mailto:info@example.com" className="flex items-center gap-2 hover:text-accent transition-colors">
-                <EMAIL_ICON className="size-4" />
-                <span>info@example.com</span>
-              </a>
-              <a href="tel:00-000-0000" className="flex items-center gap-2 hover:text-accent transition-colors">
-                <PHONE_ICON className="size-4" />
-                <span>00-000-0000</span>
-              </a>
+            <div className="flex items-center gap-2">
+              <span className="hover:text-brand-green cursor-pointer truncate max-w-[120px] md:max-w-none">
+                {contactInfo.email}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hover:text-brand-green cursor-pointer whitespace-nowrap">
+                {contactInfo.phone}
+              </span>
             </div>
           </div>
         </div>
-        {/* Bottom Strip */}
-        <div className="container">
-          <div
-            className={`flex items-center justify-between py-4 lg:px-20 mx-auto relative`}
+
+        {/* Main Header */}
+        <div className="container py-4 flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0">
+            <img
+              src={LOGO_GREEN_EXCLUDED}
+              alt="logo"
+              className="h-12 md:h-15 transition-all duration-300"
+            />
+          </Link>
+
+          {/* Desktop Nav - Centered */}
+          <nav className="hidden lg:flex items-center justify-center flex-grow">
+            <ul className="flex gap-8 xl:gap-12">
+              {links.map((link) => (
+                <li
+                  key={link.title}
+                  className={`text-[15px] font-semibold transition-all duration-300 hover:text-brand-green ${isActive(link) ? "text-brand-green" : "text-[#333]"
+                    }`}
+                >
+                  <Link to={link.path}>{link.title}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Helpline Button */}
+          <div className="hidden lg:flex flex-shrink-0">
+            <a href="tel:1421">
+              <Button variant="solid-green" className="!px-6 !py-1 !rounded-md text-[16px] ">
+                Helpline:1421
+              </Button>
+            </a>
+          </div>
+
+          {/* Mobile Hamburger */}
+          <button
+            className="lg:hidden text-3xl text-black"
+            onClick={() => setMobileOpen(true)}
           >
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <Link to="/" className="cursor-pointer">
-                <img
-                  src={LOGO_GREEN_EXCLUDED}
-                  alt="logo"
-                  className={`h-16 lg:h-20 transition-all duration-300`}
-                />
-              </Link>
-            </div>
-
-            {/* Desktop Nav */}
-            <div className="hidden lg:block absolute left-1/2 -translate-x-1/2">
-              <ul className="flex gap-4 lg:gap-8 xl:gap-12">
-                {links.map((link) => (
-                  <li
-                    key={link.path + link.title}
-                    className="relative group cursor-pointer transition-all duration-300 whitespace-nowrap"
-                  >
-                    <Link
-                      to={link.path}
-                      className={`text-slate-700 hover:text-accent font-medium text-lg transition-colors ${isActive(link) ? "text-accent" : ""
-                        }`}
-                    >
-                      {link.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Helpline Button */}
-            <div className="hidden lg:flex">
-              <a href="tel:1421">
-                <Button variant="solid-accent" className="!px-8 !py-3 text-lg font-semibold shadow-md">
-                  Helpline: 1421
-                </Button>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-            {/* Mobile Hamburger */}
-            <button
-              className="lg:hidden text-2xl text-black"
-              onClick={() => setMobileOpen(true)}
-            >
-              <FiAlignRight />
-            </button>
-          </div>
+            <FiAlignRight />
+          </button>
         </div>
       </div>
 
@@ -286,28 +122,31 @@ const Header = () => {
 
       {/* Mobile Side Menu */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-primary z-50 transform transition-transform duration-300 overflow-y-auto ${mobileOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 overflow-y-auto ${mobileOpen ? "translate-x-0" : "translate-x-full"
           }`}
       >
         {/* Close Button */}
-        <div className="flex justify-end p-4 bg-primary sticky top-0">
+        <div className="flex justify-between items-center p-4 border-b border-gray-100">
+          <Link to="/" onClick={() => setMobileOpen(false)}>
+            <img src={LOGO_GREEN_EXCLUDED} alt="logo" className="h-10" />
+          </Link>
           <button
             onClick={() => setMobileOpen(false)}
-            className="text-2xl text-white"
+            className="text-2xl text-black"
           >
             <FiX />
           </button>
         </div>
 
         {/* Mobile Nav Links */}
-        <ul className="flex flex-col gap-2 px-6 pb-4">
+        <ul className="flex flex-col p-4">
           {links.map((link) => (
-            <li key={link.title} className="text-white text-sm">
+            <li key={link.title} className="border-b border-gray-50">
               <Link
                 to={link.path}
                 onClick={() => setMobileOpen(false)}
-                className={`block py-2 ${isActive(link) ? "text-accent" : "text-white"
-                  } hover:text-accent transition-colors duration-200 text-lg`}
+                className={`block py-4 text-[16px] font-semibold ${isActive(link) ? "text-brand-green" : "text-[#333]"
+                  } hover:text-brand-green transition-colors duration-200`}
               >
                 {link.title}
               </Link>
@@ -315,31 +154,37 @@ const Header = () => {
           ))}
         </ul>
 
-        {/* Helpline (Mobile) */}
-        <div className="px-6 mt-4">
-          <a href="tel:1421" onClick={() => setMobileOpen(false)}>
-            <Button variant="solid-accent" className="w-full !px-4 !py-2">
-              Helpline: 1421
-            </Button>
-          </a>
-        </div>
+        {/* Contact Info & Socials in Mobile */}
+        <div className="p-4 mt-auto">
+          <div className="flex flex-col gap-2 mb-6 text-[14px]">
+            <span className="text-gray-600">{contactInfo.email}</span>
+            <span className="text-gray-600">{contactInfo.phone}</span>
+          </div>
 
-        {/* Social Icons (Mobile) */}
-        <div className="flex gap-4 px-6 mt-8 mb-10">
-          {socialIcons.slice(0, 4).map((icon, index) => (
-            <a
-              key={index}
-              href={icon.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileOpen(false)}
-              className="group p-1 rounded-full ring-1 ring-white/30 size-8 flex items-center justify-center hover:ring-accent transition-all"
-            >
-              <icon.icon className="text-white hover:text-accent transition-all size-4" />
+          <div className="flex gap-4">
+            {socialIcons.map((icon, index) => (
+              <a
+                key={index}
+                href={icon.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-black hover:text-brand-green transition-all duration-300"
+              >
+                <icon.icon className="size-5" />
+              </a>
+            ))}
+          </div>
+
+          <div className="mt-8">
+            <a href="tel:1421">
+              <Button variant="solid-green" className="w-full !px-4 !py-3 !rounded-md font-bold">
+                Helpline:1421
+              </Button>
             </a>
-          ))}
+          </div>
         </div>
       </div>
+
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
@@ -349,4 +194,3 @@ const Header = () => {
 };
 
 export default Header;
-

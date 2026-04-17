@@ -4,6 +4,7 @@ import ScrollToTop from "../components/common/ScrollToTop";
 import NotFound from "../pages/NotFound";
 import Loading from "../components/common/Loading";
 import Sightseeing from "../pages/Sightseeing";
+import JeepRally from "../pages/JeepRally";
 
 function AppRouter() {
 
@@ -39,7 +40,7 @@ function AppRouter() {
         <Route path="/" element={<Layout />}>
 
           <Route index element={<Sightseeing />} />
-
+          <Route path="/jeep-rally" element={<JeepRally />} />
 
 
         </Route>

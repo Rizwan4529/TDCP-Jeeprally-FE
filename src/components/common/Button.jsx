@@ -1,6 +1,6 @@
 const Button = ({
   children,
-  onClick = () => {},
+  onClick = () => { },
   className = "",
   variant = "solid",
   ...rest
@@ -22,9 +22,9 @@ const Button = ({
       hover:bg-white hover:text-black hover:border-black
     `,
     "solid-green": `
-      bg-white text-accent
-      border border-accent
-      hover:bg-accent hover:text-white hover:border-accent
+      bg-brand-green text-white
+      border border-brand-green
+      hover:bg-brand-green-hover hover:text-white hover:border-brand-green-hover
     `,
     "blue": `
       bg-[#4097F8] text-white

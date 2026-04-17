@@ -1,20 +1,22 @@
 import {
-  CHEVRON_ARROW_DOWN,
+  TWITTER_ICON,
   FACEBOOK_ICON,
   INSTAGRAM_ICON,
   LINKEDIN_ICON,
-  TIKTOK_ICON,
-  YOUTUBE_ICON,
+  CHEVRON_ARROW_DOWN,
 } from "../../assets"
 
 const socialIcons = [
   { icon: FACEBOOK_ICON, link: "https://www.facebook.com/TDCPOfficial/" },
   { icon: INSTAGRAM_ICON, link: "https://www.instagram.com/tdcp_official/" },
-  { icon: TWITTER_ICON, link: "https://x.com/TDCPOFFICIAL" },
+  { icon: TWITTER_ICON, link: "https://x.com/tourismpunjab" },
   { icon: LINKEDIN_ICON, link: "https://www.linkedin.com/company/tourism-development-corporation-of-punjab-pakistan-tdcp" },
-  { icon: YOUTUBE_ICON, link: "https://www.youtube.com/@TDCPOfficial" },
-  { icon: TIKTOK_ICON, link: "https://www.tiktok.com/@tdcp.official?_r=1&_t=ZS-91YQQpXb4b7" },
 ]
+
+const contactInfo = {
+  email: "info@example.com",
+  phone: "00-000-0000",
+}
 
 const links = [
   { title: "Home", path: "/" },
@@ -115,4 +117,4 @@ const secondaryLinks = [
   },
 ]
 
-export { socialIcons, links, secondaryLinks }
+export { socialIcons, links, secondaryLinks, contactInfo }
