@@ -9,6 +9,7 @@ import TrackDetails from './components/TrackDetails';
 import Destinations from './components/Destinations';
 import RecentGallery from './components/RecentGallery';
 import { dummyData } from './data'
+import Partners from './components/Partners';
 
 const JeepRally = () => {
     return (
@@ -22,6 +23,7 @@ const JeepRally = () => {
             <TrackDetails />
             <Destinations />
             <RecentGallery data={dummyData.gallery} />
+            <Partners />
         </div>
     );
 };
