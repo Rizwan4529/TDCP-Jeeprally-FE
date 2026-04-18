@@ -44,9 +44,9 @@ function AppRouter() {
 
           <Route index element={<Sightseeing />} />
           <Route path="/jeep-rally" element={<JeepRally />} />
-          <Route path="/1" element={<RallyMap />} />
-          <Route path="/2" element={<Rankings />} />
-          <Route path="/3" element={<Players />} />
+          <Route path="/jeep-rally/1" element={<RallyMap />} />
+          <Route path="/jeep-rally/2" element={<Rankings />} />
+          <Route path="/jeep-rally/3" element={<Players />} />
 
 
         </Route>
