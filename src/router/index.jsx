@@ -5,6 +5,9 @@ import NotFound from "../pages/NotFound";
 import Loading from "../components/common/Loading";
 import Sightseeing from "../pages/Sightseeing";
 import JeepRally from "../pages/JeepRally";
+import RallyMap from "../pages/RallyMap";
+import Rankings from "../pages/Rankings";
+import Players from "../pages/Players";
 
 function AppRouter() {
 
@@ -41,6 +44,9 @@ function AppRouter() {
 
           <Route index element={<Sightseeing />} />
           <Route path="/jeep-rally" element={<JeepRally />} />
+          <Route path="/1" element={<RallyMap />} />
+          <Route path="/2" element={<Rankings />} />
+          <Route path="/3" element={<Players />} />
 
 
         </Route>
