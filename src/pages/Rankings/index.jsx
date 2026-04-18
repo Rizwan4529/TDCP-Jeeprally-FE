@@ -130,7 +130,8 @@ const Rankings = () => {
           <div className="rankings-footer">
             {/* Checkered flags at bottom right */}
             <div className="footer-flags-wrapper">
-              <span style={{ fontSize: '3rem' }}>🏁🏁</span>
+              <img src='/assets/images/flag_black.png' alt="flag" className='w-20 md:w-60 ' />
+              {/* <span style={{ fontSize: '3rem' }}>🏁🏁</span> */}
             </div>
           </div>
         </div>

@@ -11,10 +11,8 @@ const Map = () => {
             <header className="rm-header">
                 <div className="rm-title-row">
                     <img src='/assets/images/flag.png' alt="flag" className='w-10 md:w-20 rotate-y-180' />
-                    {/* <span className="flag-icon">🏁</span> */}
                     <p className='font-gilda text-[24px] md:text-[42px]'>Cholistan Desert</p>
                     <img src='/assets/images/flag.png' alt="flag" className='w-10 md:w-20' />
-                    {/* <span className="flag-icon">🏁</span> */}
                 </div>
                 <div className="rm-stats">
                     <p>Total Distance: <strong>~200 KM</strong></p>

@@ -218,8 +218,8 @@
 .rankings-footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 3rem;
-  padding-bottom: 2rem;
+  /* margin-top: 3rem; */
+  /* padding-bottom: 2rem; */
 }
 
 .footer-flags {
