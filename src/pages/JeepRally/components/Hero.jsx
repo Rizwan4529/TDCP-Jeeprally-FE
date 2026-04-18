@@ -32,8 +32,8 @@ const Hero = () => {
                 </h1>
 
                 <p className="para max-w-[550px] text-white/90 !text-[14px] md:!text-[14px] leading-relaxed">
-                  Join thousands of racing enthusiasts for the ultimate desert off-road 
-                  experience. The 21st Cholistan Desert Rally brings together professional 
+                  Join thousands of racing enthusiasts for the ultimate desert off-road
+                  experience. The 21st Cholistan Desert Rally brings together professional
                   drivers and thrill-seekers for an unforgettable adventure.
                 </p>
 

@@ -10,7 +10,7 @@ const RulesCard = ({ title, bgColor, buttonBg, buttonText, isDark = false }) => 
     </h3>
 
     <button
-      className={`px-10 py-3 rounded-full font-bold transition-all duration-300 hover:scale-105 active:scale-95`}
+      className={`px-10 py-3 rounded-full  transition-all duration-300 hover:scale-105 active:scale-95`}
       style={{ backgroundColor: buttonBg, color: isDark ? 'white' : 'black' }}
     >
       Download

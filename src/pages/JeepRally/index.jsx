@@ -16,10 +16,14 @@ const JeepRally = () => {
         <div className="bg-white">
             <Hero />
             <Countdown />
-            <AdventureSection />
+            <div id="about">
+                <AdventureSection />
+            </div>
             <EventsCompetitions />
             <SelectChallenge />
-            <RallyRules />
+            <div id="rules">
+                <RallyRules />
+            </div>
             <TrackDetails />
             <Destinations />
             <RecentGallery data={dummyData.gallery} />

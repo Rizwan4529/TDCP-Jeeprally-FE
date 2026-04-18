@@ -20,9 +20,9 @@ const contactInfo = {
 
 const links = [
   { title: "Home", path: "/" },
-  { title: "About", path: "/about" },
+  { title: "About", path: "/#about" },
   { title: "Routes", path: "/routes" },
-  { title: "Rules", path: "/rules" },
+  { title: "Rules", path: "/#rules" },
   { title: "Competitor", path: "/competitor" },
   { title: "Ranking", path: "/ranking" },
 ]
