@@ -21,7 +21,7 @@ const RecentGallery = ({ data }) => {
     const getImage = (offset) => data.images[startIndex + offset] || {};
 
     return (
-        <section className="py-16 md:py-24 bg-white relative overflow-hidden">
+        <section className="py-10 md:py-10 bg-white relative overflow-hidden">
             {/* Background Flower Cluster - Top Left */}
             <div className="absolute top-0 left-0 z-0 pointer-events-none select-none">
                 <div className="relative w-48 md:w-64 lg:w-80 h-48 md:h-64 lg:h-80">
@@ -37,8 +37,8 @@ const RecentGallery = ({ data }) => {
             <div className="container mx-auto relative z-10">
                 <div className="px-4 lg:px-20">
                     {/* Header */}
-                    <div className="text-center mb-12 md:mb-16">
-                        <h2 className="font-gilda text-primary text-[42px]">
+                    <div className="text-center mb-10 md:mb-10">
+                        <h2 className="font-gilda text-primary text-[29px] md:text-[42px]">
                             {data.title}
                         </h2>
                     </div>

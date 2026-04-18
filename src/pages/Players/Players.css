@@ -38,7 +38,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 50%; /* Adjust based on the actual frame box width */
+  width: 50%;
+  /* Adjust based on the actual frame box width */
   text-align: center;
 }
 
@@ -70,7 +71,7 @@
 
 .players-title {
   font-family: var(--font-gilda);
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: #000;
   margin: 0;
 }
@@ -188,13 +189,13 @@
 
 .player-number {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 400;
   color: #333;
 }
 
 .player-name {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 400;
   color: #000;
   font-family: var(--font-sans);
 }
@@ -231,7 +232,7 @@
   }
 
   .players-title {
-    font-size: 1.8rem;
+    /* Responsive sizing handled by clamp above */
   }
 
   .player-info-box {

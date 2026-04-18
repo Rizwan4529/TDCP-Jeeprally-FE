@@ -26,7 +26,7 @@ const RallyRules = () => {
 
           {/* Left Side: Content */}
           <div className="w-full lg:w-[35%] space-y-8">
-            <h2 className="text-[40px] md:text-[54px] font-gilda leading-tight text-black">
+            <h2 className="text-[29px] md:text-[42px] font-gilda leading-tight text-black">
               Rally Rules and <br className="hidden md:block" /> Documents
             </h2>
             <p className="para text-gray-500 leading-relaxed max-w-3xl">

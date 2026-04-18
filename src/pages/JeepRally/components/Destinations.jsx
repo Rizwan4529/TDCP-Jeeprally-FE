@@ -24,14 +24,14 @@ const DestinationSlot = ({ data, isLarge = false }) => {
   }, [data, displayData.image]);
 
   return (
-    <div 
+    <div
       className={`
         transition-all duration-700 ease-in-out
         ${isLarge ? 'flex-[1.4] h-[480px] md:h-[550px]' : 'flex-1 h-[380px] md:h-[450px]'}
         relative group cursor-pointer
       `}
     >
-      <div 
+      <div
         className={`
           w-full h-full rounded-md overflow-hidden shadow-sm group-hover:shadow-2xl transition-all duration-500
           ${isTransitioning ? 'opacity-80 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}
@@ -70,14 +70,14 @@ const Destinations = () => {
   }
 
   return (
-    <section className="py-24 bg-[#F2F7F2]">
+    <section className="py-12 bg-[#F2F7F2]">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex justify-between items-end mb-16 px-4">
-          <h2 className="text-[42px] md:text-[54px] font-gilda text-black">
+          <h2 className="text-[29px] md:text-[42px] font-gilda text-black">
             Rally Destinations
           </h2>
-          
+
           <div className="flex gap-4">
             <button
               onClick={handlePrev}

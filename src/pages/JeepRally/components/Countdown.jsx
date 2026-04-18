@@ -47,7 +47,7 @@ const Countdown = () => {
 
   return (
     <section
-      className="relative py-12 md:py-24 overflow-hidden bg-white"
+      className="relative py-10 md:py-10 overflow-hidden bg-white"
       style={{
         backgroundImage: "url('/assets/images/dessert_2.png')",
         backgroundSize: 'cover',

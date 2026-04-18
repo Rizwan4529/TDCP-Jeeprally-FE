@@ -53,7 +53,7 @@ const Rankings = () => {
   return (
     <>
 
-      <div className="rankings-page mt-[100px]">
+      <div className="rankings-page !mt-[100px]">
         <div className="rankings-container">
           {/* Banner Section */}
           <div className="rankings-banner">

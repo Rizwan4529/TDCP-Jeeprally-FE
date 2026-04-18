@@ -64,11 +64,11 @@ const EventsCompetitions = () => {
   ];
 
   return (
-    <section className="py-24 bg-[#F2F7F2]">
+    <section className="py-10 bg-[#F2F7F2]">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="mb-16">
-          <h2 className="text-[42px] font-gilda text-black">Events & Competations</h2>
+        <div className="mb-10">
+          <h2 className="text-[29px] md:text-[42px] font-gilda text-black">Events & Competitions</h2>
         </div>
 
         {/* Events List */}

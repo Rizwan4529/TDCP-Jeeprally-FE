@@ -26,11 +26,11 @@ const ChallengeCard = ({ title, description, image, isLarge = false, className =
 
 const SelectChallenge = () => {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-10 bg-white">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto space-y-4 mb-16">
-          <h2 className="text-[42px] font-gilda text-black">Select Your Challenge</h2>
+        <div className="text-center max-w-2xl mx-auto space-y-4 mb-10">
+          <h2 className="text-[29px] md:text-[42px] font-gilda text-black">Select Your Challenge</h2>
           <p className="para text-gray-500">
             Get a closer look at the terrain, distance, and key checkpoints of the race.
           </p>

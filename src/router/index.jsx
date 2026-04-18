@@ -3,7 +3,6 @@ import Layout from "../layouts/Layout";
 import ScrollToTop from "../components/common/ScrollToTop";
 import NotFound from "../pages/NotFound";
 import Loading from "../components/common/Loading";
-import Sightseeing from "../pages/Sightseeing";
 import JeepRally from "../pages/JeepRally";
 import RallyMap from "../pages/RallyMap";
 import Rankings from "../pages/Rankings";
@@ -42,11 +41,10 @@ function AppRouter() {
         {/* Layout wrapper */}
         <Route path="/" element={<Layout />}>
 
-          <Route index element={<Sightseeing />} />
-          <Route path="/jeep-rally" element={<JeepRally />} />
-          <Route path="/jeep-rally/1" element={<RallyMap />} />
-          <Route path="/jeep-rally/2" element={<Rankings />} />
-          <Route path="/jeep-rally/3" element={<Players />} />
+          <Route index element={<JeepRally />} />
+          <Route path="/routes" element={<RallyMap />} />
+          <Route path="/ranking" element={<Rankings />} />
+          <Route path="/competitor" element={<Players />} />
 
 
         </Route>

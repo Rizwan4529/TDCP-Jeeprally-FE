@@ -48,9 +48,9 @@ const Header = () => {
                   href={icon.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-brand-green transition-all duration-300"
+                  className="hover:text-brand-green transition-all duration-300 border border-white rounded-full p-0.5 flex items-center justify-center"
                 >
-                  <icon.icon className="size-4" />
+                  <icon.icon className="size-3.5" />
                 </a>
               ))}
             </div>
@@ -168,7 +168,7 @@ const Header = () => {
                 href={icon.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-black hover:text-brand-green transition-all duration-300"
+                className="text-black hover:text-brand-green transition-all duration-300 border border-black rounded-full p-2 flex items-center justify-center"
               >
                 <icon.icon className="size-5" />
               </a>

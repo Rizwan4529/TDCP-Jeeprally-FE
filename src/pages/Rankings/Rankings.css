@@ -1,7 +1,7 @@
 .rankings-page {
   background-color: #fff;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 5rem 1rem 2rem;
 }
 
 .rankings-container {
@@ -44,7 +44,7 @@
 
 .banner-title {
   font-family: var(--font-gilda);
-  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: #000;
   margin: 0;
   white-space: nowrap;
@@ -70,7 +70,7 @@
 
 .rankings-title {
   font-family: var(--font-gilda);
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
   color: #000;
   margin: 0;
 }
@@ -242,7 +242,7 @@
 
 @media (max-width: 768px) {
   .rankings-title {
-    font-size: 1.8rem;
+    /* Responsive sizing handled by clamp above */
   }
 
   .rankings-table th,
