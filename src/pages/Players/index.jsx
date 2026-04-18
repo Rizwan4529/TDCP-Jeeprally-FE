@@ -38,6 +38,17 @@ const Players = () => {
   return (
     <div className="players-page mt-[100px]">
       <div className="players-container">
+        {/* Banner Section */}
+        <div className="players-banner">
+          <div className="banner-frame-container">
+            <img src="/assets/images/frame.png" alt="TDCP Jeep Rally Frame" className="banner-frame-img" />
+            <div className="banner-text-overlay">
+              <h1 className="banner-title">TDCP JEEP RALLY</h1>
+            </div>
+          </div>
+          <p className="banner-subtitle">Cholistan 2026</p>
+        </div>
+
         {/* Header Content Row */}
         <div className="players-header-row">
           <h1 className="players-title">Players Name</h1>

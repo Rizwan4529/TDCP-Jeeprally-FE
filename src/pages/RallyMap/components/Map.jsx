@@ -7,7 +7,7 @@ const Map = () => {
             <header className="rm-header">
                 <div className="rm-title-row">
                     <span className="flag-icon">🏁</span>
-                    <p className='font-gilda text-4xl'>Cholistan Desert</p>
+                    <p className='font-gilda text-[42px]'>Cholistan Desert</p>
                     <span className="flag-icon">🏁</span>
                 </div>
                 <div className="rm-stats">

@@ -56,6 +56,15 @@ const Rankings = () => {
       <div className="rankings-page mt-[100px]">
         <div className="rankings-container">
           {/* Banner Section */}
+          <div className="rankings-banner">
+            <div className="banner-frame-container">
+              <img src="/assets/images/frame.png" alt="TDCP Jeep Rally Frame" className="banner-frame-img" />
+              <div className="banner-text-overlay">
+                <h1 className="banner-title">TDCP JEEP RALLY</h1>
+              </div>
+            </div>
+            <p className="banner-subtitle">Cholistan 2026</p>
+          </div>
 
 
           {/* Header Action Row */}

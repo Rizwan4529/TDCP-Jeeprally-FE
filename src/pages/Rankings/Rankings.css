@@ -15,12 +15,47 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: 3rem;
+  width: 100%;
 }
 
-.banner-img {
-  max-width: 600px;
+.banner-frame-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.banner-frame-img {
   width: 100%;
   height: auto;
+}
+
+.banner-text-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  /* Adjust based on the actual frame box width */
+  text-align: center;
+}
+
+.banner-title {
+  font-family: var(--font-gilda);
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  color: #000;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.banner-subtitle {
+  font-family: var(--font-sans);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: #333;
+  margin-top: 0.5rem;
 }
 
 /* Header Action Row */
@@ -57,10 +92,10 @@
 }
 
 .search-btn {
-  background-color: #55b376;
+  background-color: #15a067;
   color: #fff;
   border: none;
-  padding: 0.75rem 2rem;
+  padding: 0.5rem 2rem;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
@@ -69,7 +104,7 @@
 }
 
 .search-btn:hover {
-  background-color: #469b65;
+  background-color: #0D542B;
 }
 
 /* Filters Section */
@@ -99,7 +134,7 @@
 }
 
 .filter-btn.active {
-  background-color: #79cb86;
+  background-color: #15a067;
   color: #fff;
 }
 
@@ -110,7 +145,7 @@
 /* Table Section */
 .rankings-table-wrapper {
   margin-top: 2rem;
-  border-top: 4px solid #55b376;
+  border-top: 4px solid #15a067;
   background: #fff;
   border-radius: 4px;
   overflow: hidden;
@@ -198,7 +233,7 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .search-container {
     width: 100%;
     max-width: none;
@@ -209,12 +244,13 @@
   .rankings-title {
     font-size: 1.8rem;
   }
-  
-  .rankings-table th, .rankings-table td {
+
+  .rankings-table th,
+  .rankings-table td {
     padding: 0.75rem 1rem;
     font-size: 0.75rem;
   }
-  
+
   .rankings-table-wrapper {
     overflow-x: auto;
   }
