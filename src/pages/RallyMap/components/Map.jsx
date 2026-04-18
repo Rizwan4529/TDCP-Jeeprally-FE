@@ -1,6 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import '../RallyMap.css'
 const Map = () => {
+    const [activeTab, setActiveTab] = useState('Jeep');
+
+    const tabs = ['Jeep', 'Quad Bike', 'Dirt Bike'];
+
     return (
         <div className="rm-wrapper  ">
             {/* Header Section */}
@@ -18,9 +22,15 @@ const Map = () => {
                 </div>
 
                 <div className="rm-toggle-container">
-                    <button className="rm-toggle-btn active">Jeep</button>
-                    <button className="rm-toggle-btn">Quad Bike</button>
-                    <button className="rm-toggle-btn">Dirt Bike</button>
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab}
+                            className={`rm-toggle-btn ${activeTab === tab ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
             </header>
 
