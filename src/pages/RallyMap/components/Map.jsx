@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import '../RallyMap.css'
+import Partners from '../../JeepRally/components/Partners';
 const Map = () => {
     const [activeTab, setActiveTab] = useState('Jeep');
 
     const tabs = ['Jeep', 'Quad Bike', 'Dirt Bike'];
 
     return (
-        <div className="rm-wrapper  ">
+        <div className="rm-wrapper ">
             {/* Header Section */}
             <header className="rm-header">
                 <div className="rm-title-row">
@@ -37,7 +38,7 @@ const Map = () => {
                 <img
                     src="/assets/images/map_line.png"
                     alt="Rally Track"
-                    className="rm-road-img"
+                    className="rm-road-img "
                 />
 
                 {/* LEFT ITEMS */}
