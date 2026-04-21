@@ -156,6 +156,15 @@
   background-color: #2b2b2b;
   padding: 1rem 1.5rem;
   color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-pattern {
+  height: 24px;
+  width: auto;
+  opacity: 0.9;
 }
 
 .table-title-bar h2 {

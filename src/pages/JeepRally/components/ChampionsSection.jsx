@@ -34,7 +34,7 @@ const tabs = ['Stock & Prepaid', 'Quad Bike', 'Dirt Bike', '4x4', 'Truck Race'];
 const ChampionsSection = () => {
   const [activeTab, setActiveTab] = useState('Stock & Prepaid');
   return (
-    <section className="py-16 md:py-24 bg-[#F2F7F2]">
+    <section className="py-10 md:py-10 bg-[#F2F7F2]">
       <div className="container mx-auto px-4 lg:px-20">
         {/* Header */}
         <div className="text-center mb-16 space-y-4">

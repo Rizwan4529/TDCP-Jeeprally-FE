@@ -99,6 +99,7 @@ const Rankings = () => {
           <div className="rankings-table-wrapper">
             <div className="table-title-bar">
               <h2>Team Standing</h2>
+              <img src="/assets/images/head.png" alt="pattern" className="header-pattern" />
             </div>
             <table className="rankings-table">
               <thead>

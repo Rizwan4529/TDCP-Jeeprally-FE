@@ -79,7 +79,7 @@ const ExperienceSlider = () => {
               {/* Content Area */}
               <div className="absolute bottom-0 left-0 right-0 p-8 md:p-10 lg:p-14 transition-all duration-500 bg-transparent group-hover:bg-brand-green">
 
-                <h3 className="text-2xl md:text-3xl lg:text-4xl font-gilda leading-snug text-white max-w-[300px]">
+                <h3 className="text-2xl md:text-3xl lg:text-3xl font-gilda leading-snug text-white max-w-[300px]">
                   {exp.title}
                 </h3>
 
