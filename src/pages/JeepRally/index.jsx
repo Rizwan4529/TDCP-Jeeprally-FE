@@ -10,6 +10,8 @@ import Destinations from './components/Destinations';
 import RecentGallery from './components/RecentGallery';
 import { dummyData } from './data'
 import Partners from './components/Partners';
+import ExperienceSlider from './components/ExperienceSlider';
+import ChampionsSection from './components/ChampionsSection';
 
 const JeepRally = () => {
     return (
@@ -19,11 +21,13 @@ const JeepRally = () => {
             <div id="about">
                 <AdventureSection />
             </div>
+            <ExperienceSlider />
             <EventsCompetitions />
-            <SelectChallenge />
+            <ChampionsSection />
             <div id="rules">
                 <RallyRules />
             </div>
+            <SelectChallenge />
             <TrackDetails />
             <Destinations />
             <RecentGallery data={dummyData.gallery} />

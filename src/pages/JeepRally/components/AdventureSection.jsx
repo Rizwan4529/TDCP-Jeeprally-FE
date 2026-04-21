@@ -5,7 +5,7 @@ const AdventureSection = () => {
     <section className="py-12 md:py-20 bg-white overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header Row - 3 Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 mb-16 md:mb-20">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 mb-16 md:mb-20">
           <div className="space-y-4 md:space-y-6">
             <h2 className="text-[28px] md:text-[42px] font-gilda leading-tight text-black border-l-4 border-brand-green pl-6">
               High-Speed <br /> Desert Adventure
@@ -38,7 +38,7 @@ const AdventureSection = () => {
               off-road adventure.
             </p>
           </div>
-        </div>
+        </div> */}
 
         {/* Image Grid Row */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-16 md:mb-20">
@@ -82,7 +82,7 @@ const AdventureSection = () => {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 py-10 md:py-12 border-t border-gray-100">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 py-0 md:py-0 ">
           <div className="flex items-center gap-4 md:gap-6">
             <span className="text-[42px] lg:text-[64px] font-sans font-medium text-brand-green leading-none">600+</span>
             <p className="text-sm text-gray-500 leading-snug">

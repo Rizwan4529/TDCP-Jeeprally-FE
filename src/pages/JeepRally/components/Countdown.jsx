@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from "react";
 
 const CountdownBox = ({ value, label }) => (
-  <div className="bg-white rounded-lg shadow-xl p-4 md:p-6 min-w-[100px] md:min-w-[140px] flex flex-col items-center">
+  <div className="bg-brand-green rounded-lg shadow-xl p-4 md:p-6 min-w-[100px] md:min-w-[140px] flex flex-col items-center">
     <span className="text-4xl md:text-6xl font-germania text-black leading-none">
       {String(value).padStart(2, '0')}
     </span>
-    <span className="text-[10px] md:text-[14px] font-sans font-bold text-gray-400 mt-2 tracking-widest uppercase">
+    <span className="text-[10px] md:text-[14px] font-sans  text-black mt-2 tracking-widest uppercase">
       {label}
     </span>
   </div>
