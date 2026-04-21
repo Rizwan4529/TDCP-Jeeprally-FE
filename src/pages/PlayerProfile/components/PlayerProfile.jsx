@@ -13,7 +13,7 @@ const PlayerProfile = () => {
         number: '#22',
         name: 'Hassan Malik',
         team: 'Hero Moto Sport Rally Team',
-        image: '/assets/images/pp1.png', // Main image
+        image: '/assets/images/ppm.png', // Main image
         driverImage: '/assets/images/pp1.png',
         navigatorImage: '/assets/images/pp2.png',
         details: {
@@ -39,12 +39,12 @@ const PlayerProfile = () => {
     return (
         <div className="mt-[100px] player-profile-page min-h-screen bg-white">
             {/* Hero Section */}
-            <section className="relative h-[400px] md:h-[500px] w-full overflow-hidden">
+            <section className="relative h-[400px] md:h-[500px] w-full">
                 {/* Checkered Background overlay */}
                 <div
                     className="absolute inset-0 opacity-100"
                     style={{
-                        backgroundImage: 'url("/assets/images/flagbg.png")',
+                        backgroundImage: 'url("/assets/images/blocks.jpg")',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                     }}
@@ -64,12 +64,12 @@ const PlayerProfile = () => {
                 </div>
 
                 {/* Profile Box overlap */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
+                <div className=" absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
                     <div className="bg-white px-10 py-8 rounded-sm shadow-xl text-center min-w-[300px] border border-gray-100 flex flex-col items-center justify-center gap-2">
                         <h2 className="text-[32px] md:text-[48px]  text-gray-900 leading-none">
                             {player.number}
                         </h2>
-                        <div className="text-gray-600 font-medium text-sm md:text-lg leading-tight uppercase tracking-wide">
+                        <div className=" text-gray-600 font-medium text-sm md:text-lg leading-tight uppercase tracking-wide">
                             {player.team}
                         </div>
                     </div>
