@@ -7,6 +7,7 @@ import JeepRally from "../pages/JeepRally";
 import RallyMap from "../pages/RallyMap";
 import Rankings from "../pages/Rankings";
 import Players from "../pages/Players";
+import Player from "../pages/PlayerProfile";
 
 function AppRouter() {
 
@@ -45,6 +46,7 @@ function AppRouter() {
           <Route path="/routes" element={<RallyMap />} />
           <Route path="/ranking" element={<Rankings />} />
           <Route path="/competitor" element={<Players />} />
+          <Route path="/player/:id" element={<Player />} />
 
 
         </Route>

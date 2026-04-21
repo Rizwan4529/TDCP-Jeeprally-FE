@@ -38,7 +38,7 @@ const ChampionsSection = () => {
       <div className="container mx-auto px-4 lg:px-20">
         {/* Header */}
         <div className="text-center mb-16 space-y-4">
-          <h2 className="font-gilda text-[32px] md:text-[50px] text-primary leading-tight">
+          <h2 className="font-gilda text-[32px] md:text-[42px] text-primary leading-tight">
             Champions of the Rally
           </h2>
           <p className="para text-gray-500 max-w-2xl mx-auto">
