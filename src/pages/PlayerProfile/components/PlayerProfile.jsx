@@ -42,7 +42,7 @@ const PlayerProfile = () => {
             <section className="relative h-[400px] md:h-[500px] w-full overflow-hidden">
                 {/* Checkered Background overlay */}
                 <div
-                    className="absolute inset-0 opacity-70"
+                    className="absolute inset-0 opacity-100"
                     style={{
                         backgroundImage: 'url("/assets/images/flagbg.png")',
                         backgroundSize: 'cover',
