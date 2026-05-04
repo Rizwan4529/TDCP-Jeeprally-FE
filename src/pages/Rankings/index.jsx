@@ -83,7 +83,7 @@ const Rankings = () => {
           </div>
 
           {/* Filters Section */}
-          <div className="rankings-filters">
+          <div className="rankings-filters no-scrollbar">
             {tabs.map((tab) => (
               <button
                 key={tab}

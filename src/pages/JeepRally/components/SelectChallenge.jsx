@@ -2,7 +2,7 @@ import React from "react";
 import AnimatedButton from "../../../components/common/AnimatedButton";
 
 const ChallengeCard = ({ title, description, image, isLarge = false, className = "" }) => (
-  <div className={`bg-white rounded-md p-6 shadow-lg shadow-gray-200/50 border border-gray-50 flex ${isLarge ? 'flex-col h-full' : 'flex-col sm:flex-row flex-1'} gap-6 group hover:shadow-xl transition-all duration-500 ${className}`}>
+  <div className={`bg-white rounded-md p-3 shadow-lg shadow-gray-200/50 border border-gray-50 flex ${isLarge ? 'flex-col h-full' : 'flex-col sm:flex-row flex-1'} gap-6 group hover:shadow-xl transition-all duration-500 ${className}`}>
     <div className={`${isLarge ? 'w-full h-72 lg:h-[400px]' : 'w-full sm:w-52 h-48 sm:h-auto'} overflow-hidden rounded-md flex-shrink-0`}>
       <img
         src={image}

@@ -40,6 +40,7 @@
   padding: 5px;
   border-radius: 30px;
   margin-top: 20px;
+  max-width: 100%;
 }
 
 .rm-toggle-btn {
@@ -51,6 +52,7 @@
   font-size: 14px;
   color: #777;
   transition: 0.3s;
+  white-space: nowrap;
 }
 
 .rm-toggle-btn.active {

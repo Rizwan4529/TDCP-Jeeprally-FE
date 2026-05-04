@@ -57,7 +57,7 @@ const Hero = () => {
             {/* Right Column: Image Card */}
             <div className="hidden lg:flex justify-end">
               <div className="group relative max-w-[280px] xl:max-w-[320px] transform hover:-translate-y-4 transition-all duration-700">
-                <div className="relative h-48 xl:h-56 overflow-hidden rounded-sm">
+                <div className="relative h-48 xl:h-56 overflow-hidden rounded-md">
                   <img
                     src="/assets/images/hero_small_1.jpg"
                     alt="Professional Drivers"

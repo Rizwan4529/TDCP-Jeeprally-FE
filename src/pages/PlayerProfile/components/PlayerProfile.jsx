@@ -83,7 +83,7 @@ const PlayerProfile = () => {
             <section className="container mx-auto px-4 pb-20">
 
                 {/* Driver/Navigator Toggle */}
-                <div className="flex justify-center gap-6 md:gap-10 mb-16">
+                <div className="flex justify-center gap-6 md:gap-10 mb-16 overflow-x-auto no-scrollbar max-w-full">
                     {/* Driver Tab */}
                     <div className="relative group cursor-pointer" onClick={() => setActiveTab('driver')}>
                         <div className={`w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'driver' ? 'border-[#48AA71]' : 'border-transparent opacity-60'}`}>

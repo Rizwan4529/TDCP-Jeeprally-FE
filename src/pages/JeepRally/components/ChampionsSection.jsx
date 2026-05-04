@@ -46,11 +46,11 @@ const ChampionsSection = () => {
           </p>
         </div>
         {/* Filters Section */}
-        <div className="players-filters flex justify-center flex-wrap gap-2 md:gap-4 mb-12">
+        <div className="players-filters flex overflow-x-auto no-scrollbar gap-2 md:gap-4 mb-12">
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`px-6 py-2 rounded-full text-sm transition-all duration-300 ${activeTab === tab
+              className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${activeTab === tab
                 ? 'bg-brand-green text-white shadow-md'
                 : 'bg-white/50 text-gray-600 hover:bg-white'
                 }`}

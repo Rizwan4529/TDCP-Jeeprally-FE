@@ -21,7 +21,6 @@ const experiences = [
   {
     id: 3,
     title: "High-Speed Desert Adventure",
-    subtext: "Nabeel Iqbal",
     image: "/assets/images/s3.jpg",
   },
   {

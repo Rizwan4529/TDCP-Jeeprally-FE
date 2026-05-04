@@ -4,7 +4,7 @@ import Partners from '../../JeepRally/components/Partners';
 const Map = () => {
     const [activeTab, setActiveTab] = useState('Jeep');
 
-    const tabs = ['Jeep', 'Quad Bike', 'Dirt Bike'];
+    const tabs = ['Jeep', 'Quad Bike', 'Dirt Bike', "Test 1", "Test 2", "Test 2"];
 
     return (
         <div className="rm-wrapper ">
@@ -20,11 +20,11 @@ const Map = () => {
                     <p>Estimated Time: <strong>3–5 Hours</strong></p>
                 </div>
 
-                <div className="rm-toggle-container">
+                <div className="rm-toggle-container overflow-x-auto no-scrollbar max-w-full">
                     {tabs.map((tab) => (
                         <button
                             key={tab}
-                            className={`rm-toggle-btn ${activeTab === tab ? 'active' : ''}`}
+                            className={`rm-toggle-btn whitespace-nowrap ${activeTab === tab ? 'active' : ''}`}
                             onClick={() => setActiveTab(tab)}
                         >
                             {tab}
