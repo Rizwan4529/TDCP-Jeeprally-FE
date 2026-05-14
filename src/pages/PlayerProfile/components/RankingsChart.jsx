@@ -25,46 +25,46 @@ const data = [
 
 const RankingChart = () => {
   return (
-    <section className="py-20 bg-white">
+    <section className="bg-white py-16 md:py-20">
       <div className="container mx-auto px-4 lg:px-20">
-        <h2 className="font-gilda text-[36px] md:text-[42px] text-primary text-center mb-16">
+        <h2 className="mb-10 text-center font-gilda text-[34px] text-black md:mb-14 md:text-[40px]">
           Rankings
         </h2>
 
-        <div className="h-[400px] md:h-[500px] w-full">
+        <div className="mx-auto h-[280px] w-full max-w-5xl md:h-[360px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
               margin={{
-                top: 20,
-                right: 0,
-                left: -25,
-                bottom: 20,
+                top: 8,
+                right: 8,
+                left: -12,
+                bottom: 8,
               }}
             >
               <CartesianGrid
                 vertical={false}
                 strokeDasharray="0"
-                stroke="#f0f0f0"
+                stroke="#ececec"
               />
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#9ca3af', fontSize: 14 }}
-                dy={20}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                dy={14}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#9ca3af', fontSize: 14 }}
+                tick={{ fill: '#6b7280', fontSize: 12 }}
                 domain={[0, 80]}
                 ticks={[0, 20, 40, 60, 80]}
                 dx={-10}
               />
               <Tooltip
                 content={<CustomTooltip />}
-                cursor={{ stroke: '#f0f0f0', strokeWidth: 1 }}
+                cursor={{ stroke: '#efefef', strokeWidth: 1 }}
               />
               <Line
                 type="monotone"

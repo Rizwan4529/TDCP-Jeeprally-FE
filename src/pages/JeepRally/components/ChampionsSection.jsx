@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
 import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
+import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
 import {
   getCategoryFilterTabs,
   getDefaultCategoryKey,
@@ -12,6 +14,10 @@ import {
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
 import { shouldShowChampionsEmpty } from "./championsSection.utils.js";
+import {
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+} from "../../../api/features/content/websiteContent.utils.js";
 
 const POSITION_STYLES = {
   1: {
@@ -31,9 +37,10 @@ const POSITION_STYLES = {
   },
 };
 
-const ChampionsSection = () => {
+const ChampionsSection = ({ content }) => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
   const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const { data: websiteContent } = useWebsiteContentQuery();
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const tabs = useMemo(
     () => getCategoryFilterTabs(categoriesRaw),
@@ -96,6 +103,13 @@ const ChampionsSection = () => {
     champions,
     championsSuccess,
   });
+  const resolvedContent = useMemo(() => {
+    if (content) return content;
+    return getWebsiteContentSection(
+      getWebsiteContentPage(websiteContent, "home"),
+      "champions"
+    );
+  }, [content, websiteContent]);
 
   return (
     <section className="py-10 md:py-10 bg-section">
@@ -103,10 +117,10 @@ const ChampionsSection = () => {
         {/* Header */}
         <div className="text-center mb-16 space-y-4">
           <h2 className="font-gilda text-[32px] md:text-[42px] text-primary leading-tight">
-            Champions of the Rally
+            {resolvedContent?.title || "Champions of the Rally"}
           </h2>
           <p className="para text-gray-500 max-w-2xl mx-auto">
-            Celebrating the top performers who conquered the desert track
+            {resolvedContent?.subtitle || "Celebrating the top performers who conquered the desert track"}
           </p>
         </div>
         {/* Filters Section */}
@@ -145,13 +159,14 @@ const ChampionsSection = () => {
                 return desktopOrder.indexOf(a.id) - desktopOrder.indexOf(b.id);
               })
               .map((player) => (
-                <div
+                <Link
+                  to={`/player/${player.id}?category=${encodeURIComponent(activeCategoryKey)}`}
                   key={player.id}
                   className={`relative w-full md:w-1/3 flex flex-col justify-end h-full ${player.order} group`}
                 >
                   {/* Card Container with Gradient */}
                   <div
-                    className={`  w-full rounded-[15px] overflow-hidden shadow-lg transition-transform duration-500 hover:-translate-y-2 h-full`}
+                    className={`w-full rounded-[15px] overflow-hidden shadow-lg transition-transform duration-500 hover:-translate-y-2 h-full cursor-pointer`}
                   >
                     {/* Player Image */}
                     <div className={`pointer-events-none w-full h-full`}>
@@ -167,7 +182,7 @@ const ChampionsSection = () => {
                       {player.name} ( {player.team} )
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
           </div>
         )}

@@ -1,237 +1,272 @@
-import { useState } from 'react';
-import { useParams } from 'react-router';
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FiChevronDown } from "react-icons/fi";
+import { useParams, useSearchParams } from "react-router";
+import raceBg from "../../../assets/images/race-bg.jpg";
+import {
+  fetchRallyChampions,
+  resolveCheckpointImageUrl,
+} from "../../../api/features/rally/rally.service.jsx";
+import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
+import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
+import {
+  getDefaultCategoryKey,
+  hasCategoryKey,
+} from "../../../utils/constants.js";
+import {
+  STATIC_CHAMPION_PROFILES,
+  STATIC_OTHER_RACES,
+  STATIC_TEAM_STANDING,
+} from "../playerProfile.data.js";
+import { buildPlayerProfile } from "../playerProfile.utils.js";
+
+const BADGE_ICON = (
+  <svg
+    className="h-3.5 w-3.5"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden
+  >
+    <path d="M12 2l2.3 4.66L19.5 7.4l-3.75 3.65.88 5.15L12 13.7l-4.63 2.5.88-5.15L4.5 7.4l5.2-.74L12 2z" />
+  </svg>
+);
+
+const InfoRow = ({ label, value }) => (
+  <div className="grid grid-cols-[minmax(110px,180px)_1fr] items-center gap-6 py-2.5">
+    <span className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#222]">
+      {label}
+    </span>
+    <span className="text-right text-[14px] text-[#4B4B4B]">{value}</span>
+  </div>
+);
+
+const Badge = ({ children }) => (
+  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E7E7E7] bg-white px-3 py-1 text-[10px] font-medium text-[#5E5E5E] shadow-[0_2px_6px_rgba(0,0,0,0.04)]">
+    {BADGE_ICON}
+    {children}
+  </span>
+);
+
+const StandingPanel = ({
+  title,
+  headerClassName,
+  items,
+  expandedIndex,
+  onToggle,
+  renderExpanded,
+  striped = false,
+}) => (
+  <div className="overflow-hidden rounded-[4px] border border-[#ECECEC] bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)]">
+    <div className={`px-6 py-4 ${headerClassName}`}>
+      <h3 className="font-gilda text-[17px] text-white">{title}</h3>
+    </div>
+    <div>
+      {items.map((item, idx) => {
+        const isOpen = expandedIndex === idx;
+        return (
+          <div
+            key={`${item.year}-${idx}`}
+            className="border-t border-[#ECECEC] first:border-t-0"
+          >
+            <button
+              type="button"
+              className={`flex w-full items-center justify-between px-6 py-4 text-left transition-colors ${
+                striped && idx % 2 === 1 ? "bg-[#F6F6F6]" : "bg-white"
+              } hover:bg-[#FAFAFA]`}
+              onClick={() => onToggle(isOpen ? null : idx)}
+            >
+              <span className="font-sans text-[36px] font-semibold italic leading-none text-[#1E1E1E]">
+                {item.year}
+              </span>
+              <div className="flex items-center gap-2">
+                <Badge>{item.stage}</Badge>
+                <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-full border border-[#E7E7E7] bg-white px-2 text-[11px] font-semibold text-[#444]">
+                  {item.rank}
+                </span>
+                <FiChevronDown
+                  className={`text-[#7C7C7C] transition-transform duration-300 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </div>
+            </button>
+            {isOpen ? renderExpanded(item) : null}
+          </div>
+        );
+      })}
+    </div>
+  </div>
+);
+
+const ProfileRoleCard = ({ label, image, isActive, onClick }) => (
+  <button
+    type="button"
+    className="group relative text-center"
+    onClick={onClick}
+  >
+    <div
+      className={`overflow-hidden rounded-[6px] bg-[#43515C] shadow-[0_8px_18px_rgba(0,0,0,0.10)] transition-all duration-300 ${
+        isActive
+          ? "border-[4px] border-primary"
+          : "border-[4px] border-transparent opacity-95"
+      }`}
+    >
+      <img
+        src={image}
+        alt={label}
+        className="h-[176px] w-[160px] object-cover object-top md:h-[176px] md:w-[180px]"
+      />
+    </div>
+    <div
+      className={`relative mx-auto -mt-5 w-fit min-w-[128px] rounded-[4px] px-6 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.14)] ${
+        isActive ? "bg-primary text-white" : "bg-[#333333] text-white"
+      }`}
+    >
+      <span className="font-gilda text-[20px]">{label}</span>
+      {isActive ? (
+        <span className="absolute left-1/2 top-full -translate-x-1/2 border-l-[10px] border-r-[10px] border-t-[12px] border-l-transparent border-r-transparent border-t-primary" />
+      ) : null}
+    </div>
+  </button>
+);
 
 const PlayerProfile = () => {
-    const { id } = useParams();
-    const [activeTab, setActiveTab] = useState('driver'); // 'driver' or 'navigator'
-    const [expandedTeamStanding, setExpandedTeamStanding] = useState(0); // Index of expanded row
-    const [expandedOtherRaces, setExpandedOtherRaces] = useState(null); // Index of expanded row
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState("driver");
+  const [expandedTeamStanding, setExpandedTeamStanding] = useState(0);
+  const [expandedOtherRaces, setExpandedOtherRaces] = useState(0);
+  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
+  const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const eventId = activeEvent?._id;
+  const requestedCategory = searchParams.get("category") || "";
+  const activeCategoryKey = useMemo(() => {
+    if (hasCategoryKey(categoriesRaw, requestedCategory)) {
+      return requestedCategory;
+    }
+    return getDefaultCategoryKey(categoriesRaw);
+  }, [categoriesRaw, requestedCategory]);
 
-    // Dummy data for the profile
-    const player = {
-        id: 1,
-        number: '#22',
-        name: 'Hassan Malik',
-        team: 'Hero Moto Sport Rally Team',
-        image: '/assets/images/ppm.png', // Main image
-        driverImage: '/assets/images/pp1.png',
-        navigatorImage: '/assets/images/pp2.png',
-        details: {
-            Age: '26',
-            Occupation: 'Driver',
-            'Date of Birth': 'Born on 30/08/1994',
-            Location: 'Lagos, Nigeria',
-            Team: 'red bull ktm racing'
-        },
-        teamStanding: [
-            { year: '2025', stage: '1 stage', rank: '7', role: 'Driver', cat: 'Bike', team: 'RED BULL GASGAS FACTORY RACING' },
-            { year: '2024', stage: '1 stage', rank: '7' },
-            { year: '2023', stage: '1 stage', rank: '7' },
-        ],
-        otherRaces: [
-            { year: '2025', stage: '1 stage', rank: '7' },
-            { year: '2024', stage: '1 stage', rank: '7' },
-            { year: '2023', stage: '1 stage', rank: '7' },
-            { year: '2024', stage: '1 stage', rank: '7' },
-        ]
-    };
+  const fallbackProfile = useMemo(
+    () =>
+      STATIC_CHAMPION_PROFILES.find((item) => item.id === id) ||
+      STATIC_CHAMPION_PROFILES[0],
+    [id],
+  );
+  const { data: championsRaw = [] } = useQuery({
+    queryKey: [
+      "rally",
+      "champions",
+      "player-profile",
+      eventId,
+      activeCategoryKey,
+    ],
+    queryFn: () => fetchRallyChampions(eventId, activeCategoryKey),
+    enabled: Boolean(eventId && activeCategoryKey),
+    refetchOnWindowFocus: false,
+  });
 
-    return (
-        <div className="mt-[100px] player-profile-page min-h-screen bg-white">
-            {/* Hero Section */}
-            <section className="relative h-[400px] md:h-[500px] w-full">
-                {/* Checkered Background overlay */}
-                <div
-                    className="absolute inset-0 opacity-100"
-                    style={{
-                        backgroundImage: 'url("/assets/images/blocks.jpg")',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                    }}
-                ></div>
-                {/* Grey Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-b from-gray-200/50 to-white/10"></div>
+  const champion = useMemo(
+    () => championsRaw.find((item) => item._id === id) || null,
+    [championsRaw, id],
+  );
+  const profile = useMemo(
+    () => buildPlayerProfile(champion, fallbackProfile),
+    [champion, fallbackProfile],
+  );
 
-                {/* Player Image center */}
-                <div className="absolute inset-0 flex items-end justify-center">
-                    <div className="relative h-full flex items-end">
-                        <img
-                            src={player.image}
-                            alt={player.name}
-                            className="h-[80%] md:h-[90%] w-auto object-contain z-10"
-                        />
-                    </div>
-                </div>
+  const heroImage = resolveCheckpointImageUrl(profile.heroImage);
+  const driverImage = resolveCheckpointImageUrl(profile.driverImage);
+  const navigatorImage = resolveCheckpointImageUrl(profile.navigatorImage);
 
-                {/* Profile Box overlap */}
-                <div className=" absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-20">
-                    <div className="bg-white px-10 py-8 rounded-sm shadow-xl text-center min-w-[300px] border border-gray-100 flex flex-col items-center justify-center gap-2">
-                        <h2 className="text-[32px] md:text-[48px]  text-gray-900 leading-none">
-                            {player.number}
-                        </h2>
-                        <div className=" text-gray-600 font-medium text-sm md:text-lg leading-tight uppercase tracking-wide">
-                            {player.team}
-                        </div>
-                    </div>
-                </div>
-            </section>
+  return (
+    <div className="mt-[50px] min-h-screen bg-white">
+      <section className="relative h-[360px] z-20 md:h-[420px] lg:h-[470px] ">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${raceBg})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/10" />
 
-            {/* Spacing for overlap box */}
-            <div className="h-32 md:h-40"></div>
-
-            {/* Main Content */}
-            <section className="container mx-auto px-4 pb-20">
-
-                {/* Driver/Navigator Toggle */}
-                <div className="flex justify-center gap-6 md:gap-10 mb-16 overflow-x-auto no-scrollbar max-w-full">
-                    {/* Driver Tab */}
-                    <div className="relative group cursor-pointer" onClick={() => setActiveTab('driver')}>
-                        <div className={`w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'driver' ? 'border-primary' : 'border-transparent opacity-60'}`}>
-                            <img src={player.driverImage} alt="Driver" className="w-full h-full object-cover" />
-                        </div>
-                        <div className={`mt-[-20px] mx-auto w-fit relative z-10 px-6 py-2 rounded-sm shadow-lg transition-all duration-300 ${activeTab === 'driver' ? 'bg-primary text-white' : 'bg-[#333] text-white'}`}>
-                            <span className="font-gilda text-lg">Driver</span>
-                            {activeTab === 'driver' && (
-                                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary"></div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Navigator Tab */}
-                    <div className="relative group cursor-pointer" onClick={() => setActiveTab('navigator')}>
-                        <div className={`w-[140px] h-[140px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'navigator' ? 'border-primary' : 'border-transparent opacity-60'}`}>
-                            <img src={player.navigatorImage} alt="Navigator" className="w-full h-full object-cover" />
-                        </div>
-                        <div className={`mt-[-20px] mx-auto w-fit relative z-10 px-6 py-2 rounded-sm shadow-lg transition-all duration-300 ${activeTab === 'navigator' ? 'bg-primary text-white' : 'bg-[#333] text-white'}`}>
-                            <span className="font-gilda text-lg">Navigator</span>
-                            {activeTab === 'navigator' && (
-                                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary"></div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Info Card */}
-                <div className="max-w-3xl mx-auto bg-white rounded-sm shadow-2xl p-8 mb-20 border border-gray-50">
-                    <h2 className="text-[32px] md:text-[42px] font-gilda text-primary mb-8 border-b border-gray-100 pb-4">
-                        {player.name}
-                    </h2>
-                    <div className="space-y-4">
-                        {Object.entries(player.details).map(([key, value]) => (
-                            <div key={key} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-                                <span className="font-bold text-primary uppercase text-sm tracking-wider w-1/3">
-                                    {key}
-                                </span>
-                                <span className="text-gray-600 text-right w-2/3">
-                                    {value}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Stats Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
-                    {/* Team Standing */}
-                    <div>
-                        <div className="bg-primary text-white px-6 py-4 rounded-t-sm">
-                            <h3 className="font-gilda text-xl">Team Standing</h3>
-                        </div>
-                        <div className="bg-white border-x border-b border-gray-100 rounded-b-sm overflow-hidden shadow-sm">
-                            {player.teamStanding.map((item, idx) => (
-                                <div key={idx} className="border-b border-gray-100 last:border-0">
-                                    <div
-                                        className="flex items-center justify-between p-4 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
-                                        onClick={() => setExpandedTeamStanding(expandedTeamStanding === idx ? null : idx)}
-                                    >
-                                        <span className="font-bold text-xl italic">{item.year}</span>
-                                        <div className="flex items-center gap-3">
-                                            <span className="bg-gray-100 px-3 py-1 rounded text-xs text-gray-600 flex items-center gap-1">
-                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                                                {item.stage}
-                                            </span>
-                                            <span className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-sm font-bold">
-                                                {item.rank}
-                                            </span>
-                                            <svg
-                                                className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${expandedTeamStanding === idx ? 'rotate-180' : ''}`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    {expandedTeamStanding === idx && (
-                                        <div className="p-4 bg-gray-50/50 flex flex-wrap gap-2 text-[10px] uppercase font-bold tracking-tighter transition-all duration-300 animate-in fade-in slide-in-from-top-1">
-                                            <span className="px-3 py-1 border border-gray-200 rounded-full bg-white flex items-center gap-1 italic">
-                                                Role : <span className="text-gray-500">{item.role || 'Driver'}</span>
-                                            </span>
-                                            <span className="px-3 py-1 border border-gray-200 rounded-full bg-white flex items-center gap-1 italic">
-                                                Cat : <span className="text-gray-500">{item.cat || 'T1'}</span>
-                                            </span>
-                                            <span className="px-3 py-1 border border-gray-200 rounded-full bg-white flex items-center gap-1 italic">
-                                                Team : <span className="text-gray-500">{item.team || 'Privateer'}</span>
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Other Races */}
-                    <div>
-                        <div className="bg-[#333] text-white px-6 py-4 rounded-t-sm">
-                            <h3 className="font-gilda text-xl">Other Races</h3>
-                        </div>
-                        <div className="bg-white border-x border-b border-gray-100 rounded-b-sm overflow-hidden shadow-sm">
-                            {player.otherRaces.map((item, idx) => (
-                                <div key={idx} className="border-b border-gray-100 last:border-0">
-                                    <div
-                                        className={`p-4 flex items-center justify-between transition-colors cursor-pointer ${idx % 2 !== 0 ? 'bg-gray-100/50' : 'bg-white'} hover:bg-gray-50`}
-                                        onClick={() => setExpandedOtherRaces(expandedOtherRaces === idx ? null : idx)}
-                                    >
-                                        <span className="font-bold text-xl italic">{item.year}</span>
-                                        <div className="flex items-center gap-3">
-                                            <span className="bg-gray-100 px-3 py-1 rounded text-xs text-gray-600 flex items-center gap-1">
-                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                                                {item.stage}
-                                            </span>
-                                            <span className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-sm font-bold bg-white">
-                                                {item.rank}
-                                            </span>
-                                            <svg
-                                                className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${expandedOtherRaces === idx ? 'rotate-180' : ''}`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    {expandedOtherRaces === idx && (
-                                        <div className="p-4 bg-gray-50/50 flex flex-wrap gap-2 text-[10px] uppercase font-bold tracking-tighter transition-all duration-300 animate-in fade-in slide-in-from-top-1">
-                                            <span className="px-3 py-1 border border-gray-200 rounded-full bg-white flex items-center gap-1 italic">
-                                                Event : <span className="text-gray-500">Rally Championship</span>
-                                            </span>
-                                            <span className="px-3 py-1 border border-gray-200 rounded-full bg-white flex items-center gap-1 italic">
-                                                Vehicle : <span className="text-gray-500">4x4 Modified</span>
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
+        <div className="absolute inset-x-0 bottom-0 z-10 flex justify-center">
+          <img
+            src={heroImage}
+            alt={profile.driverName}
+            className="h-[300px] object-contain object-bottom"
+          />
         </div>
-    );
+
+        <div className="absolute bottom-0 left-1/2 z-40 w-[min(90vw,360px)] -translate-x-1/2 translate-y-1/2 rounded-[4px] border border-[#ECECEC] bg-white px-6 py-5 text-center shadow-[0_12px_28px_rgba(0,0,0,0.10)]">
+          <p className="font-sans text-[20px] leading-none text-[#111]">
+            {profile.number}
+          </p>
+          <p className="mt-2 font-gilda text-[18px] leading-[1.25] text-[#2E2E2E]">
+            {profile.teamName}
+          </p>
+        </div>
+      </section>
+
+      <section className="container relative z-0 mx-auto px-4 pb-20 pt-28 md:pt-32">
+        <div className="mx-auto flex max-w-[460px] items-end justify-center gap-5 md:gap-8">
+          <ProfileRoleCard
+            label="Driver"
+            image={driverImage}
+            isActive={activeTab === "driver"}
+            onClick={() => setActiveTab("driver")}
+          />
+          <ProfileRoleCard
+            label="Navigator"
+            image={navigatorImage}
+            isActive={activeTab === "navigator"}
+            onClick={() => setActiveTab("navigator")}
+          />
+        </div>
+
+        <div className="mx-auto mt-12 max-w-[470px] rounded-[4px] border border-[#EFEFEF] bg-white px-5 py-6 shadow-[0_10px_24px_rgba(0,0,0,0.07)] md:px-6">
+          <h2 className="font-gilda text-[27px] leading-none text-[#212121]">
+            {profile.driverName}
+          </h2>
+          <div className="mt-6 divide-y divide-[#F1F1F1]">
+            {profile.details.map((item) => (
+              <InfoRow key={item.label} label={item.label} value={item.value} />
+            ))}
+          </div>
+        </div>
+
+        <div className="mx-auto mt-14 grid max-w-[1020px] gap-6 lg:grid-cols-2">
+          <StandingPanel
+            title="Team Standing"
+            headerClassName="bg-primary"
+            items={STATIC_TEAM_STANDING}
+            expandedIndex={expandedTeamStanding}
+            onToggle={setExpandedTeamStanding}
+            renderExpanded={(item) => (
+              <div className="flex flex-wrap gap-3 bg-[#FBFBFB] px-6 py-4">
+                <Badge>Role : {item.role}</Badge>
+                <Badge>Cat : {item.category}</Badge>
+                <Badge>Team : {item.team}</Badge>
+              </div>
+            )}
+          />
+
+          <StandingPanel
+            title="Other Races"
+            headerClassName="bg-[#333333]"
+            items={STATIC_OTHER_RACES}
+            expandedIndex={expandedOtherRaces}
+            onToggle={setExpandedOtherRaces}
+            striped={true}
+            renderExpanded={(item) => (
+              <div className="flex flex-wrap gap-3 bg-[#FBFBFB] px-6 py-4">
+                <Badge>Event : {item.event}</Badge>
+                <Badge>Vehicle : {item.vehicle}</Badge>
+              </div>
+            )}
+          />
+        </div>
+      </section>
+    </div>
+  );
 };
 
 export default PlayerProfile;

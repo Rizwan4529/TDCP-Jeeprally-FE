@@ -16,7 +16,10 @@ export function getDefaultCategoryKey(categories = []) {
 
 export function getCategoryLabelMap(categories = []) {
   return Object.fromEntries(
-    normalizeCategories(categories).map((category) => [category.key, category.title])
+    normalizeCategories(categories).map((category) => [
+      category.key,
+      category.title,
+    ]),
   );
 }
 
@@ -29,7 +32,9 @@ export function getCategoryFilterTabs(categories = []) {
 
 export function hasCategoryKey(categories = [], key) {
   if (!key) return false;
-  return normalizeCategories(categories).some((category) => category.key === key);
+  return normalizeCategories(categories).some(
+    (category) => category.key === key,
+  );
 }
 
 /** localStorage key for the active rally event id (set from GET /rally/active on each full page load). */

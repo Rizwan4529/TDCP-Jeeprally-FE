@@ -1,7 +1,6 @@
 import React from 'react';
 
-const WhyExperience = () => {
-    const features = [
+const DEFAULT_FEATURES = [
         {
             icon: '/assets/images/ic1.png',
             title: 'High-Speed Racing',
@@ -24,6 +23,15 @@ const WhyExperience = () => {
         }
     ];
 
+const WhyExperience = ({ content }) => {
+    const features = content?.items?.length
+        ? content.items.map((item) => ({
+            icon: item?.image || '/assets/images/ic1.png',
+            title: item?.title || 'Feature',
+            desc: item?.subTitle || '',
+        }))
+        : DEFAULT_FEATURES;
+
     return (
         <section className="why-experience-section py-20 overflow-hidden bg-section">
             <div className="container mx-auto px-4 md:px-20">
@@ -38,8 +46,8 @@ const WhyExperience = () => {
                             <div className="solid-circle"></div>
                             {/* The Jeep Image */}
                             <img
-                                src="/assets/images/yellow-jeep.png"
-                                alt="Yellow Jeep"
+                                src={content?.image || "/assets/images/yellow-jeep.png"}
+                                alt={content?.title || "Yellow Jeep"}
                                 className="relative z-10 w-full max-w-[500px] h-auto drop-shadow-2xl"
                             />
                             {/* Green Indicator Dot */}
@@ -51,12 +59,14 @@ const WhyExperience = () => {
                     <div className="flex-1">
                         <div className="adventure-content">
                             <h2 className="text-[32px] md:text-[42px] font-gilda leading-tight text-black border-l-4 border-primary pl-6 mb-6">
-                                Why Experience <br /> the Rally
+                                {content?.title || (
+                                    <>
+                                        Why Experience <br /> the Rally
+                                    </>
+                                )}
                             </h2>
                             <p className="adventure-desc text-gray-500 text-sm mb-12 leading-relaxed max-w-[500px]">
-                                TDCP Jeep Rally combine advanced off-road racing with a
-                                personalized approach to help you experience the thrill
-                                and beauty of the desert landscape.
+                                {content?.subTitle || "TDCP Jeep Rally combine advanced off-road racing with a personalized approach to help you experience the thrill and beauty of the desert landscape."}
                             </p>
 
                             <div className="features-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">

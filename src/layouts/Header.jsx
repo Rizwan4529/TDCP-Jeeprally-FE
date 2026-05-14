@@ -1,25 +1,89 @@
 import { useEffect, useMemo, useState } from "react";
-import { LOGO_WHITE } from "../assets";
-import { FiX, FiAlignRight } from "react-icons/fi";
+import {
+  FACEBOOK_ICON,
+  INSTAGRAM_ICON,
+  LINKEDIN_ICON,
+  LOGO_WHITE,
+  TWITTER_ICON,
+} from "../assets";
+import { FiAlignRight, FiX } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
 import AuthModal from "../components/auth/AuthModal";
-
 import {
-  socialIcons,
-  utilityLinks,
-  leftNavLinks,
-  rightNavLinks,
-  mobileNavLinks,
-  contactInfo,
+  contactInfo as defaultContactInfo,
+  leftNavLinks as defaultLeftNavLinks,
+  mobileNavLinks as defaultMobileNavLinks,
+  rightNavLinks as defaultRightNavLinks,
+  socialIcons as defaultSocialIcons,
+  utilityLinks as defaultUtilityLinks,
 } from "./data/data";
+import { useWebsiteContentQuery } from "../api/features/content/hooks.jsx";
+import {
+  ensureExternalUrl,
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+  getWebsiteSectionItems,
+} from "../api/features/content/websiteContent.utils.js";
+
+const SOCIAL_ICON_COMPONENTS = {
+  facebook: FACEBOOK_ICON,
+  instagram: INSTAGRAM_ICON,
+  twitter: TWITTER_ICON,
+  x: TWITTER_ICON,
+  linkedin: LINKEDIN_ICON,
+};
 
 const Header = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { data: websiteContent } = useWebsiteContentQuery();
 
   const path = location.pathname;
   const hash = location.hash;
+  const siteHeaderPage = useMemo(
+    () => getWebsiteContentPage(websiteContent, "siteHeader"),
+    [websiteContent]
+  );
+  const topBarSection = useMemo(
+    () => getWebsiteContentSection(siteHeaderPage, "topBar"),
+    [siteHeaderPage]
+  );
+  const primaryNavSection = useMemo(
+    () => getWebsiteContentSection(siteHeaderPage, "primaryNav"),
+    [siteHeaderPage]
+  );
+  const utilityLinks = useMemo(() => {
+    const links = getWebsiteSectionItems(topBarSection, "utilityLinks");
+    return links.length > 0 ? links : defaultUtilityLinks;
+  }, [topBarSection]);
+  const socialLinks = useMemo(() => {
+    const links = getWebsiteSectionItems(topBarSection, "socialLinks")
+      .map((social) => ({
+        ...social,
+        icon:
+          SOCIAL_ICON_COMPONENTS[social?.name?.toLowerCase?.()] ||
+          INSTAGRAM_ICON,
+        link: ensureExternalUrl(social.link),
+      }))
+      .filter((social) => social.link);
+
+    return links.length > 0 ? links : defaultSocialIcons;
+  }, [topBarSection]);
+  const leftNavLinks = useMemo(() => {
+    const links = getWebsiteSectionItems(primaryNavSection, "leftLinks");
+    return links.length > 0 ? links : defaultLeftNavLinks;
+  }, [primaryNavSection]);
+  const rightNavLinks = useMemo(() => {
+    const links = getWebsiteSectionItems(primaryNavSection, "rightLinks");
+    return links.length > 0 ? links : defaultRightNavLinks;
+  }, [primaryNavSection]);
+  const mobileNavLinks = useMemo(() => {
+    const links = getWebsiteSectionItems(primaryNavSection, "mobileLinks");
+    return links.length > 0 ? links : defaultMobileNavLinks;
+  }, [primaryNavSection]);
+  const contactInfo = topBarSection?.contact ?? defaultContactInfo;
+  const ctaText = primaryNavSection?.ctaText || "Login";
 
   const isActive = (link) => {
     if (!link || link.external) return false;
@@ -42,13 +106,13 @@ const Header = () => {
       seen.add(key);
       return true;
     });
-  }, []);
+  }, [mobileNavLinks]);
 
   const renderLink = (link, className, onClick) => {
     if (link.external) {
       return (
         <a
-          href={link.path}
+          href={ensureExternalUrl(link.path)}
           target="_blank"
           rel="noopener noreferrer"
           className={className}
@@ -66,7 +130,6 @@ const Header = () => {
     );
   };
 
-  // Ensure mobile menu closes on desktop resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) setMobileOpen(false);
@@ -89,20 +152,20 @@ const Header = () => {
         <div className="mx-auto hidden h-7 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 text-[10px] lg:grid xl:px-10">
           <div className="flex items-center gap-3 whitespace-nowrap">
             {utilityLinks.map((link, index) => (
-              <div key={link.title} className="flex items-center gap-3">
+              <div key={link.id ?? link.title} className="flex items-center gap-3">
                 {index > 0 && <span className="h-3 w-px bg-white/40" />}
                 {renderLink(
                   link,
-                  "transition-opacity duration-200 hover:opacity-80",
+                  "transition-opacity duration-200 hover:opacity-80"
                 )}
               </div>
             ))}
           </div>
 
           <div className="flex items-center justify-center gap-3">
-            {socialIcons.map((social, index) => (
+            {socialLinks.map((social, index) => (
               <a
-                key={social.link + index}
+                key={`${social.link}-${index}`}
                 href={social.link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -131,7 +194,7 @@ const Header = () => {
 
       <div className="relative bg-secondary shadow-[0_6px_20px_rgba(62,34,12,0.10)]">
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 hidden justify-center lg:flex">
-          <div className="pointer-events-auto relative flex h-[78px] w-[92px] items-center justify-center rounded-b-[4px]  border-primary/20 bg-secondary ">
+          <div className="pointer-events-auto relative flex h-[78px] w-[92px] items-center justify-center rounded-b-[4px] border-primary/20 bg-secondary">
             <Link
               to="/"
               className="flex h-full w-full items-center justify-center pt-1"
@@ -149,14 +212,14 @@ const Header = () => {
           <nav className="justify-self-start">
             <ul className="flex items-center gap-8 xl:gap-10">
               {leftNavLinks.map((link) => (
-                <li key={link.title}>
+                <li key={link.id ?? link.title}>
                   {renderLink(
                     link,
                     `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
                       !isActive(link)
                         ? "text-black"
                         : "text-primary/85 hover:text-black"
-                    }`,
+                    }`
                   )}
                 </li>
               ))}
@@ -169,14 +232,14 @@ const Header = () => {
             <nav>
               <ul className="flex items-center gap-8 xl:gap-10">
                 {rightNavLinks.map((link, index) => (
-                  <li key={`${link.title}-${index}`}>
+                  <li key={link.id ?? `${link.title}-${index}`}>
                     {renderLink(
                       link,
                       `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
                         !isActive(link)
                           ? "text-black"
                           : "text-primary/85 hover:text-black"
-                      }`,
+                      }`
                     )}
                   </li>
                 ))}
@@ -188,7 +251,7 @@ const Header = () => {
               onClick={() => setIsAuthModalOpen(true)}
               className="inline-flex h-9 items-center rounded-full bg-primary px-8 text-[14px] font-medium text-white shadow-[0_6px_14px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
             >
-              Login
+              {ctaText}
             </button>
           </div>
         </div>
@@ -224,7 +287,7 @@ const Header = () => {
             onClick={() => setIsAuthModalOpen(true)}
             className="inline-flex h-9 items-center rounded-full bg-primary px-5 text-[13px] font-medium text-white shadow-[0_6px_14px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
           >
-            Login
+            {ctaText}
           </button>
         </div>
       </div>
@@ -262,11 +325,11 @@ const Header = () => {
         <div className="border-b border-primary/10 bg-primary px-4 py-3 text-white">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px]">
             {utilityLinks.map((link) => (
-              <div key={link.title}>
+              <div key={link.id ?? link.title}>
                 {renderLink(
                   link,
                   "transition-opacity duration-200 hover:opacity-80",
-                  () => setMobileOpen(false),
+                  () => setMobileOpen(false)
                 )}
               </div>
             ))}
@@ -276,7 +339,7 @@ const Header = () => {
         <ul className="flex flex-col px-4 py-3">
           {allMobileLinks.map((link) => (
             <li
-              key={link.title}
+              key={link.id ?? link.title}
               className="border-b border-primary/8 last:border-b-0"
             >
               {renderLink(
@@ -286,7 +349,7 @@ const Header = () => {
                     ? "text-primary"
                     : "text-[#3B2A1F] hover:text-primary"
                 }`,
-                () => setMobileOpen(false),
+                () => setMobileOpen(false)
               )}
             </li>
           ))}
@@ -299,9 +362,9 @@ const Header = () => {
           </div>
 
           <div className="flex items-center gap-4 text-primary">
-            {socialIcons.map((social, index) => (
+            {socialLinks.map((social, index) => (
               <a
-                key={social.link + index}
+                key={`${social.link}-${index}`}
                 href={social.link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -320,7 +383,7 @@ const Header = () => {
             }}
             className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary text-sm font-medium text-white shadow-[0_8px_18px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
           >
-            Login
+            {ctaText}
           </button>
         </div>
       </div>

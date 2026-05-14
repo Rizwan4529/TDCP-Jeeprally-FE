@@ -79,29 +79,29 @@ describe("fetchRallyVideos", () => {
       data: {
         success: true,
         message: "Videos fetched successfully",
-        data: {
-          videos: [
-            {
-              _id: "video-1",
-              video_url: "uploads/videos/1778760310438-419130833.mp4",
-              order: 1,
-            },
-          ],
-          pagination: {
-            page: 1,
-            limit: 20,
-            total: 1,
-            pages: 1,
+        data: [
+          {
+            _id: "video-2",
+            title: "new video 2",
+            url: "/uploads/videos/1778778748948-443320057.mp4",
           },
-        },
+          {
+            _id: "video-1",
+            title: "new video 1",
+            url: "/uploads/videos/1778778747489-839092702.mp4",
+          },
+        ],
       },
     });
 
     await expect(rallyService.fetchRallyVideos()).resolves.toEqual([
       expect.objectContaining({
+        _id: "video-2",
+        video_url: "/uploads/videos/1778778748948-443320057.mp4",
+      }),
+      expect.objectContaining({
         _id: "video-1",
-        video_url: "uploads/videos/1778760310438-419130833.mp4",
-        order: 1,
+        video_url: "/uploads/videos/1778778747489-839092702.mp4",
       }),
     ]);
 
@@ -176,5 +176,67 @@ describe("fetchRallyCompetitors", () => {
     await expect(
       rallyService.fetchRallyCompetitors("event-1", "stock_prepaid")
     ).rejects.toThrow("Unable to fetch competitors");
+  });
+});
+
+describe("fetchRallyChallenges", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("unwraps challenges for an event", async () => {
+    expect(typeof rallyService.fetchRallyChallenges).toBe("function");
+
+    rallyAxios.get.mockResolvedValue({
+      data: {
+        success: true,
+        message: "Challenges fetched successfully",
+        data: [
+          {
+            _id: "challenge-1",
+            title: "24hr Bike Race",
+            description: "A gruelling 24-hour endurance challenge.",
+            image: "uploads\\images\\1778596798487-251031038.png",
+            category: "stock_prepaid",
+          },
+          {
+            _id: "challenge-2",
+            title: "Cholistan Desert Rally",
+            description: "The main event open to all categories.",
+            image: null,
+            category: null,
+          },
+        ],
+      },
+    });
+
+    await expect(rallyService.fetchRallyChallenges("event-1")).resolves.toEqual([
+      expect.objectContaining({
+        _id: "challenge-1",
+        title: "24hr Bike Race",
+        image: "uploads\\images\\1778596798487-251031038.png",
+      }),
+      expect.objectContaining({
+        _id: "challenge-2",
+        title: "Cholistan Desert Rally",
+      }),
+    ]);
+
+    expect(rallyAxios.get).toHaveBeenCalledWith("/rally/event-1/challenges");
+  });
+
+  it("throws when challenges request is unsuccessful", async () => {
+    expect(typeof rallyService.fetchRallyChallenges).toBe("function");
+
+    rallyAxios.get.mockResolvedValue({
+      data: {
+        success: false,
+        message: "Unable to fetch challenges",
+      },
+    });
+
+    await expect(rallyService.fetchRallyChallenges("event-1")).rejects.toThrow(
+      "Unable to fetch challenges"
+    );
   });
 });

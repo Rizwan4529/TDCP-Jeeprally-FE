@@ -1,6 +1,6 @@
 import React from "react";
 
-const TrackDetails = () => {
+const TrackDetails = ({ content }) => {
   return (
     <section className="py-8 bg-white relative overflow-hidden">
       {/* Decorative Finish Pattern */}
@@ -18,9 +18,11 @@ const TrackDetails = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-10">
-          <h2 className="text-[29px] md:text-[42px] font-gilda text-black leading-tight">Rally Track Details</h2>
+          <h2 className="text-[29px] md:text-[42px] font-gilda text-black leading-tight">
+            {content?.title || "Rally Track Details"}
+          </h2>
           <p className="para text-gray-500">
-            Get a closer look at the terrain, distance, and key checkpoints of the race.
+            {content?.subtitle || "Get a closer look at the terrain, distance, and key checkpoints of the race."}
           </p>
         </div>
 

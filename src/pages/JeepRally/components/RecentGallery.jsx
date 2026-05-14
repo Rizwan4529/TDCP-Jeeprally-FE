@@ -5,6 +5,11 @@ import {
   fetchGeneralGallery,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
+import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
+import {
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+} from "../../../api/features/content/websiteContent.utils.js";
 
 const GALLERY_TITLE = "Recent Gallery";
 const GALLERY_LIMIT = 10;
@@ -30,8 +35,9 @@ function slotImagesFromApi(images) {
   return list;
 }
 
-const RecentGallery = () => {
+const RecentGallery = ({ content }) => {
   const [page, setPage] = useState(1);
+  const { data: websiteContent } = useWebsiteContentQuery();
 
   const { data, isPending, isFetching, isError } = useQuery({
     queryKey: ["gallery", "general", page, GALLERY_LIMIT],
@@ -43,6 +49,13 @@ const RecentGallery = () => {
     () => slotImagesFromApi(data?.images),
     [data?.images]
   );
+  const resolvedContent = useMemo(() => {
+    if (content) return content;
+    return getWebsiteContentSection(
+      getWebsiteContentPage(websiteContent, "home"),
+      "recentGallery"
+    );
+  }, [content, websiteContent]);
 
   const totalPages = Math.max(1, Number(data?.pagination?.pages ?? 1));
   const showSkeleton = isPending || isFetching;
@@ -77,7 +90,7 @@ const RecentGallery = () => {
         <div className="px-4 lg:px-20">
           <div className="text-center mb-10 md:mb-10">
             <h2 className="font-gilda text-primary text-[29px] md:text-[42px]">
-              {GALLERY_TITLE}
+              {resolvedContent?.title || GALLERY_TITLE}
             </h2>
           </div>
 

@@ -2,7 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import "./Players.css";
 import Partners from "../JeepRally/components/Partners";
-import { useCategoriesQuery } from "../../api/features/content/hooks.jsx";
+import {
+  useCategoriesQuery,
+  useWebsiteContentQuery,
+} from "../../api/features/content/hooks.jsx";
 import {
   getCategoryFilterTabs,
   getDefaultCategoryKey,
@@ -17,11 +20,16 @@ import {
   getPlayerSkeletonCards,
   mapCompetitorsToPlayers,
 } from "./players.utils.js";
+import {
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+} from "../../api/features/content/websiteContent.utils.js";
 
 const Players = () => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const { data: websiteContent } = useWebsiteContentQuery();
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const tabs = useMemo(
     () => getCategoryFilterTabs(categoriesRaw),
@@ -65,6 +73,22 @@ const Players = () => {
   }, [playersData, searchQuery]);
 
   const playerSkeletons = useMemo(() => getPlayerSkeletonCards(), []);
+  const playersPage = useMemo(
+    () => getWebsiteContentPage(websiteContent, "players"),
+    [websiteContent]
+  );
+  const heroContent = useMemo(
+    () => getWebsiteContentSection(playersPage, "hero"),
+    [playersPage]
+  );
+  const listHeaderContent = useMemo(
+    () => getWebsiteContentSection(playersPage, "listHeader"),
+    [playersPage]
+  );
+  const messagesContent = useMemo(
+    () => getWebsiteContentSection(playersPage, "messages"),
+    [playersPage]
+  );
 
   return (
     <div className="players-page mt-[100px]">
@@ -72,27 +96,27 @@ const Players = () => {
         {/* Banner Section */}
         <div className="players-banner">
           <div className="banner-frame-container">
-            <img src="/assets/images/frame.png" alt="TDCP Jeep Rally Frame" className="banner-frame-img" />
+            <img src={heroContent?.frameImage || "/assets/images/frame.png"} alt="TDCP Jeep Rally Frame" className="banner-frame-img" />
             <div className="banner-text-overlay">
-              <h1 className="banner-title">TDCP JEEP RALLY</h1>
+              <h1 className="banner-title">{heroContent?.title || "TDCP JEEP RALLY"}</h1>
             </div>
           </div>
-          <p className="banner-subtitle">Cholistan 2026</p>
+          <p className="banner-subtitle">{heroContent?.subTitle || "Cholistan 2026"}</p>
         </div>
 
         {/* Header Content Row */}
         <div className="players-header-row">
-          <h1 className="players-title">Players Name</h1>
+          <h1 className="players-title">{listHeaderContent?.title || "Players Name"}</h1>
           <div className="search-container">
             <input
               type="text"
-              placeholder="Driver name"
+              placeholder={listHeaderContent?.searchPlaceholder || "Driver name"}
               className="search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button type="button" className="search-btn">
-              Search
+              {listHeaderContent?.searchButtonText || "Search"}
             </button>
           </div>
         </div>
@@ -116,7 +140,7 @@ const Players = () => {
         <div className="players-grid">
           {!eventId && (
             <div className="col-span-full text-center py-12 text-gray-500">
-              Active rally is not available yet.
+              {messagesContent?.noActiveEvent || "Active rally is not available yet."}
             </div>
           )}
           {eventId && isPending && (
@@ -138,12 +162,12 @@ const Players = () => {
           )}
           {eventId && isError && (
             <div className="col-span-full text-center py-12 text-red-600">
-              Could not load competitors. Please try again later.
+              {messagesContent?.loadError || "Could not load competitors. Please try again later."}
             </div>
           )}
           {eventId && !isPending && !isError && filteredPlayers.length === 0 && (
             <div className="col-span-full text-center py-12 text-gray-500">
-              No approved competitors found for this category.
+              {messagesContent?.emptyState || "No approved competitors found for this category."}
             </div>
           )}
           {eventId &&

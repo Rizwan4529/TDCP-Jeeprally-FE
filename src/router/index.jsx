@@ -11,18 +11,24 @@ import Player from "../pages/PlayerProfile";
 import PreviousRallies from "../pages/PreviousRallies";
 import About from "../pages/About";
 import Services from "../pages/Services";
+import { useWebsiteContentQuery } from "../api/features/content/hooks.jsx";
+import { shouldShowWebsiteLoader } from "../api/features/content/websiteContent.utils.js";
 
 function AppRouter() {
+  const {
+    data: websiteContent,
+    isPending,
+    isFetching,
+    isError,
+  } = useWebsiteContentQuery();
 
-  const isLoading = false
-  const error = false
-  if (isLoading) {
+  if (shouldShowWebsiteLoader({ isPending, isFetching, content: websiteContent })) {
     return (
       <Loading />
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

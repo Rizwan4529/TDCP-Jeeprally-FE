@@ -15,7 +15,14 @@ import {
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
-import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
+import {
+  useCategoriesQuery,
+  useWebsiteContentQuery,
+} from "../../../api/features/content/hooks.jsx";
+import {
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+} from "../../../api/features/content/websiteContent.utils.js";
 
 function topPercentForIndex(index, total) {
   if (total <= 0) return 0;
@@ -151,6 +158,7 @@ const Map = () => {
 
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const { data: websiteContent } = useWebsiteContentQuery();
 
   const eventId = activeEvent?._id;
   const categories = useMemo(
@@ -217,30 +225,46 @@ const Map = () => {
   const lastCp = checkpoints[checkpoints.length - 1];
   const showStartLabel = Boolean(firstCp?.is_start);
   const showFinishLabel = Boolean(lastCp?.is_finish);
+  const rallyMapPage = useMemo(
+    () => getWebsiteContentPage(websiteContent, "rallyMap"),
+    [websiteContent]
+  );
+  const chromeContent = useMemo(
+    () => getWebsiteContentSection(rallyMapPage, "chrome"),
+    [rallyMapPage]
+  );
+  const emptyStatesContent = useMemo(
+    () => getWebsiteContentSection(rallyMapPage, "emptyStates"),
+    [rallyMapPage]
+  );
 
   return (
     <div className="rm-wrapper ">
       <header className="rm-header">
         <div className="rm-title-row">
           <img
-            src="/assets/images/flag.png"
+            src={chromeContent?.leftFlagImage || "/assets/images/flag.png"}
             alt="flag"
             className="w-10 md:w-20 rotate-y-180"
           />
           <p className="font-gilda text-[24px] md:text-[42px]">
             {routesLoading && !title ? "…" : title ?? "—"}
           </p>
-          <img src="/assets/images/flag.png" alt="flag" className="w-10 md:w-20" />
+          <img
+            src={chromeContent?.rightFlagImage || "/assets/images/flag.png"}
+            alt="flag"
+            className="w-10 md:w-20"
+          />
         </div>
         <div className="rm-stats">
           <p>
-            Total Distance:{" "}
+            {chromeContent?.totalDistanceLabel || "Total Distance"}:{" "}
             <strong>
               {distanceKm != null ? `~${distanceKm} KM` : "—"}
             </strong>
           </p>
           <p>
-            Estimated Time:{" "}
+            {chromeContent?.estimatedTimeLabel || "Estimated Time"}:{" "}
             <strong>{estimatedTime ?? "—"}</strong>
           </p>
         </div>
@@ -264,18 +288,18 @@ const Map = () => {
       <div className="rm-canvas rm-canvas-desktop">
         {!showRoutesEmpty && showStartLabel && (
           <div className="rm-label-start" aria-hidden>
-            Start
+            {chromeContent?.startLabel || "Start"}
           </div>
         )}
         {!showRoutesEmpty && showFinishLabel && (
           <div className="rm-label-finish" aria-hidden>
-            Finish
+            {chromeContent?.finishLabel || "Finish"}
           </div>
         )}
 
         {!showRoutesEmpty && (
           <img
-            src="/assets/images/map_line.png"
+            src={chromeContent?.trackImage || "/assets/images/map_line.png"}
             alt="Rally Track"
             className={`rm-road-img${checkpointsLoading ? " rm-road-img--dim" : ""}`}
           />
@@ -283,16 +307,16 @@ const Map = () => {
 
         {showRoutesEmpty && (
           <MapEmptyState
-            title="No route added yet"
-            description="A route has not been added for this category yet. Please check back later."
+            title={emptyStatesContent?.route?.title || "No route added yet"}
+            description={emptyStatesContent?.route?.description || "A route has not been added for this category yet. Please check back later."}
           />
         )}
 
         {!showRoutesEmpty &&
           showCheckpointsEmpty && (
             <MapEmptyState
-              title="No checkpoints yet"
-              description="Checkpoints have not been added for this route. Please check back later."
+              title={emptyStatesContent?.checkpoints?.title || "No checkpoints yet"}
+              description={emptyStatesContent?.checkpoints?.description || "Checkpoints have not been added for this route. Please check back later."}
             />
           )}
 
@@ -315,16 +339,16 @@ const Map = () => {
       <div className="rm-mobile-sequence">
         {showRoutesEmpty && (
           <MapEmptyState
-            title="No route added yet"
-            description="A route has not been added for this category yet. Please check back later."
+            title={emptyStatesContent?.route?.title || "No route added yet"}
+            description={emptyStatesContent?.route?.description || "A route has not been added for this category yet. Please check back later."}
           />
         )}
 
         {!showRoutesEmpty &&
           showCheckpointsEmpty && (
             <MapEmptyState
-              title="No checkpoints yet"
-              description="Checkpoints have not been added for this route. Please check back later."
+              title={emptyStatesContent?.checkpoints?.title || "No checkpoints yet"}
+              description={emptyStatesContent?.checkpoints?.description || "Checkpoints have not been added for this route. Please check back later."}
             />
           )}
 

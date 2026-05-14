@@ -2,16 +2,24 @@ import React, { useEffect, useMemo, useState } from 'react';
 import './PreviousRallies.css';
 import Partners from '../JeepRally/components/Partners';
 import AnimatedButton from '../../components/common/AnimatedButton';
-import { useCategoriesQuery } from '../../api/features/content/hooks.jsx';
+import {
+    useCategoriesQuery,
+    useWebsiteContentQuery,
+} from '../../api/features/content/hooks.jsx';
 import {
     getCategoryFilterTabs,
     getDefaultCategoryKey,
     hasCategoryKey,
 } from '../../utils/constants.js';
+import {
+    getWebsiteContentPage,
+    getWebsiteContentSection,
+} from '../../api/features/content/websiteContent.utils.js';
 
 const PreviousRallies = () => {
     const [activeCategoryKey, setActiveCategoryKey] = useState('');
     const { data: categoriesRaw = [] } = useCategoriesQuery();
+    const { data: websiteContent } = useWebsiteContentQuery();
     const tabs = useMemo(() => getCategoryFilterTabs(categoriesRaw), [categoriesRaw]);
 
     useEffect(() => {
@@ -22,7 +30,20 @@ const PreviousRallies = () => {
         }
     }, [activeCategoryKey, categoriesRaw, tabs.length]);
 
-    const rallies = [
+    const previousRalliesPage = useMemo(
+        () => getWebsiteContentPage(websiteContent, "previousRallies"),
+        [websiteContent]
+    );
+    const heroContent = useMemo(
+        () => getWebsiteContentSection(previousRalliesPage, "hero"),
+        [previousRalliesPage]
+    );
+    const cardsContent = useMemo(
+        () => getWebsiteContentSection(previousRalliesPage, "cards"),
+        [previousRalliesPage]
+    );
+
+    const rallies = cardsContent?.items?.length ? cardsContent.items : [
         {
             id: 1,
             title: 'Toronto Motorcycle',
@@ -70,8 +91,8 @@ const PreviousRallies = () => {
             <div className="container previous-container">
                 {/* Header Section */}
                 <div className="previous-header">
-                    <img src="/assets/images/header-frame.png" alt="pattern" className="header-frame" />
-                    <h1 className="previous-title">Previous Rallies</h1>
+                    <img src={heroContent?.frameImage || "/assets/images/header-frame.png"} alt="pattern" className="header-frame" />
+                    <h1 className="previous-title">{heroContent?.title || "Previous Rallies"}</h1>
                 </div>
 
                 {/* Filter Tabs */}
@@ -104,7 +125,7 @@ const PreviousRallies = () => {
                             <div className="card-content">
                                 <h2 className="card-title">{rally.title}</h2>
                                 <p className="card-description">{rally.description}</p>
-                                <AnimatedButton text='View Details' />
+                                <AnimatedButton text={cardsContent?.ctaText || 'View Details'} />
                                 {/* <a href="#" className="view-details">
                                     View Details 
                                     <span className="arrow-icon">→</span>

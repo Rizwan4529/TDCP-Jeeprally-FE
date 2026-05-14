@@ -69,7 +69,6 @@ const RulesCard = ({
   fileUrl,
 }) => {
   const rawPath = normalizeFileUrlString(fileUrl);
-  console.log(rawPath, fileUrl);
   const canDownload = Boolean(rawPath);
 
   return (
@@ -116,7 +115,7 @@ const STATIC_FALLBACK_PAGES = [
   ],
 ];
 
-const RallyRules = () => {
+const RallyRules = ({ content }) => {
   const [pageIndex, setPageIndex] = useState(0);
 
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
@@ -174,13 +173,15 @@ const RallyRules = () => {
         <div className="flex flex-col lg:flex-row gap-16 lg:items-center">
           <div className="w-full lg:w-[35%] space-y-8">
             <h2 className="text-[29px] md:text-[42px] font-gilda leading-tight text-black">
-              Rally Rules and <br className="hidden md:block" /> Documents
+              {content?.title || (
+                <>
+                  Rally Rules and <br className="hidden md:block" /> Documents
+                </>
+              )}
             </h2>
             <p className="para text-gray-500 leading-relaxed max-w-3xl">
-              Welcome to the Cholistan Desert Rally 2026 Rules and Documents
-              area. All Rally Racers, looking to read the rules for competition
-              or application for registration and Rally safety guidelines, then
-              this is the place to get them.
+              {content?.subTitle ||
+                "Welcome to the Cholistan Desert Rally 2026 Rules and Documents area. All Rally Racers, looking to read the rules for competition or application for registration and Rally safety guidelines, then this is the place to get them."}
             </p>
           </div>
 

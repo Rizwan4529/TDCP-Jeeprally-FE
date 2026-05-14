@@ -1,17 +1,33 @@
 import React from 'react'
+import {
+    getWebsiteNestedSection,
+} from '../../../api/features/content/websiteContent.utils.js'
 
-const OurStory = () => {
+const OurStory = ({ heroContent, introContent }) => {
+    const visionContent = getWebsiteNestedSection(introContent, "vision");
+    const mainContent = getWebsiteNestedSection(introContent, "main");
+    const cardContent = getWebsiteNestedSection(introContent, "card");
+
     return (
         <div className="about-page">
             {/* Hero Section */}
             <section className="about-hero">
-                <div className="about-hero-bg"></div>
+                <div
+                    className="about-hero-bg"
+                    style={{
+                        backgroundImage: `url('${heroContent?.bgImg || "/assets/images/s1.jpg"}')`,
+                    }}
+                ></div>
                 <div className="about-hero-overlay"></div>
                 <div className="container mx-auto px-4 md:px-20 about-hero-content">
                     <h1 className="hero-heading about-hero-title">
-                        Where Speed Meets <br />
-                        The Spirit Of The <br />
-                        Desert
+                        {heroContent?.title || (
+                            <>
+                                Where Speed Meets <br />
+                                The Spirit Of The <br />
+                                Desert
+                            </>
+                        )}
                     </h1>
                 </div>
             </section>
@@ -23,47 +39,40 @@ const OurStory = () => {
 
                         {/* Vision Box */}
                         <div className="vision-box">
-                            <h2 className="vision-title">Our Vision</h2>
+                            <h2 className="vision-title">{visionContent?.title || "Our Vision"}</h2>
                             <p className="vision-text">
-                                To establish the TDCP Jeep Rally as a globally recognized
-                                off-road event that celebrates adventure, showcases the
-                                desert landscape, and attracts enthusiasts from
-                                around the world.
+                                {visionContent?.subTitle || "To establish the TDCP Jeep Rally as a globally recognized off-road event that celebrates adventure, showcases the desert landscape, and attracts enthusiasts from around the world."}
                             </p>
                         </div>
 
                         {/* Story Content */}
                         <div className="story-content">
-                            <h2 className="story-subtitle text-[29px] md:text-[42px]">Our Story of Speed & Adventure</h2>
+                            <h2 className="story-subtitle text-[29px] md:text-[42px]">
+                                {mainContent?.title || "Our Story of Speed & Adventure"}
+                            </h2>
                             <p className="story-description">
-                                The TDCP Jeep Rally is one of Pakistan's premier off-road motorsport
-                                events, organized to promote adventure tourism and showcase the
-                                raw beauty of the desert. It brings together professional drivers,
-                                thrill-seekers, and spectators for an unforgettable experience.
-                                <br /><br />
-                                Over the years, the rally has evolved into a symbol of resilience
-                                and passion, attracting international participants and putting
-                                the Cholistan desert on the global tourism map.
+                                {mainContent?.subTitle || "The TDCP Jeep Rally is one of Pakistan's premier off-road motorsport events, organized to promote adventure tourism and showcase the raw beauty of the desert. It brings together professional drivers, thrill-seekers, and spectators for an unforgettable experience."}
                             </p>
                         </div>
 
-                        {/* Stats Card */}
-                        <div className="stats-card">
-                            <div className="stats-img-wrapper">
-                                <img
-                                    src="/assets/images/jeep_3_1.jpg"
-                                    alt="Rally Action"
-                                    className="stats-img"
-                                />
+                        {cardContent ? (
+                            <div className="stats-card">
+                                <div className="stats-img-wrapper">
+                                    <img
+                                        src={cardContent.image}
+                                        alt={cardContent.subTitle || "Rally Action"}
+                                        className="stats-img"
+                                    />
+                                </div>
+                                <div className="stats-content">
+                                    <div className="stats-number">{cardContent.title}</div>
+                                    <h3 className="stats-label">{cardContent.subTitle}</h3>
+                                    <p className="stats-desc">
+                                        {cardContent.paragraph}
+                                    </p>
+                                </div>
                             </div>
-                            <div className="stats-content">
-                                <div className="stats-number">600+</div>
-                                <h3 className="stats-label">Rally Drivers</h3>
-                                <p className="stats-desc">
-                                    Top drivers and off-road enthusiasts competing for victory.
-                                </p>
-                            </div>
-                        </div>
+                        ) : null}
 
                     </div>
                 </div>

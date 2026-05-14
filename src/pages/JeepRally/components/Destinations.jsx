@@ -57,7 +57,7 @@ const DestinationSlot = ({ data, isLarge = false }) => {
   );
 };
 
-const Destinations = () => {
+const Destinations = ({ content }) => {
   const [startIndex, setStartIndex] = useState(0);
 
   const { data: apiDestinations = [] } = useQuery({
@@ -101,7 +101,7 @@ const Destinations = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-16 px-4">
           <h2 className="text-[29px] md:text-[42px] font-gilda text-black">
-            Rally Destinations
+            {content?.title || "Rally Destinations"}
           </h2>
 
           <div className="flex gap-4">

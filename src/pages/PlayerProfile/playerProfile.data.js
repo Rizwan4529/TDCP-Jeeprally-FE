@@ -1,0 +1,111 @@
+export const STATIC_CHAMPION_PROFILES = [
+  {
+    id: "6a05b0fa353a50d5f68e2810",
+    number: "#22",
+    driverName: "Muhammad Rizwan",
+    teamName: "Sahiwal Sand Runners mp2relsq",
+    teamNumber: "T-mp2relsq-8",
+    heroImage: "uploads\\images\\1778757882863-155614587.png",
+    driverImage: "uploads\\images\\1778757882863-155614587.png",
+    navigatorImage: "uploads\\images\\1778757882957-19783339.png",
+    details: [
+      { label: "AGE", value: "26" },
+      { label: "OCCUPATION", value: "Driver" },
+      { label: "DATE OF BIRTH", value: "Born on 30/08/1994" },
+      { label: "LOCATION", value: "Cholistan Desert, Bahawalpur" },
+      { label: "TEAM", value: "Sahiwal Sand Runners mp2relsq" },
+    ],
+  },
+  {
+    id: "6a05b0fa353a50d5f68e2811",
+    number: "#12",
+    driverName: "Muhammad Rizwan",
+    teamName: "Desert Storm Racing mp2relsq",
+    teamNumber: "T-mp2relsq-2",
+    heroImage: "uploads\\images\\1778757882957-19783339.png",
+    driverImage: "uploads\\images\\1778757882957-19783339.png",
+    navigatorImage: "uploads\\images\\1778757883011-842087860.png",
+    details: [
+      { label: "AGE", value: "26" },
+      { label: "OCCUPATION", value: "Driver" },
+      { label: "DATE OF BIRTH", value: "Born on 30/08/1994" },
+      { label: "LOCATION", value: "Cholistan Desert, Bahawalpur" },
+      { label: "TEAM", value: "Desert Storm Racing mp2relsq" },
+    ],
+  },
+  {
+    id: "6a05b0fb353a50d5f68e2812",
+    number: "#50",
+    driverName: "Muhammad Rizwan",
+    teamName: "Rizwan team",
+    teamNumber: "50",
+    heroImage: "uploads\\images\\1778757883011-842087860.png",
+    driverImage: "uploads\\images\\1778757883011-842087860.png",
+    navigatorImage: "uploads\\images\\1778757882863-155614587.png",
+    details: [
+      { label: "AGE", value: "26" },
+      { label: "OCCUPATION", value: "Driver" },
+      { label: "DATE OF BIRTH", value: "Born on 30/08/1994" },
+      { label: "LOCATION", value: "Cholistan Desert, Bahawalpur" },
+      { label: "TEAM", value: "Rizwan team" },
+    ],
+  },
+];
+
+export const STATIC_TEAM_STANDING = [
+  {
+    year: "2025",
+    stage: "1stage",
+    rank: "7e",
+    role: "Driver",
+    category: "Bike",
+    team: "RED BULL GASGAS FACTORY RACING",
+  },
+  {
+    year: "2024",
+    stage: "1stage",
+    rank: "7e",
+    role: "Driver",
+    category: "Bike",
+    team: "RED BULL GASGAS FACTORY RACING",
+  },
+  {
+    year: "2023",
+    stage: "1stage",
+    rank: "7e",
+    role: "Driver",
+    category: "Bike",
+    team: "RED BULL GASGAS FACTORY RACING",
+  },
+];
+
+export const STATIC_OTHER_RACES = [
+  {
+    year: "2025",
+    stage: "1stage",
+    rank: "7e",
+    event: "Rally Championship",
+    vehicle: "4x4 Modified",
+  },
+  {
+    year: "2024",
+    stage: "1stage",
+    rank: "7e",
+    event: "Rally Championship",
+    vehicle: "4x4 Modified",
+  },
+  {
+    year: "2023",
+    stage: "1stage",
+    rank: "7e",
+    event: "Rally Championship",
+    vehicle: "4x4 Modified",
+  },
+  {
+    year: "2024",
+    stage: "1stage",
+    rank: "7e",
+    event: "Rally Championship",
+    vehicle: "4x4 Modified",
+  },
+];

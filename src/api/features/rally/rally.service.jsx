@@ -111,12 +111,27 @@ export async function fetchRallyChampions(eventId, category) {
   return data.data ?? [];
 }
 
+export async function fetchRallyChallenges(eventId) {
+  const { data } = await rallyAxios.get(`/rally/${eventId}/challenges`);
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load challenges");
+  }
+  return data.data ?? [];
+}
+
 export async function fetchRallyVideos() {
   const { data } = await rallyAxios.get("/videos");
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load videos");
   }
-  return data?.data?.videos ?? [];
+  const videos = Array.isArray(data?.data)
+    ? data.data
+    : data?.data?.videos ?? [];
+
+  return videos.map((video) => ({
+    ...video,
+    video_url: video.video_url ?? video.url ?? null,
+  }));
 }
 
 export async function fetchRallyCompetitors(eventId, category) {

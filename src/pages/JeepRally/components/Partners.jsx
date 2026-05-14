@@ -4,6 +4,8 @@ import {
   fetchPartners,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
+import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
+import { getWebsiteContentPage } from "../../../api/features/content/websiteContent.utils.js";
 
 const STATIC_FALLBACK_LOGOS = [
   "/assets/images/p1.png",
@@ -23,12 +25,17 @@ const LogoCard = ({ src }) => (
   </div>
 );
 
-const Partners = () => {
+const Partners = ({ content }) => {
+  const { data: websiteContent } = useWebsiteContentQuery();
   const { data: partnersRaw = [] } = useQuery({
     queryKey: ["partners"],
     queryFn: fetchPartners,
     refetchOnWindowFocus: false,
   });
+  const resolvedContent = useMemo(
+    () => content || getWebsiteContentPage(websiteContent, "partners"),
+    [content, websiteContent]
+  );
 
   const partnerSlots = useMemo(() => {
     const sorted = [...partnersRaw]
@@ -64,7 +71,9 @@ const Partners = () => {
   return (
     <section className="py-10 bg-section overflow-hidden">
       <div className="container mx-auto px-4 mb-10">
-        <h2 className="text-[29px] md:text-[42px] font-gilda text-black text-center">Our Partners</h2>
+        <h2 className="text-[29px] md:text-[42px] font-gilda text-black text-center">
+          {resolvedContent?.title || "Our Partners"}
+        </h2>
       </div>
 
       <div className="relative flex overflow-hidden">

@@ -37,8 +37,24 @@ const TimeTile = ({ value, label }) => (
   </div>
 );
 
-const Hero = () => {
+const DEFAULT_HERO_TITLE = (
+  <>
+    Experience The Thrill
+    <br />
+    Of Desert Adventure
+    <br />
+    Like Never Before
+  </>
+);
+
+const DEFAULT_HERO_SUBTITLE =
+  "This text presents my research journey on the topic of Music and Tourism Imaginaries and gives the context which led to the publication of this special issue of Via Tourism Review.";
+
+const Hero = ({ content }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft());
+  const heroTitle = content?.title || DEFAULT_HERO_TITLE;
+  const heroSubtitle = content?.subTitle || DEFAULT_HERO_SUBTITLE;
+  const heroBackgroundImage = content?.bgImg || "/assets/images/hero_1.jpg";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -54,7 +70,7 @@ const Hero = () => {
       <div
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: "url('/assets/images/hero_1.jpg')",
+          backgroundImage: `url('${heroBackgroundImage}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -71,17 +87,11 @@ const Hero = () => {
             <div className="col-span-12 lg:col-span-7 text-white">
               <div className="space-y-5 md:space-y-7">
                 <h1 className="font-gilda text-[42px] leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.38)] sm:text-[52px] md:text-[66px] xl:text-[78px]">
-                  Experience The Thrill
-                  <br />
-                  Of Desert Adventure
-                  <br />
-                  Like Never Before
+                  {heroTitle}
                 </h1>
 
                 <p className="max-w-[520px] text-[13px] leading-[1.8] text-white/82 md:text-[15px]">
-                  This text presents my research journey on the topic of Music
-                  and Tourism Imaginaries and gives the context which led to the
-                  publication of this special issue of Via Tourism Review.
+                  {heroSubtitle}
                 </p>
 
                 <div className="flex flex-wrap gap-3 pt-2 md:gap-4 md:pt-4">

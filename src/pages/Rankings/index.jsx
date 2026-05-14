@@ -10,7 +10,14 @@ import {
 } from "../../utils/constants.js";
 import { fetchRallyRankings } from "../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../api/features/rally/rally.queryOptions.jsx";
-import { useCategoriesQuery } from "../../api/features/content/hooks.jsx";
+import {
+  useCategoriesQuery,
+  useWebsiteContentQuery,
+} from "../../api/features/content/hooks.jsx";
+import {
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+} from "../../api/features/content/websiteContent.utils.js";
 
 function mapRankingRows(apiRows) {
   return (apiRows ?? [])
@@ -39,6 +46,7 @@ const Rankings = () => {
   const eventId = activeEvent?._id;
 
   const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const { data: websiteContent } = useWebsiteContentQuery();
 
   const categories = useMemo(
     () => normalizeCategories(categoriesRaw),
@@ -87,6 +95,22 @@ const Rankings = () => {
     if (stages.length === 0) return null;
     return Math.max(...stages.map(Number));
   }, [rankingsRaw]);
+  const rankingsPage = useMemo(
+    () => getWebsiteContentPage(websiteContent, "rankings"),
+    [websiteContent]
+  );
+  const heroContent = useMemo(
+    () => getWebsiteContentSection(rankingsPage, "hero"),
+    [rankingsPage]
+  );
+  const tableChromeContent = useMemo(
+    () => getWebsiteContentSection(rankingsPage, "tableChrome"),
+    [rankingsPage]
+  );
+  const messagesContent = useMemo(
+    () => getWebsiteContentSection(rankingsPage, "messages"),
+    [rankingsPage]
+  );
 
   return (
     <>
@@ -95,33 +119,33 @@ const Rankings = () => {
           <div className="rankings-banner">
             <div className="banner-frame-container">
               <img
-                src="/assets/images/frame.png"
+                src={heroContent?.frameImage || "/assets/images/frame.png"}
                 alt="TDCP Jeep Rally Frame"
                 className="banner-frame-img"
               />
               <div className="banner-text-overlay">
-                <h1 className="banner-title">TDCP JEEP RALLY</h1>
+                <h1 className="banner-title">{heroContent?.title || "TDCP JEEP RALLY"}</h1>
               </div>
             </div>
-            <p className="banner-subtitle">Cholistan 2026</p>
+            <p className="banner-subtitle">{heroContent?.subTitle || "Cholistan 2026"}</p>
           </div>
 
           <div className="rankings-header-row">
             <h1 className="rankings-title">
               {afterStage != null
                 ? `Rankings after stage ${afterStage}`
-                : "Rankings after the stage"}
+                : tableChromeContent?.titleFallback || "Rankings after the stage"}
             </h1>
             <div className="search-container">
               <input
                 type="text"
-                placeholder="Driver name"
+                placeholder={tableChromeContent?.searchPlaceholder || "Driver name"}
                 className="search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <button type="button" className="search-btn">
-                Search
+                {tableChromeContent?.searchButtonText || "Search"}
               </button>
             </div>
           </div>
@@ -143,9 +167,9 @@ const Rankings = () => {
 
           <div className="rankings-table-wrapper">
             <div className="table-title-bar">
-              <h2>Team Standing</h2>
+              <h2>{tableChromeContent?.tableTitle || "Team Standing"}</h2>
               <img
-                src="/assets/images/head.png"
+                src={tableChromeContent?.headerPatternImage || "/assets/images/head.png"}
                 alt="pattern"
                 className="header-pattern"
               />
@@ -153,33 +177,37 @@ const Rankings = () => {
             <table className="rankings-table">
               <thead>
                 <tr>
-                  <th>POS.</th>
-                  <th>DRIVE-TEAM</th>
-                  <th>TEAM</th>
-                  <th>TIME</th>
-                  <th>VARIATION</th>
-                  <th>PENALTY</th>
+                  {(tableChromeContent?.tableHeaders ?? [
+                    "POS.",
+                    "DRIVE-TEAM",
+                    "TEAM",
+                    "TIME",
+                    "VARIATION",
+                    "PENALTY",
+                  ]).map((header) => (
+                    <th key={header}>{header}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {!eventId && (
                   <tr>
                     <td colSpan={6} className="text-center py-8 text-gray-500">
-                      Active rally is not available yet.
+                      {messagesContent?.noActiveEvent || "Active rally is not available yet."}
                     </td>
                   </tr>
                 )}
                 {eventId && isPending && (
                   <tr>
                     <td colSpan={6} className="text-center py-8 text-gray-500">
-                      Loading rankings…
+                      {messagesContent?.loading || "Loading rankings…"}
                     </td>
                   </tr>
                 )}
                 {eventId && isError && (
                   <tr>
                     <td colSpan={6} className="text-center py-8 text-red-600">
-                      Could not load rankings. Please try again later.
+                      {messagesContent?.loadError || "Could not load rankings. Please try again later."}
                     </td>
                   </tr>
                 )}
@@ -189,7 +217,7 @@ const Rankings = () => {
                   filteredRows.length === 0 && (
                     <tr>
                       <td colSpan={6} className="text-center py-8 text-gray-500">
-                        No rankings for this category.
+                        {messagesContent?.emptyState || "No rankings for this category."}
                       </td>
                     </tr>
                   )}
@@ -213,7 +241,7 @@ const Rankings = () => {
           <div className="rankings-footer">
             <div className="footer-flags-wrapper">
               <img
-                src="/assets/images/flag_black.png"
+                src={tableChromeContent?.footerFlagImage || "/assets/images/flag_black.png"}
                 alt="flag"
                 className="w-20 md:w-60 "
               />

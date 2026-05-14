@@ -15,6 +15,11 @@ import {
   fetchRallyVideos,
   resolveRallyVideoUrl,
 } from "../../../api/features/rally/rally.service.jsx";
+import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
+import {
+  getWebsiteContentPage,
+  getWebsiteContentSection,
+} from "../../../api/features/content/websiteContent.utils.js";
 import {
   chunkAdventureVideos,
   getAdventureVideoColumns,
@@ -30,6 +35,12 @@ const SLOT_CLASSES = {
   short: "relative group overflow-hidden rounded-md h-[220px]",
   tall: "relative group overflow-hidden rounded-md h-[340px]",
 };
+
+const DEFAULT_STATS = [
+  { value: "600+", label: "Registered Racers", subLabel: "competing each year" },
+  { value: "95+", label: "Professional Routes", subLabel: "carefully mapped" },
+  { value: "500+", label: "Dedicated Volunteers", subLabel: "supporting the event" },
+];
 
 function VideoTile({
   video,
@@ -72,11 +83,15 @@ function VideoTile({
   );
 }
 
-const AdventureSection = () => {
+const AdventureSection = ({ content }) => {
   const videoRefs = useRef(new Map());
+  const swiperRef = useRef(null);
+  const prevButtonRef = useRef(null);
+  const nextButtonRef = useRef(null);
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [loadingVideoId, setLoadingVideoId] = useState(null);
   const sliderId = useId().replace(/:/g, "");
+  const { data: websiteContent } = useWebsiteContentQuery();
 
   const { data: videosRaw = [] } = useQuery({
     queryKey: ["rally", "videos"],
@@ -87,16 +102,50 @@ const AdventureSection = () => {
     retry: 1,
   });
 
-  const videos = useMemo(
-    () =>
-      [...videosRaw].sort(
-        (a, b) => Number(a.order ?? 0) - Number(b.order ?? 0),
-      ),
-    [videosRaw],
-  );
+  const videos = useMemo(() => [...videosRaw], [videosRaw]);
+  const resolvedContent = useMemo(() => {
+    if (content) return content;
+    return getWebsiteContentSection(
+      getWebsiteContentPage(websiteContent, "home"),
+      "stats"
+    );
+  }, [content, websiteContent]);
+  const stats = useMemo(() => {
+    const apiStats = resolvedContent?.stats
+      ?.map((item) => ({
+        value: item?.value,
+        label: item?.label,
+      }))
+      .filter((item) => item?.value && item?.label);
+
+    return apiStats?.length ? apiStats : DEFAULT_STATS;
+  }, [resolvedContent]);
 
   const videoSlides = useMemo(() => chunkAdventureVideos(videos), [videos]);
   const canNavigate = shouldShowAdventureCarouselControls(videos);
+
+  useEffect(() => {
+    const swiper = swiperRef.current;
+    if (
+      !swiper ||
+      !canNavigate ||
+      !prevButtonRef.current ||
+      !nextButtonRef.current
+    ) {
+      return;
+    }
+
+    swiper.params.navigation.prevEl = prevButtonRef.current;
+    swiper.params.navigation.nextEl = nextButtonRef.current;
+
+    if (swiper.navigation) {
+      swiper.navigation.destroy();
+      swiper.navigation.init();
+      swiper.navigation.update();
+    }
+
+    swiper.update();
+  }, [canNavigate, videoSlides.length]);
 
   const pauseVideoById = useCallback((videoId) => {
     const videoNode = videoRefs.current.get(videoId);
@@ -227,12 +276,19 @@ const AdventureSection = () => {
 
         <div className="relative mb-16 md:mb-20">
           <Swiper
+            key={`${videoSlides.length}-${canNavigate ? "nav" : "static"}`}
             modules={[Navigation]}
-            onBeforeInit={(swiper) => {
-              swiper.params.navigation.prevEl = `#adventure-prev-${sliderId}`;
-              swiper.params.navigation.nextEl = `#adventure-next-${sliderId}`;
+            onSwiper={(swiper) => {
+              swiperRef.current = swiper;
             }}
-            navigation={canNavigate}
+            navigation={
+              canNavigate
+                ? {
+                    prevEl: prevButtonRef.current,
+                    nextEl: nextButtonRef.current,
+                  }
+                : false
+            }
             loop={canNavigate}
             loopedSlides={Math.min(videoSlides.length, 2)}
             allowTouchMove={canNavigate}
@@ -333,7 +389,7 @@ const AdventureSection = () => {
           {canNavigate && (
             <>
               <button
-                id={`adventure-prev-${sliderId}`}
+                ref={prevButtonRef}
                 type="button"
                 aria-label="Show previous videos"
                 className="absolute -left-20 top-1/2 z-40 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-xl transition-all duration-300 hover:bg-brand-green hover:text-white"
@@ -341,7 +397,7 @@ const AdventureSection = () => {
                 <FiArrowLeft className="text-2xl" />
               </button>
               <button
-                id={`adventure-next-${sliderId}`}
+                ref={nextButtonRef}
                 type="button"
                 aria-label="Show next videos"
                 className="absolute -right-20 top-1/2 z-40 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-xl transition-all duration-300 hover:bg-brand-green hover:text-white"
@@ -354,30 +410,16 @@ const AdventureSection = () => {
 
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 py-0 md:py-0 ">
-          <div className="flex items-center gap-4 md:gap-6">
-            <span className="text-[42px] lg:text-[64px] font-sans font-medium text-brand-green leading-none">
-              600+
-            </span>
-            <p className="text-sm text-gray-500 leading-snug">
-              Registered Racers <br /> competing each year
-            </p>
-          </div>
-          <div className="flex items-center gap-4 md:gap-6">
-            <span className="text-[42px] lg:text-[64px] font-sans font-medium text-brand-green leading-none">
-              95+
-            </span>
-            <p className="text-sm text-gray-500 leading-snug">
-              Professional Routes <br /> carefully mapped
-            </p>
-          </div>
-          <div className="flex items-center gap-4 md:gap-6">
-            <span className="text-[42px] lg:text-[64px] font-sans font-medium text-brand-green leading-none">
-              500+
-            </span>
-            <p className="text-sm text-gray-500 leading-snug">
-              Dedicated Volunteers <br /> supporting the event
-            </p>
-          </div>
+          {stats.map((item) => (
+            <div key={`${item.value}-${item.label}`} className="flex items-center gap-4 md:gap-6">
+              <span className="text-[42px] lg:text-[64px] font-sans font-medium text-brand-green leading-none">
+                {item.value}
+              </span>
+              <p className="text-sm text-gray-500 leading-snug">
+                {item.label}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
       <style
