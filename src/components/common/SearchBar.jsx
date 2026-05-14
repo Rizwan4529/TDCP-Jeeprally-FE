@@ -179,12 +179,12 @@ const SearchBar = ({ isExcluded, scrolled }) => {
                       <div className="flex items-start gap-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-muted group-hover:text-accent transition-colors">
+                            <span className="text-xs text-muted group-hover:text-primary transition-colors">
                               {getCategoryLabel(result)}
                             </span>
                           </div>
                           <h4
-                            className="text-sm font-semibold text-black group-hover:text-accent transition-colors"
+                            className="text-sm font-semibold text-black group-hover:text-primary transition-colors"
                             dangerouslySetInnerHTML={{
                               __html:
                                 result.highlightedTitle ||
@@ -199,7 +199,7 @@ const SearchBar = ({ isExcluded, scrolled }) => {
                             }}
                           />
                           {result.metadata?.category?.[0]?.subcategories && (
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-1 group-hover:text-accent/70 transition-colors">
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-1 group-hover:text-primary/70 transition-colors">
                               {result.metadata.category[0].subcategories.join(
                                 ", "
                               )}

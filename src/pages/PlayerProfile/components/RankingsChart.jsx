@@ -69,7 +69,7 @@ const RankingChart = () => {
               <Line
                 type="monotone"
                 dataKey="yellow"
-                stroke="#FDB813"
+                stroke="#F9DA4A"
                 strokeWidth={4}
                 dot={false}
                 activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
@@ -78,7 +78,7 @@ const RankingChart = () => {
               <Line
                 type="monotone"
                 dataKey="green"
-                stroke="#48AA71"
+                stroke="#B44423"
                 strokeWidth={4}
                 dot={false}
                 activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
@@ -98,7 +98,7 @@ const CustomTooltip = ({ active, payload }) => {
       <div className="relative group">
         <div className="bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-xl flex flex-col items-center">
           <span className="text-[12px] font-bold text-gray-800">{payload[0].value}</span>
-          <div className="w-2 h-2 rounded-full bg-[#00AEEF] mt-1"></div>
+          <div className="w-2 h-2 rounded-full bg-primary mt-1"></div>
         </div>
         <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white"></div>
       </div>

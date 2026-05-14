@@ -1,11 +1,17 @@
-import { useEffect, useState } from "react";
-import { LOGO_GREEN_EXCLUDED } from "../assets";
+import { useEffect, useMemo, useState } from "react";
+import { LOGO_WHITE } from "../assets";
 import { FiX, FiAlignRight } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
-import Button from "../components/common/Button";
 import AuthModal from "../components/auth/AuthModal";
 
-import { socialIcons, links, contactInfo } from "./data/data";
+import {
+  socialIcons,
+  utilityLinks,
+  leftNavLinks,
+  rightNavLinks,
+  mobileNavLinks,
+  contactInfo,
+} from "./data/data";
 
 const Header = () => {
   const location = useLocation();
@@ -13,9 +19,51 @@ const Header = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const path = location.pathname;
+  const hash = location.hash;
 
   const isActive = (link) => {
-    return link.path === path;
+    if (!link || link.external) return false;
+
+    const [linkPath, linkHash = ""] = link.path.split("#");
+    const normalizedPath = linkPath || "/";
+    const normalizedHash = linkHash ? `#${linkHash}` : "";
+
+    if (normalizedPath !== path) return false;
+    if (normalizedHash) return normalizedHash === hash;
+    if (normalizedPath === "/") return hash === "";
+    return true;
+  };
+
+  const allMobileLinks = useMemo(() => {
+    const seen = new Set();
+    return mobileNavLinks.filter((link) => {
+      const key = `${link.title}-${link.path}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, []);
+
+  const renderLink = (link, className, onClick) => {
+    if (link.external) {
+      return (
+        <a
+          href={link.path}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={className}
+          onClick={onClick}
+        >
+          {link.title}
+        </a>
+      );
+    }
+
+    return (
+      <Link to={link.path} className={className} onClick={onClick}>
+        {link.title}
+      </Link>
+    );
   };
 
   // Ensure mobile menu closes on desktop resize
@@ -36,152 +84,244 @@ const Header = () => {
   }, [mobileOpen]);
 
   return (
-    <div className="fixed w-full top-0 z-50 transition-colors duration-300 bg-white border-b border-gray-100">
-      <div className="flex flex-col">
-        {/* Top Strip */}
-        <div className="bg-black text-white py-2 overflow-hidden">
-          <div className="container flex items-center justify-end gap-4 md:gap-6 text-[10px] md:text-[12px] font-sans px-4">
-            <div className="hidden lg:flex gap-4 items-center">
-              {socialIcons.map((icon, index) => (
-                <a
-                  key={index}
-                  href={icon.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-brand-green transition-all duration-300 border border-white rounded-full p-0.5 flex items-center justify-center"
-                >
-                  <icon.icon className="size-3.5" />
-                </a>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="hover:text-brand-green cursor-pointer truncate max-w-[120px] md:max-w-none">
-                {contactInfo.email}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="hover:text-brand-green cursor-pointer whitespace-nowrap">
-                {contactInfo.phone}
-              </span>
-            </div>
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div className="bg-primary text-white">
+        <div className="mx-auto hidden h-7 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 text-[10px] lg:grid xl:px-10">
+          <div className="flex items-center gap-3 whitespace-nowrap">
+            {utilityLinks.map((link, index) => (
+              <div key={link.title} className="flex items-center gap-3">
+                {index > 0 && <span className="h-3 w-px bg-white/40" />}
+                {renderLink(
+                  link,
+                  "transition-opacity duration-200 hover:opacity-80",
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-center gap-3">
+            {socialIcons.map((social, index) => (
+              <a
+                key={social.link + index}
+                href={social.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity duration-200 hover:opacity-80"
+              >
+                <social.icon className="size-3.5" />
+              </a>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-end gap-6 whitespace-nowrap">
+            <span className="tracking-[0.02em]">
+              helpline:{contactInfo.helpline}
+            </span>
+            <span>{contactInfo.phone}</span>
           </div>
         </div>
 
-        {/* Main Header */}
-        <div className="container py-4 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <img
-              src={LOGO_GREEN_EXCLUDED}
-              alt="logo"
-              className="h-12 md:h-15 transition-all duration-300"
-            />
-          </Link>
+        <div className="flex h-7 items-center justify-between px-4 text-[10px] lg:hidden">
+          <span className="tracking-[0.02em]">
+            helpline:{contactInfo.helpline}
+          </span>
+          <span>{contactInfo.phone}</span>
+        </div>
+      </div>
 
-          {/* Desktop Nav - Centered */}
-          <nav className="hidden lg:flex items-center justify-center flex-grow">
-            <ul className="flex gap-8 xl:gap-12">
-              {links.map((link) => (
-                <li
-                  key={link.title}
-                  className={`text-[15px] font-semibold transition-all duration-300 hover:text-brand-green ${isActive(link) ? "text-brand-green" : "text-[#333]"
-                    }`}
-                >
-                  <Link to={link.path}>{link.title}</Link>
+      <div className="relative bg-secondary shadow-[0_6px_20px_rgba(62,34,12,0.10)]">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 hidden justify-center lg:flex">
+          <div className="pointer-events-auto relative flex h-[78px] w-[92px] items-center justify-center rounded-b-[4px]  border-primary/20 bg-secondary ">
+            <Link
+              to="/"
+              className="flex h-full w-full items-center justify-center pt-1"
+            >
+              <img
+                src={LOGO_WHITE}
+                alt="TDCP logo"
+                className="h-[50px] w-[50px] object-contain"
+              />
+            </Link>
+          </div>
+        </div>
+
+        <div className="mx-auto hidden h-[58px] max-w-[1440px] grid-cols-[minmax(0,1fr)_120px_minmax(0,1fr)] items-center px-6 lg:grid xl:px-10">
+          <nav className="justify-self-start">
+            <ul className="flex items-center gap-8 xl:gap-10">
+              {leftNavLinks.map((link) => (
+                <li key={link.title}>
+                  {renderLink(
+                    link,
+                    `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
+                      !isActive(link)
+                        ? "text-black"
+                        : "text-primary/85 hover:text-black"
+                    }`,
+                  )}
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* Helpline Button */}
-          <div className="hidden lg:flex flex-shrink-0">
-            <a href="tel:1421">
-              <Button variant="solid-green" className="!px-6 !py-1 !rounded-md text-[16px] ">
-                Helpline:1421
-              </Button>
-            </a>
+          <div />
+
+          <div className="flex items-center justify-self-end gap-8 xl:gap-10">
+            <nav>
+              <ul className="flex items-center gap-8 xl:gap-10">
+                {rightNavLinks.map((link, index) => (
+                  <li key={`${link.title}-${index}`}>
+                    {renderLink(
+                      link,
+                      `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
+                        !isActive(link)
+                          ? "text-black"
+                          : "text-primary/85 hover:text-black"
+                      }`,
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="inline-flex h-9 items-center rounded-full bg-primary px-8 text-[14px] font-medium text-white shadow-[0_6px_14px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
+            >
+              Login
+            </button>
+          </div>
+        </div>
+
+        <div className="relative flex h-14 items-center justify-between px-4 lg:hidden">
+          <button
+            type="button"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-primary/15 text-primary"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open menu"
+          >
+            <FiAlignRight className="text-[22px]" />
+          </button>
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+            <div className="pointer-events-auto relative flex h-[68px] w-[78px] items-center justify-center rounded-b-[10px] border-x border-b border-primary/20 bg-secondary shadow-[0_8px_16px_rgba(91,52,17,0.16)]">
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex h-full w-full items-center justify-center pt-1"
+              >
+                <img
+                  src={LOGO_WHITE}
+                  alt="TDCP logo"
+                  className="h-[42px] w-[42px] object-contain"
+                />
+              </Link>
+            </div>
           </div>
 
-          {/* Mobile Hamburger */}
           <button
-            className="lg:hidden text-3xl text-black"
-            onClick={() => setMobileOpen(true)}
+            type="button"
+            onClick={() => setIsAuthModalOpen(true)}
+            className="inline-flex h-9 items-center rounded-full bg-primary px-5 text-[13px] font-medium text-white shadow-[0_6px_14px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
           >
-            <FiAlignRight />
+            Login
           </button>
         </div>
       </div>
 
-      {/* Mobile Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/70 z-40"
+          className="fixed inset-0 z-[60] bg-black/45"
           onClick={() => setMobileOpen(false)}
-        ></div>
+        />
       )}
 
-      {/* Mobile Side Menu */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white z-50 transform transition-transform duration-300 overflow-y-auto ${mobileOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+        className={`fixed right-0 top-0 z-[70] h-full w-[84vw] max-w-[360px] overflow-y-auto bg-white shadow-[-10px_0_40px_rgba(0,0,0,0.18)] transition-transform duration-300 ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        {/* Close Button */}
-        <div className="flex justify-between items-center p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between bg-secondary px-4 py-4">
           <Link to="/" onClick={() => setMobileOpen(false)}>
-            <img src={LOGO_GREEN_EXCLUDED} alt="logo" className="h-10" />
+            <img
+              src={LOGO_WHITE}
+              alt="TDCP logo"
+              className="h-11 w-11 object-contain"
+            />
           </Link>
           <button
+            type="button"
             onClick={() => setMobileOpen(false)}
-            className="text-2xl text-black"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 text-primary"
+            aria-label="Close menu"
           >
             <FiX />
           </button>
         </div>
 
-        {/* Mobile Nav Links */}
-        <ul className="flex flex-col p-4">
-          {links.map((link) => (
-            <li key={link.title} className="border-b border-gray-50">
-              <Link
-                to={link.path}
-                onClick={() => setMobileOpen(false)}
-                className={`block py-4 text-[16px] font-semibold ${isActive(link) ? "text-brand-green" : "text-[#333]"
-                  } hover:text-brand-green transition-colors duration-200`}
-              >
-                {link.title}
-              </Link>
+        <div className="border-b border-primary/10 bg-primary px-4 py-3 text-white">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px]">
+            {utilityLinks.map((link) => (
+              <div key={link.title}>
+                {renderLink(
+                  link,
+                  "transition-opacity duration-200 hover:opacity-80",
+                  () => setMobileOpen(false),
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <ul className="flex flex-col px-4 py-3">
+          {allMobileLinks.map((link) => (
+            <li
+              key={link.title}
+              className="border-b border-primary/8 last:border-b-0"
+            >
+              {renderLink(
+                link,
+                `block py-4 text-[16px] font-medium transition-colors duration-200 ${
+                  isActive(link)
+                    ? "text-primary"
+                    : "text-[#3B2A1F] hover:text-primary"
+                }`,
+                () => setMobileOpen(false),
+              )}
             </li>
           ))}
         </ul>
 
-        {/* Contact Info & Socials in Mobile */}
-        <div className="p-4 mt-auto">
-          <div className="flex flex-col gap-2 mb-6 text-[14px]">
-            <span className="text-gray-600">{contactInfo.email}</span>
-            <span className="text-gray-600">{contactInfo.phone}</span>
+        <div className="space-y-5 px-4 py-5">
+          <div className="flex items-center justify-between rounded-2xl bg-[#FFF9E8] px-4 py-3 text-[12px] text-[#5C4938]">
+            <span>helpline:{contactInfo.helpline}</span>
+            <span>{contactInfo.phone}</span>
           </div>
 
-          <div className="flex gap-4">
-            {socialIcons.map((icon, index) => (
+          <div className="flex items-center gap-4 text-primary">
+            {socialIcons.map((social, index) => (
               <a
-                key={index}
-                href={icon.link}
+                key={social.link + index}
+                href={social.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-black hover:text-brand-green transition-all duration-300 border border-black rounded-full p-2 flex items-center justify-center"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-primary/15 transition-colors duration-200 hover:bg-primary hover:text-white"
               >
-                <icon.icon className="size-5" />
+                <social.icon className="size-4" />
               </a>
             ))}
           </div>
 
-          <div className="mt-8">
-            <a href="tel:1421">
-              <Button variant="solid-green" className="w-full !px-4 !py-3 !rounded-md font-bold">
-                Helpline:1421
-              </Button>
-            </a>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setIsAuthModalOpen(true);
+              setMobileOpen(false);
+            }}
+            className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary text-sm font-medium text-white shadow-[0_8px_18px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
+          >
+            Login
+          </button>
         </div>
       </div>
 
@@ -189,7 +329,7 @@ const Header = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
-    </div>
+    </header>
   );
 };
 

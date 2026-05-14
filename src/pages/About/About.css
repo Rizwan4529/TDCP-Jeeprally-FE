@@ -10,7 +10,7 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-  margin-top: 80px;
+  margin-top: 86px;
 }
 
 .about-hero-bg {
@@ -63,7 +63,7 @@
 
 /* Vision Box */
 .vision-box {
-  background-color: #48AA71;
+  background-color: var(--color-primary);
   /* brand-green adjustment */
   padding: 40px;
   border-radius: 6px;
@@ -131,7 +131,7 @@
 
 .stats-content {
   padding: 30px;
-  background: linear-gradient(#FFFFFF, #48AA71);
+  background: linear-gradient(#FFFFFF, #FDEB98);
 }
 
 .stats-number {
@@ -157,7 +157,7 @@
 
 /* Adventure Section (Why Experience the Rally) */
 .why-experience-section {
-  background-color: #f7faf7;
+  background-color: var(--color-section);
   /* Light sage background */
 }
 
@@ -176,7 +176,7 @@
   transform: translate(-50%, -50%);
   width: 80%;
   aspect-ratio: 1;
-  border: 2.5px dashed #48AA71;
+  border: 2.5px dashed var(--color-primary);
   border-radius: 50%;
   opacity: 0.4;
 }
@@ -188,7 +188,7 @@
   transform: translate(-50%, -50%);
   width: 75%;
   aspect-ratio: 1;
-  /* background-color: #48AA71; */
+  /* background-color: #C4390E; */
   border-radius: 50%;
   opacity: 0.15;
   z-index: 1;
@@ -201,10 +201,10 @@
   transform: translate(-50%, 50%);
   width: 25px;
   height: 25px;
-  background-color: #48AA71;
+  background-color: var(--color-primary);
   border-radius: 50%;
   z-index: 15;
-  border: 4px solid #f7faf7;
+  border: 4px solid var(--color-section);
 }
 
 .feature-item {

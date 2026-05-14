@@ -1,4 +1,4 @@
-const Tabs = ({ tabs, activeTab, onChange, accentColor = "bg-accent" }) => {
+const Tabs = ({ tabs, activeTab, onChange, accentColor = "bg-primary" }) => {
   return (
     <div className="flex space-x-2 p-1 bg-gray-100 rounded-full overflow-x-auto no-scrollbar max-w-full">
       {tabs.map((tab) => (

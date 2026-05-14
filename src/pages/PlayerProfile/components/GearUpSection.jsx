@@ -17,7 +17,7 @@ const specs = {
 
 const GearUpSection = () => {
   return (
-    <section className="py-20 bg-[#F2F7F2] overflow-hidden">
+    <section className="py-20 bg-section overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-8 max-w-6xl mx-auto">

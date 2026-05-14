@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { fetchAllContent, fetchAvailableSitesLinks, fetchContent, fetchContentByCategory, fetchContentBySubCategory, fetchNamesList, fetchServiceContent } from "./content.service"
+import { fetchAllContent, fetchAvailableSitesLinks, fetchCategories, fetchContent, fetchContentByCategory, fetchContentBySubCategory, fetchNamesList, fetchServiceContent } from "./content.service"
 
 export const useContentQuery = (filters) => {
   return useQuery({
@@ -48,5 +48,16 @@ export const useServiceContentQuery = (id) => {
     queryKey: ["service-content", id],
     queryFn: () => fetchServiceContent(id),
     enabled: !!id,
+  })
+}
+
+export const useCategoriesQuery = () => {
+  return useQuery({
+    queryKey: ["categories"],
+    queryFn: () => fetchCategories(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
+    retry: 1,
   })
 }

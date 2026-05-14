@@ -1,46 +1,28 @@
-import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation } from 'swiper/modules';
+import React, { useMemo } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { normalizeCategories } from "../../../utils/constants.js";
+import { resolveCategoryImageUrl } from "../../../api/features/content/content.service.jsx";
+import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-
-const experiences = [
-  {
-    id: 1,
-    title: "Thrilling Off-Road Experience",
-    image: "/assets/images/s1.jpg",
-  },
-  {
-    id: 2,
-    title: "Unforgettable Rally Excitement",
-    image: "/assets/images/s2.jpg",
-  },
-  {
-    id: 3,
-    title: "High-Speed Desert Adventure",
-    image: "/assets/images/s3.jpg",
-  },
-  {
-    id: 4,
-    title: "Unforgettable Rally Excitement",
-    image: "/assets/images/s4.jpg",
-  },
-  {
-    id: 5,
-    title: "Thrilling Off-Road Experience",
-    image: "/assets/images/s1.jpg",
-  },
-  {
-    id: 6,
-    title: "Unforgettable Rally Excitement",
-    image: "/assets/images/s2.jpg",
-  },
-];
+import "swiper/css";
+import "swiper/css/navigation";
 
 const ExperienceSlider = () => {
+  const { data: categoriesRaw = [] } = useCategoriesQuery();
+
+  const experiences = useMemo(
+    () =>
+      normalizeCategories(categoriesRaw).map((category) => ({
+        id: category._id ?? category.key,
+        title: category.title,
+        image: resolveCategoryImageUrl(category.image),
+      })),
+    [categoriesRaw],
+  );
+
   return (
     <section className="relative w-full py-0 overflow-hidden group/section">
       <Swiper
@@ -50,8 +32,8 @@ const ExperienceSlider = () => {
           swiper.params.navigation.nextEl = "#next-btn";
         }}
         navigation={true}
-        loop={true}
-        loopedSlides={2}
+        loop={experiences.length > 1}
+        loopedSlides={Math.min(experiences.length, 2)}
         centeredSlides={false}
         allowTouchMove={true}
         breakpoints={{
@@ -60,24 +42,26 @@ const ExperienceSlider = () => {
           1024: { slidesPerView: 3 },
           1280: { slidesPerView: 4 },
         }}
-        className="w-full h-[500px] md:h-[600px] lg:h-[700px]"
+        className="remove-swiper-padding w-full h-[500px] md:h-[600px] lg:h-[700px]"
       >
         {experiences.map((exp) => (
           <SwiperSlide key={exp.id}>
             <div className="relative w-full h-full overflow-hidden group cursor-pointer border-r border-white/5 last:border-r-0">
-              {/* Background Image */}
-              <img
-                src={exp.image}
-                alt={exp.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-              />
+              {exp.image ? (
+                <img
+                  src={exp.image}
+                  alt={exp.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-primary" aria-hidden />
+              )}
 
               {/* Overlay - Darker on hover */}
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-500" />
 
               {/* Content Area */}
               <div className="absolute bottom-0 left-0 right-0 p-8 md:p-10 lg:p-14 transition-all duration-500 bg-transparent group-hover:bg-brand-green">
-
                 <h3 className="text-2xl md:text-3xl lg:text-3xl font-gilda leading-snug text-white max-w-[300px]">
                   {exp.title}
                 </h3>
@@ -108,10 +92,13 @@ const ExperienceSlider = () => {
       </button>
 
       {/* CSS to hide default swiper buttons if they appear */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .swiper-button-prev, .swiper-button-next { display: none !important; }
-      `}} />
+      `,
+        }}
+      />
     </section>
   );
 };

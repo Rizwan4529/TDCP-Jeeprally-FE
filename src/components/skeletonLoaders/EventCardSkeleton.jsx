@@ -1,6 +1,6 @@
 const EventCardSkeleton = () => {
   return (
-    <div className="bg-[#EFF4EF] rounded-lg shadow-md p-4 relative spacing-y-sm animate-pulse">
+    <div className="bg-section rounded-lg shadow-md p-4 relative spacing-y-sm animate-pulse">
       {/* Image placeholder */}
       <div className="w-full h-110 md:h-[250px] rounded-lg bg-gray-300" />
 

@@ -86,26 +86,26 @@ const PlayerProfile = () => {
                 <div className="flex justify-center gap-6 md:gap-10 mb-16 overflow-x-auto no-scrollbar max-w-full">
                     {/* Driver Tab */}
                     <div className="relative group cursor-pointer" onClick={() => setActiveTab('driver')}>
-                        <div className={`w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'driver' ? 'border-[#48AA71]' : 'border-transparent opacity-60'}`}>
+                        <div className={`w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'driver' ? 'border-primary' : 'border-transparent opacity-60'}`}>
                             <img src={player.driverImage} alt="Driver" className="w-full h-full object-cover" />
                         </div>
-                        <div className={`mt-[-20px] mx-auto w-fit relative z-10 px-6 py-2 rounded-sm shadow-lg transition-all duration-300 ${activeTab === 'driver' ? 'bg-[#48AA71] text-white' : 'bg-[#333] text-white'}`}>
+                        <div className={`mt-[-20px] mx-auto w-fit relative z-10 px-6 py-2 rounded-sm shadow-lg transition-all duration-300 ${activeTab === 'driver' ? 'bg-primary text-white' : 'bg-[#333] text-white'}`}>
                             <span className="font-gilda text-lg">Driver</span>
                             {activeTab === 'driver' && (
-                                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#48AA71]"></div>
+                                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary"></div>
                             )}
                         </div>
                     </div>
 
                     {/* Navigator Tab */}
                     <div className="relative group cursor-pointer" onClick={() => setActiveTab('navigator')}>
-                        <div className={`w-[140px] h-[140px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'navigator' ? 'border-[#48AA71]' : 'border-transparent opacity-60'}`}>
+                        <div className={`w-[140px] h-[140px] md:w-[220px] md:h-[220px] rounded-sm overflow-hidden border-4 transition-all duration-300 ${activeTab === 'navigator' ? 'border-primary' : 'border-transparent opacity-60'}`}>
                             <img src={player.navigatorImage} alt="Navigator" className="w-full h-full object-cover" />
                         </div>
-                        <div className={`mt-[-20px] mx-auto w-fit relative z-10 px-6 py-2 rounded-sm shadow-lg transition-all duration-300 ${activeTab === 'navigator' ? 'bg-[#48AA71] text-white' : 'bg-[#333] text-white'}`}>
+                        <div className={`mt-[-20px] mx-auto w-fit relative z-10 px-6 py-2 rounded-sm shadow-lg transition-all duration-300 ${activeTab === 'navigator' ? 'bg-primary text-white' : 'bg-[#333] text-white'}`}>
                             <span className="font-gilda text-lg">Navigator</span>
                             {activeTab === 'navigator' && (
-                                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#48AA71]"></div>
+                                <div className="absolute bottom-[-8px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-primary"></div>
                             )}
                         </div>
                     </div>
@@ -113,13 +113,13 @@ const PlayerProfile = () => {
 
                 {/* Info Card */}
                 <div className="max-w-3xl mx-auto bg-white rounded-sm shadow-2xl p-8 mb-20 border border-gray-50">
-                    <h2 className="text-[32px] md:text-[42px] font-gilda text-[#162c17] mb-8 border-b border-gray-100 pb-4">
+                    <h2 className="text-[32px] md:text-[42px] font-gilda text-primary mb-8 border-b border-gray-100 pb-4">
                         {player.name}
                     </h2>
                     <div className="space-y-4">
                         {Object.entries(player.details).map(([key, value]) => (
                             <div key={key} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-                                <span className="font-bold text-[#162c17] uppercase text-sm tracking-wider w-1/3">
+                                <span className="font-bold text-primary uppercase text-sm tracking-wider w-1/3">
                                     {key}
                                 </span>
                                 <span className="text-gray-600 text-right w-2/3">
@@ -134,7 +134,7 @@ const PlayerProfile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-6xl mx-auto">
                     {/* Team Standing */}
                     <div>
-                        <div className="bg-[#48AA71] text-white px-6 py-4 rounded-t-sm">
+                        <div className="bg-primary text-white px-6 py-4 rounded-t-sm">
                             <h3 className="font-gilda text-xl">Team Standing</h3>
                         </div>
                         <div className="bg-white border-x border-b border-gray-100 rounded-b-sm overflow-hidden shadow-sm">

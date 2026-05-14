@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './PreviousRallies.css';
 import Partners from '../JeepRally/components/Partners';
 import AnimatedButton from '../../components/common/AnimatedButton';
+import { useCategoriesQuery } from '../../api/features/content/hooks.jsx';
+import {
+    getCategoryFilterTabs,
+    getDefaultCategoryKey,
+    hasCategoryKey,
+} from '../../utils/constants.js';
 
 const PreviousRallies = () => {
-    const [activeTab, setActiveTab] = useState('Stock & Prepaid');
+    const [activeCategoryKey, setActiveCategoryKey] = useState('');
+    const { data: categoriesRaw = [] } = useCategoriesQuery();
+    const tabs = useMemo(() => getCategoryFilterTabs(categoriesRaw), [categoriesRaw]);
 
-    const tabs = ['Stock & Prepaid', 'Quad Bike', 'Dirt Bike', '4x4', 'Truck Race'];
+    useEffect(() => {
+        if (tabs.length === 0) return;
+
+        if (!activeCategoryKey || !hasCategoryKey(categoriesRaw, activeCategoryKey)) {
+            setActiveCategoryKey(getDefaultCategoryKey(categoriesRaw));
+        }
+    }, [activeCategoryKey, categoriesRaw, tabs.length]);
 
     const rallies = [
         {
@@ -64,14 +78,14 @@ const PreviousRallies = () => {
                 <div className="players-filters flex overflow-x-auto no-scrollbar gap-2 md:gap-4 mb-12">
                     {tabs.map((tab) => (
                         <button
-                            key={tab}
-                            className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${activeTab === tab
+                            key={tab.key}
+                            className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${activeCategoryKey === tab.key
                                 ? 'bg-brand-green text-white shadow-md'
                                 : 'bg-white/50 text-gray-600 hover:bg-white'
                                 }`}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => setActiveCategoryKey(tab.key)}
                         >
-                            {tab}
+                            {tab.title}
                         </button>
                     ))}
                 </div>

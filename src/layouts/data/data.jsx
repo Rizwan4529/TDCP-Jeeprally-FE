@@ -14,17 +14,35 @@ const socialIcons = [
 ]
 
 const contactInfo = {
-  email: "info@example.com",
+  helpline: "1421",
   phone: "00-000-0000",
 }
 
-const links = [
+const utilityLinks = [
+  { title: "Partners", path: "/#partners" },
+  { title: "Videos & Photos", path: "/#gallery" },
+  { title: "https://staging.tdcp.gop.pk", path: "https://staging.tdcp.gop.pk", external: true },
+]
+
+const leftNavLinks = [
   { title: "Home", path: "/" },
-  { title: "About", path: "/about" },
-  { title: "Routes", path: "/routes" },
+  { title: "About Us", path: "/about" },
   { title: "Rules", path: "/#rules" },
   { title: "Competitor", path: "/competitor" },
+]
+
+const rightNavLinks = [
+  { title: "Challenges", path: "/#challenges" },
   { title: "Ranking", path: "/ranking" },
+  { title: "Routes", path: "/routes" },
+  { title: "Rules", path: "/#rules" },
+]
+
+const mobileNavLinks = [
+  ...leftNavLinks,
+  { title: "Challenges", path: "/#challenges" },
+  { title: "Ranking", path: "/ranking" },
+  { title: "Routes", path: "/routes" },
 ]
 
 const secondaryLinks = [
@@ -117,4 +135,12 @@ const secondaryLinks = [
   },
 ]
 
-export { socialIcons, links, secondaryLinks, contactInfo }
+export {
+  socialIcons,
+  utilityLinks,
+  leftNavLinks,
+  rightNavLinks,
+  mobileNavLinks,
+  secondaryLinks,
+  contactInfo,
+}

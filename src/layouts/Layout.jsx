@@ -4,6 +4,7 @@ import { Outlet, useLocation } from 'react-router'
 import Footer from './Footer'
 import BackToTop from '../components/common/BackToTop'
 import { useEffect } from 'react'
+import { ActiveRallySync } from '../components/rally/ActiveRallySync.jsx'
 
 const Layout = () => {
   const { pathname, hash } = useLocation();
@@ -23,6 +24,7 @@ const Layout = () => {
 
   return (
     <>
+      <ActiveRallySync />
       <Header />
       <main>
         <Outlet />

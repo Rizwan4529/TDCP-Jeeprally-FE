@@ -1,64 +1,104 @@
-import React, { useState } from 'react';
-import './Rankings.css';
-import Partners from '../JeepRally/components/Partners';
+import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import "./Rankings.css";
+import Partners from "../JeepRally/components/Partners";
+import {
+  getCategoryLabelMap,
+  getDefaultCategoryKey,
+  hasCategoryKey,
+  normalizeCategories,
+} from "../../utils/constants.js";
+import { fetchRallyRankings } from "../../api/features/rally/rally.service.jsx";
+import { activeRallyQueryOptions } from "../../api/features/rally/rally.queryOptions.jsx";
+import { useCategoriesQuery } from "../../api/features/content/hooks.jsx";
+
+function mapRankingRows(apiRows) {
+  return (apiRows ?? [])
+    .map((item) => {
+      const team = item.team_id || {};
+      const driver = team.driver_id || {};
+      return {
+        id: item._id,
+        pos: item.position ?? 0,
+        driveTeam: driver.name || "—",
+        team: team.team_name || "—",
+        time: item.total_time ?? "—",
+        variation: "—",
+        penalty: item.total_penalty ?? "—",
+        afterStage: item.after_stage,
+      };
+    })
+    .sort((a, b) => Number(a.pos) - Number(b.pos));
+}
+
 const Rankings = () => {
-  const [activeTab, setActiveTab] = useState('Stock & Prepaid');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const tabs = ['Stock & Prepaid', 'Quad Bike', 'Dirt Bike', '4x4', 'Truck Race'];
+  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
+  const eventId = activeEvent?._id;
 
-  const rankingData = [
-    {
-      pos: 1,
-      driveTeam: 'LUCIANO BENAVIDES',
-      team: 'RED BULL KTM FACTORY RACING',
-      time: "49H 00' 41\"",
-      variation: "+ 00H 25' 12\"",
-      penalty: "00H 10' 00\""
-    },
-    {
-      pos: 2,
-      driveTeam: 'LUCIANO BENAVIDES',
-      team: 'RED BULL KTM FACTORY RACING',
-      time: "49H 00' 41\"",
-      variation: "+ 00H 25' 12\"",
-      penalty: "00H 10' 00\""
-    },
-    {
-      pos: 3,
-      driveTeam: 'LUCIANO BENAVIDES',
-      team: 'RED BULL KTM FACTORY RACING',
-      time: "49H 00' 41\"",
-      variation: "+ 00H 25' 12\"",
-      penalty: "00H 10' 00\""
-    },
-    {
-      pos: 4,
-      driveTeam: 'LUCIANO BENAVIDES',
-      team: 'RED BULL KTM FACTORY RACING',
-      time: "49H 00' 41\"",
-      variation: "+ 00H 25' 12\"",
-      penalty: "00H 10' 00\""
-    },
-    {
-      pos: 5,
-      driveTeam: 'LUCIANO BENAVIDES',
-      team: 'RED BULL KTM FACTORY RACING',
-      time: "49H 00' 41\"",
-      variation: "+ 00H 25' 12\"",
-      penalty: "00H 10' 00\""
+  const { data: categoriesRaw = [] } = useCategoriesQuery();
+
+  const categories = useMemo(
+    () => normalizeCategories(categoriesRaw),
+    [categoriesRaw]
+  );
+  const categoryLabels = useMemo(
+    () => getCategoryLabelMap(categories),
+    [categories]
+  );
+
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    if (!activeCategory || !hasCategoryKey(categories, activeCategory)) {
+      setActiveCategory(getDefaultCategoryKey(categories));
     }
-  ];
+  }, [activeCategory, categories]);
+
+  const {
+    data: rankingsRaw = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["rally", "rankings", eventId, activeCategory],
+    queryFn: () => fetchRallyRankings(eventId, activeCategory),
+    enabled: Boolean(eventId && activeCategory),
+    refetchOnWindowFocus: false,
+  });
+
+  const rows = useMemo(() => mapRankingRows(rankingsRaw), [rankingsRaw]);
+
+  const filteredRows = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(
+      (r) =>
+        r.driveTeam.toLowerCase().includes(q) ||
+        r.team.toLowerCase().includes(q)
+    );
+  }, [rows, searchQuery]);
+
+  const afterStage = useMemo(() => {
+    const stages = (rankingsRaw ?? [])
+      .map((r) => r.after_stage)
+      .filter((v) => v != null && v !== "");
+    if (stages.length === 0) return null;
+    return Math.max(...stages.map(Number));
+  }, [rankingsRaw]);
 
   return (
     <>
-
       <div className="rankings-page !mt-[100px]">
         <div className="rankings-container">
-          {/* Banner Section */}
           <div className="rankings-banner">
             <div className="banner-frame-container">
-              <img src="/assets/images/frame.png" alt="TDCP Jeep Rally Frame" className="banner-frame-img" />
+              <img
+                src="/assets/images/frame.png"
+                alt="TDCP Jeep Rally Frame"
+                className="banner-frame-img"
+              />
               <div className="banner-text-overlay">
                 <h1 className="banner-title">TDCP JEEP RALLY</h1>
               </div>
@@ -66,10 +106,12 @@ const Rankings = () => {
             <p className="banner-subtitle">Cholistan 2026</p>
           </div>
 
-
-          {/* Header Action Row */}
           <div className="rankings-header-row">
-            <h1 className="rankings-title">026 Rankings after the stage 13</h1>
+            <h1 className="rankings-title">
+              {afterStage != null
+                ? `Rankings after stage ${afterStage}`
+                : "Rankings after the stage"}
+            </h1>
             <div className="search-container">
               <input
                 type="text"
@@ -78,28 +120,35 @@ const Rankings = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="search-btn">Search</button>
+              <button type="button" className="search-btn">
+                Search
+              </button>
             </div>
           </div>
 
-          {/* Filters Section */}
           <div className="rankings-filters no-scrollbar">
-            {tabs.map((tab) => (
+            {categories.map((category) => (
               <button
-                key={tab}
-                className={`filter-btn ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
+                key={category.key}
+                type="button"
+                className={`filter-btn ${
+                  activeCategory === category.key ? "active" : ""
+                }`}
+                onClick={() => setActiveCategory(category.key)}
               >
-                {tab}
+                {categoryLabels[category.key]}
               </button>
             ))}
           </div>
 
-          {/* Table Section */}
           <div className="rankings-table-wrapper">
             <div className="table-title-bar">
               <h2>Team Standing</h2>
-              <img src="/assets/images/head.png" alt="pattern" className="header-pattern" />
+              <img
+                src="/assets/images/head.png"
+                alt="pattern"
+                className="header-pattern"
+              />
             </div>
             <table className="rankings-table">
               <thead>
@@ -113,26 +162,61 @@ const Rankings = () => {
                 </tr>
               </thead>
               <tbody>
-                {rankingData.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.pos}</td>
-                    <td className="drive-team">{row.driveTeam}</td>
-                    <td className="team-name">{row.team}</td>
-                    <td className="time-val">{row.time}</td>
-                    <td className="variation-plus">{row.variation}</td>
-                    <td>{row.penalty}</td>
+                {!eventId && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-gray-500">
+                      Active rally is not available yet.
+                    </td>
                   </tr>
-                ))}
+                )}
+                {eventId && isPending && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-gray-500">
+                      Loading rankings…
+                    </td>
+                  </tr>
+                )}
+                {eventId && isError && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-red-600">
+                      Could not load rankings. Please try again later.
+                    </td>
+                  </tr>
+                )}
+                {eventId &&
+                  !isPending &&
+                  !isError &&
+                  filteredRows.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-gray-500">
+                        No rankings for this category.
+                      </td>
+                    </tr>
+                  )}
+                {eventId &&
+                  !isPending &&
+                  !isError &&
+                  filteredRows.map((row) => (
+                    <tr key={row.id}>
+                      <td>{row.pos}</td>
+                      <td className="drive-team">{row.driveTeam}</td>
+                      <td className="team-name">{row.team}</td>
+                      <td className="time-val">{row.time}</td>
+                      <td className="variation-plus">{row.variation}</td>
+                      <td>{row.penalty}</td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
 
-          {/* Footer Section */}
           <div className="rankings-footer">
-            {/* Checkered flags at bottom right */}
             <div className="footer-flags-wrapper">
-              <img src='/assets/images/flag_black.png' alt="flag" className='w-20 md:w-60 ' />
-              {/* <span style={{ fontSize: '3rem' }}>🏁🏁</span> */}
+              <img
+                src="/assets/images/flag_black.png"
+                alt="flag"
+                className="w-20 md:w-60 "
+              />
             </div>
           </div>
         </div>

@@ -56,8 +56,8 @@
 }
 
 .rm-toggle-btn.active {
-  background: #15a067;
-  /* Green from image */
+  background: var(--color-primary);
+  /* Primary brand color */
   color: white;
 }
 
@@ -66,6 +66,11 @@
   position: relative;
   width: 800px;
   height: 1200px;
+  max-width: 100%;
+}
+
+.rm-mobile-sequence {
+  display: none;
 }
 
 .rm-label-start,
@@ -96,7 +101,7 @@
 }
 
 .rm-dot-connector::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 8px;
   height: 8px;
@@ -175,4 +180,198 @@
   margin-top: 2px;
   font-size: 11px;
   color: #555;
+  padding-left: 1rem;
+  list-style: disc;
+}
+
+.rm-card-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #ececec 0%, #e0e0e0 100%);
+  color: #9a9a9a;
+  border: 1px dashed #c8c8c8;
+}
+
+.rm-card-img-placeholder-icon {
+  width: 36px;
+  height: 36px;
+  stroke-width: 1.25;
+}
+
+.rm-road-img--dim {
+  opacity: 0.35;
+  transition: opacity 0.25s ease;
+}
+
+.rm-checkpoints-empty {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  text-align: center;
+  max-width: 280px;
+  padding: 1.5rem 1.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8e8e8;
+}
+
+.rm-checkpoints-empty-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-primary);
+  margin: 0 auto 0.75rem;
+  stroke-width: 1.25;
+}
+
+.rm-checkpoints-empty-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.rm-checkpoints-empty-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #666;
+}
+
+.rm-mobile-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #ece7d2;
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+}
+
+.rm-mobile-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.rm-mobile-card-step {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.rm-mobile-card-copy {
+  min-width: 0;
+}
+
+.rm-mobile-card-title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: #2f2f2f;
+}
+
+.rm-mobile-card-km {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  color: #777;
+}
+
+.rm-mobile-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+}
+
+.rm-mobile-card-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(180, 68, 35, 0.1);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.rm-mobile-card-list {
+  margin: 0.875rem 0 0;
+  padding-left: 1rem;
+  list-style: disc;
+  color: #555;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 767px) {
+  .rm-wrapper {
+    padding: 4rem 1rem 2rem;
+  }
+
+  .rm-header {
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .rm-title-row {
+    gap: 0.5rem;
+  }
+
+  .rm-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .rm-toggle-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.625rem;
+    background: transparent;
+    padding: 0;
+    margin-inline: auto;
+    width: min(100%, 26rem);
+  }
+
+  .rm-toggle-btn {
+    padding: 0.7rem 1rem;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    font-size: 0.8125rem;
+  }
+
+  .rm-toggle-btn.active {
+    color: #fff;
+  }
+
+  .rm-canvas-desktop {
+    display: none;
+  }
+
+  .rm-mobile-sequence {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    width: min(100%, 32rem);
+  }
+
+  .rm-mobile-sequence .rm-checkpoints-empty {
+    position: static;
+    left: auto;
+    top: auto;
+    transform: none;
+    max-width: none;
+  }
 }

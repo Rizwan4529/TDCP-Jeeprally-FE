@@ -92,7 +92,7 @@
 }
 
 .search-btn {
-  background-color: #15a067;
+  background-color: var(--color-primary);
   color: #fff;
   border: none;
   padding: 0.5rem 2rem;
@@ -104,7 +104,7 @@
 }
 
 .search-btn:hover {
-  background-color: #0D542B;
+  background-color: var(--color-primary-dark);
 }
 
 /* Filters Section */
@@ -134,7 +134,7 @@
 }
 
 .filter-btn.active {
-  background-color: #15a067;
+  background-color: var(--color-primary);
   color: #fff;
 }
 
@@ -145,7 +145,7 @@
 /* Table Section */
 .rankings-table-wrapper {
   margin-top: 2rem;
-  border-top: 4px solid #15a067;
+  border-top: 4px solid var(--color-primary);
   background: #fff;
   border-radius: 4px;
   overflow: hidden;
@@ -197,11 +197,11 @@
 }
 
 .rankings-table tr:nth-child(even) {
-  background-color: #f2f9f2;
+  background-color: #FFF8E0;
 }
 
 .rankings-table tr:hover {
-  background-color: #e8f5e8;
+  background-color: #FFF2C8;
 }
 
 .drive-team {

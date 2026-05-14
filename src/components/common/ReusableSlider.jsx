@@ -190,14 +190,14 @@ const ReusableSlider = ({
             {showNavigation && (
               <div className='flex items-center gap-4'>
                 <button
-                  className='bg-accent rounded-full md:w-11 md:h-11 min-w-9 min-h-9 md:min-w-11 md:min-h-11 grid place-items-center hover:bg-primary transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='bg-primary rounded-full md:w-11 md:h-11 min-w-9 min-h-9 md:min-w-11 md:min-h-11 grid place-items-center hover:bg-primary-dark transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
                   onClick={goToPrevious}
                   disabled={isImageLoading}
                 >
                   <ARROW_LEFT_ICON fill='#fff' />
                 </button>
                 <button
-                  className='bg-accent rounded-full md:w-11 md:h-11 min-w-9 min-h-9 md:min-w-11 md:min-h-11 grid place-items-center hover:bg-primary transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
+                  className='bg-primary rounded-full md:w-11 md:h-11 min-w-9 min-h-9 md:min-w-11 md:min-h-11 grid place-items-center hover:bg-primary-dark transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
                   onClick={goToNext}
                   disabled={isImageLoading}
                 >

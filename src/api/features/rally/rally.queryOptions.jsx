@@ -1,0 +1,11 @@
+import { fetchActiveRally } from "./rally.service.jsx";
+
+export const activeRallyQueryOptions = {
+  queryKey: ["rally", "active"],
+  queryFn: fetchActiveRally,
+  staleTime: Infinity,
+  gcTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+  retry: 1,
+};

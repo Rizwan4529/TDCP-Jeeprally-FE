@@ -25,7 +25,7 @@ const WhyExperience = () => {
     ];
 
     return (
-        <section className="why-experience-section py-20 overflow-hidden bg-[#f7faf7]">
+        <section className="why-experience-section py-20 overflow-hidden bg-section">
             <div className="container mx-auto px-4 md:px-20">
                 <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
 
@@ -50,7 +50,7 @@ const WhyExperience = () => {
                     {/* Right side: Content */}
                     <div className="flex-1">
                         <div className="adventure-content">
-                            <h2 className="text-[32px] md:text-[42px] font-gilda leading-tight text-black border-l-4 border-[#48AA71] pl-6 mb-6">
+                            <h2 className="text-[32px] md:text-[42px] font-gilda leading-tight text-black border-l-4 border-primary pl-6 mb-6">
                                 Why Experience <br /> the Rally
                             </h2>
                             <p className="adventure-desc text-gray-500 text-sm mb-12 leading-relaxed max-w-[500px]">

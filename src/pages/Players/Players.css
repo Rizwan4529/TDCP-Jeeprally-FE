@@ -93,7 +93,7 @@
 }
 
 .search-btn {
-  background-color: #15a067;
+  background-color: var(--color-primary);
   color: #fff;
   border: none;
   padding: 0.3rem 2rem;
@@ -105,7 +105,7 @@
 }
 
 .search-btn:hover {
-  background-color: #0D542B;
+  background-color: var(--color-primary-dark);
 }
 
 /* Filters Section */
@@ -135,7 +135,7 @@
 }
 
 .filter-btn.active {
-  background-color: #15a067;
+  background-color: var(--color-primary);
   color: #fff;
 }
 
@@ -171,6 +171,27 @@
   border-radius: 8px;
 }
 
+.player-card-skeleton {
+  background-color: #eceef2;
+  overflow: visible;
+}
+
+.player-img-skeleton,
+.player-number-skeleton,
+.player-name-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #e7eaef 0%, #f3f5f8 50%, #e7eaef 100%);
+  background-size: 200% 100%;
+  animation: players-skeleton-shimmer 1.35s ease-in-out infinite;
+}
+
+.player-img-skeleton {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
 .player-info-box {
   position: absolute;
   bottom: -20px;
@@ -187,6 +208,24 @@
   gap: 0.25rem;
 }
 
+.player-info-box-skeleton {
+  gap: 0.6rem;
+}
+
+.player-number-skeleton {
+  display: block;
+  width: 42%;
+  height: 0.9rem;
+  border-radius: 999px;
+}
+
+.player-name-skeleton {
+  display: block;
+  width: 76%;
+  height: 1rem;
+  border-radius: 999px;
+}
+
 .player-number {
   font-size: 0.9rem;
   font-weight: 400;
@@ -198,6 +237,15 @@
   font-weight: 400;
   color: #000;
   font-family: var(--font-sans);
+}
+
+@keyframes players-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Responsive */

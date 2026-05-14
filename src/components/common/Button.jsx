@@ -32,9 +32,9 @@ const Button = ({
       hover:bg-white hover:text-black hover:border-black
     `,
     "solid-accent": `
-      bg-accent text-white
-      border border-accent
-      hover:bg-white hover:text-accent hover:border-accent
+      bg-secondary text-black
+      border border-secondary
+      hover:bg-primary hover:text-white hover:border-primary
     `,
     ghost: `
       bg-transparent text-white

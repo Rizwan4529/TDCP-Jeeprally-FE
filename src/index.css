@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Gilda+Display&family=Nanum+Myeongjo&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Gilda+Display&family=Manrope:wght@200..800&family=Nanum+Myeongjo&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Germania+One&display=swap");
 @import url("https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.core.css");
 @import "tailwindcss";
@@ -7,11 +7,14 @@
 @theme {
   --container: 1536px;
 
-  --color-primary: #162c17;
-  --color-accent: #6CC371;
-  --color-brand-green: #15a067;
-  --color-brand-green-hover: #0D542B;
-  --color-section: #EFF4EF;
+  --color-primary: #B44423;
+  --color-primary-dark: #91371D;
+  --color-secondary: #F9DA4A;
+  --color-secondary-soft: #FBE79C;
+  --color-accent: #F9DA4A;
+  --color-brand-green: #B44423;
+  --color-brand-green-hover: #91371D;
+  --color-section: #FFF7D8;
 
   --spacing-sm: 0.5rem;
   /* 8px */
@@ -23,6 +26,7 @@
   /* 50px */
 
   --font-sans: "Poppins", sans-serif;
+  --font-manrope: "Manrope", sans-serif;
   --font-gilda: "Gilda Display", serif;
   --font-nanum: "Nanum Myeongjo", serif;
   --font-germania: "Germania One", serif;
@@ -47,6 +51,10 @@
 
   .font-gilda {
     font-family: var(--font-gilda);
+  }
+
+  .font-manrope {
+    font-family: var(--font-manrope);
   }
 
   .font-germania {
@@ -130,11 +138,11 @@
   }
 
   .swiper-pagination-bullet {
-    @apply !w-2.5 !h-2.5 !bg-[#B4E0B6];
+    @apply !w-2.5 !h-2.5 !bg-[#FBE79C];
   }
 
   .swiper-pagination-bullet-active {
-    @apply !bg-[#6cc371];
+    @apply !bg-[#B44423];
   }
 
   /* Hide scrollbars */
@@ -152,7 +160,7 @@
 
   /* Search result highlighting */
   mark {
-    background-color: #fef08a;
+    background-color: #F9DA4A;
     color: inherit;
     padding: 0 2px;
     border-radius: 2px;

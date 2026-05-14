@@ -50,9 +50,9 @@
 }
 
 .prev-filter-btn.active {
-  background-color: #66BB6A;
+  background-color: var(--color-primary);
   color: #fff;
-  box-shadow: 0 4px 15px rgba(102, 187, 106, 0.3);
+  box-shadow: 0 4px 15px rgba(180, 68, 35, 0.3);
 }
 
 /* Grid Layout */

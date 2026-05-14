@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  fetchDestinationsGeneral,
+  resolveCheckpointImageUrl,
+} from "../../../api/features/rally/rally.service.jsx";
 
-const destinations = [
+const STATIC_FALLBACK_DESTINATIONS = [
   { title: "Choilistan", image: "/assets/images/heroimg.png" },
   { title: "Rahim Yar Khan", image: "/assets/images/journey2.jpg" },
   { title: "Bhawalpur", image: "/assets/images/img1.png" },
@@ -55,24 +60,45 @@ const DestinationSlot = ({ data, isLarge = false }) => {
 const Destinations = () => {
   const [startIndex, setStartIndex] = useState(0);
 
+  const { data: apiDestinations = [] } = useQuery({
+    queryKey: ["destinations", "general"],
+    queryFn: fetchDestinationsGeneral,
+    refetchOnWindowFocus: false,
+  });
+
+  const destinations = useMemo(() => {
+    const mapped = (apiDestinations ?? [])
+      .map((d) => {
+        const image = resolveCheckpointImageUrl(d.image);
+        if (!image) return null;
+        return { title: d.name || "Destination", image };
+      })
+      .filter(Boolean);
+    return mapped.length > 0 ? mapped : STATIC_FALLBACK_DESTINATIONS;
+  }, [apiDestinations]);
+
+  const len = Math.max(1, destinations.length);
+
+  useEffect(() => {
+    setStartIndex((i) => i % len);
+  }, [len]);
+
   const handleNext = () => {
-    setStartIndex((prev) => (prev + 1) % destinations.length);
+    setStartIndex((prev) => (prev + 1) % len);
   };
 
   const handlePrev = () => {
-    setStartIndex((prev) => (prev - 1 + destinations.length) % destinations.length);
+    setStartIndex((prev) => (prev - 1 + len) % len);
   };
 
-  // Get exactly 4 items for the fixed slots
   const visibleItems = [];
   for (let i = 0; i < 4; i++) {
-    visibleItems.push(destinations[(startIndex + i) % destinations.length]);
+    visibleItems.push(destinations[(startIndex + i) % len]);
   }
 
   return (
-    <section className="py-12 bg-[#F2F7F2]">
+    <section className="py-12 bg-section">
       <div className="container mx-auto px-4">
-        {/* Header */}
         <div className="flex justify-between items-end mb-16 px-4">
           <h2 className="text-[29px] md:text-[42px] font-gilda text-black">
             Rally Destinations
@@ -96,7 +122,6 @@ const Destinations = () => {
           </div>
         </div>
 
-        {/* Fixed Slot Grid */}
         <div className="flex flex-col md:flex-row items-start gap-6 md:gap-8 max-w-7xl mx-auto overflow-hidden px-4">
           <DestinationSlot data={visibleItems[0]} />
           <DestinationSlot data={visibleItems[1]} isLarge={true} />

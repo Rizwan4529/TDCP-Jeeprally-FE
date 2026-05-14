@@ -1,145 +1,345 @@
-import React, { useState } from 'react'
-import '../RallyMap.css'
-import Partners from '../../JeepRally/components/Partners';
-const Map = () => {
-    const [activeTab, setActiveTab] = useState('Jeep');
+import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FiImage, FiMapPin } from "react-icons/fi";
+import "../RallyMap.css";
+import {
+  getCategoryLabelMap,
+  getDefaultCategoryKey,
+  hasCategoryKey,
+  normalizeCategories,
+} from "../../../utils/constants.js";
+import { shouldShowRoutesEmpty } from "../map.utils.js";
+import {
+  fetchRallyRoutes,
+  fetchRouteCheckpoints,
+  resolveCheckpointImageUrl,
+} from "../../../api/features/rally/rally.service.jsx";
+import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
+import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 
-    const tabs = ['Jeep', 'Quad Bike', 'Dirt Bike', "Test 1", "Test 2", "Test 2"];
-
-    return (
-        <div className="rm-wrapper ">
-            {/* Header Section */}
-            <header className="rm-header">
-                <div className="rm-title-row">
-                    <img src='/assets/images/flag.png' alt="flag" className='w-10 md:w-20 rotate-y-180' />
-                    <p className='font-gilda text-[24px] md:text-[42px]'>Cholistan Desert</p>
-                    <img src='/assets/images/flag.png' alt="flag" className='w-10 md:w-20' />
-                </div>
-                <div className="rm-stats">
-                    <p>Total Distance: <strong>~200 KM</strong></p>
-                    <p>Estimated Time: <strong>3–5 Hours</strong></p>
-                </div>
-
-                <div className="rm-toggle-container overflow-x-auto no-scrollbar max-w-full">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab}
-                            className={`rm-toggle-btn whitespace-nowrap ${activeTab === tab ? 'active' : ''}`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-            </header>
-
-            <div className="rm-canvas">
-
-                <img
-                    src="/assets/images/map_line.png"
-                    alt="Rally Track"
-                    className="rm-road-img "
-                />
-
-                {/* LEFT ITEMS */}
-                <div className="rm-item rm-left" style={{ top: '14.5%' }}>
-                    <div className="rm-card">
-                        <img src="/assets/images/jeep_3_1.jpg" alt="Warm-Up" className="rm-card-img" />
-                        <div className="rm-card-body">
-                            <h2 className="rm-card-title">Warm-Up Track <span className="rm-km">(0–40 KM)</span></h2>
-                            <ul className="rm-list">
-                                <li>Flat Desert Terrain</li>
-                                <li>Light Sand</li>
-                                <li>Speed Build-Up Zone</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="rm-dot-connector"></div>
-                </div>
-
-                <div className="rm-item rm-left rm-chk-item" style={{ top: '40%' }}>
-                    <div className="rm-cp-text">
-                        <p className="rm-cp-title">Checkpoint 1 (50 KM) <span className="red-dot">●</span></p>
-                        <ul className="rm-list">
-                            <li>Water / Safety Check</li>
-                            <li>Quick Inspection</li>
-                        </ul>
-                    </div>
-                    <div className="rm-dot-connector red"></div>
-                </div>
-
-                <div className="rm-item rm-left" style={{ top: '46.5%', left: '5%' }}>
-                    <div className="rm-card">
-                        <img src="/assets/images/jeep_5_1.jpg" alt="Technical" className="rm-card-img" />
-                        <div className="rm-card-body">
-                            <h2 className="rm-card-title">Technical Terrain <span className="rm-km">(100–160 KM)</span></h2>
-                            <ul className="rm-list">
-                                <li>Rough Patches</li>
-                                <li>Narrow Tracks</li>
-                                <li>Zig-Zag Navigation</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="rm-dot-connector"></div>
-                </div>
-
-                {/* RIGHT ITEMS */}
-                <div className="rm-item rm-right" style={{ top: '0.5%' }}>
-                    <div className="rm-dot-connector"></div>
-                    <div className="rm-card">
-                        <img src="/assets/images/jeep_4_2.png" alt="Dune" className="rm-card-img" />
-                        <div className="rm-card-body">
-                            <h2 className="rm-card-title">Dune Challenge <span className="rm-km">(40–100 KM)</span></h2>
-                            <ul className="rm-list">
-                                <li>Medium To High Dunes</li>
-                                <li>Elevation Changes</li>
-                                <li>Sharp Inclines & Drops</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="rm-item rm-right rm-chk-item" style={{ top: '22%' }}>
-                    <div className="rm-dot-connector red"></div>
-                    <div className="rm-cp-text">
-                        <p className="rm-cp-title"><span className="red-dot">●</span> Checkpoint 2 (100 KM)</p>
-                        <ul className="rm-list">
-                            <li>Midpoint Break</li>
-                            <li>Refueling Zone</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div className="rm-item rm-right" style={{ top: '29%', }}>
-                    <div className="rm-dot-connector"></div>
-                    <div className="rm-card">
-                        <img src="/assets/images/jeep_3_3.jpg" alt="Speed Run" className="rm-card-img" />
-                        <div className="rm-card-body">
-                            <h2 className="rm-card-title">Speed Run <span className="rm-km">(160–200 KM)</span></h2>
-                            <ul className="rm-list">
-                                <li>Long Straight Track</li>
-                                <li>High-Speed Zone</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                {/* <div className="rm-item rm-right" style={{ top: '85%' }}>
-          <div className="rm-dot-connector"></div>
-          <div className="rm-card">
-            <img src="/assets/images/jeep_3_5.jpg" alt="Final Speed" className="rm-card-img" />
-            <div className="rm-card-body">
-              <h2 className="rm-card-title">Speed Run <span className="rm-km">(160–200 KM)</span></h2>
-              <ul className="rm-list">
-                <li>Long Straight Track</li>
-                <li>High-Speed Zone</li>
-              </ul>
-            </div>
-          </div>
-        </div> */}
-
-            </div>
-        </div>)
+function topPercentForIndex(index, total) {
+  if (total <= 0) return 0;
+  if (total === 1) return 46;
+  const padTop = 12;
+  const padBottom = 20;
+  const span = 100 - padTop - padBottom;
+  return padTop + (index / (total - 1)) * span;
 }
 
-export default Map
+function CheckpointImageSlot({ image, title }) {
+  const [broken, setBroken] = useState(false);
+  const url = resolveCheckpointImageUrl(image);
+
+  if (!url || broken) {
+    return (
+      <div
+        className="rm-card-img rm-card-img-placeholder"
+        role="img"
+        aria-label={`No image for ${title}`}
+      >
+        <FiImage aria-hidden className="rm-card-img-placeholder-icon" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className="rm-card-img"
+      src={url}
+      alt=""
+      onError={() => setBroken(true)}
+    />
+  );
+}
+
+function CheckpointBlock({ checkpoint, side, style }) {
+  const isRight = side === "right";
+  const km = `(${checkpoint.km_start}–${checkpoint.km_end} KM)`;
+  const points = Array.isArray(checkpoint.description_points)
+    ? checkpoint.description_points
+    : [];
+
+  const card = (
+    <div className="rm-card">
+      <CheckpointImageSlot image={checkpoint.image} title={checkpoint.title} />
+      <div className="rm-card-body">
+        <h2 className="rm-card-title">
+          {checkpoint.title} <span className="rm-km">{km}</span>
+        </h2>
+        {points.length > 0 && (
+          <ul className="rm-list">
+            {points.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+
+  const connector = <div className="rm-dot-connector" />;
+
+  return (
+    <div
+      className={`rm-item ${isRight ? "rm-right" : "rm-left"}`}
+      style={style}
+    >
+      {isRight ? (
+        <>
+          {connector}
+          {card}
+        </>
+      ) : (
+        <>
+          {card}
+          {connector}
+        </>
+      )}
+    </div>
+  );
+}
+
+function CheckpointSequenceCard({ checkpoint, index }) {
+  const orderNum = Number(checkpoint.order ?? index + 1);
+  const km = `(${checkpoint.km_start}–${checkpoint.km_end} KM)`;
+  const points = Array.isArray(checkpoint.description_points)
+    ? checkpoint.description_points
+    : [];
+
+  return (
+    <article className="rm-mobile-card">
+      <div className="rm-mobile-card-header">
+        <span className="rm-mobile-card-step">{orderNum}</span>
+        <div className="rm-mobile-card-copy">
+          <h2 className="rm-mobile-card-title">{checkpoint.title}</h2>
+          <p className="rm-mobile-card-km">{km}</p>
+        </div>
+      </div>
+
+      {(checkpoint.is_start || checkpoint.is_finish) && (
+        <div className="rm-mobile-card-badges">
+          {checkpoint.is_start && <span className="rm-mobile-card-badge">Start</span>}
+          {checkpoint.is_finish && (
+            <span className="rm-mobile-card-badge">Finish</span>
+          )}
+        </div>
+      )}
+
+      {points.length > 0 && (
+        <ul className="rm-mobile-card-list">
+          {points.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+    </article>
+  );
+}
+
+function MapEmptyState({ title, description }) {
+  return (
+    <div className="rm-checkpoints-empty" role="status">
+      <FiMapPin className="rm-checkpoints-empty-icon" aria-hidden />
+      <p className="rm-checkpoints-empty-title">{title}</p>
+      <p className="rm-checkpoints-empty-text">{description}</p>
+    </div>
+  );
+}
+
+const Map = () => {
+  const [activeCategory, setActiveCategory] = useState("");
+
+  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
+  const { data: categoriesRaw = [] } = useCategoriesQuery();
+
+  const eventId = activeEvent?._id;
+  const categories = useMemo(
+    () => normalizeCategories(categoriesRaw),
+    [categoriesRaw]
+  );
+  const categoryLabels = useMemo(
+    () => getCategoryLabelMap(categories),
+    [categories]
+  );
+
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    if (!activeCategory || !hasCategoryKey(categories, activeCategory)) {
+      setActiveCategory(getDefaultCategoryKey(categories));
+    }
+  }, [activeCategory, categories]);
+
+  const {
+    data: routes = [],
+    isFetching: routesLoading,
+    isSuccess: routesSuccess,
+  } = useQuery({
+    queryKey: ["rally", "routes", eventId, activeCategory],
+    queryFn: () => fetchRallyRoutes(eventId, activeCategory),
+    enabled: Boolean(eventId && activeCategory),
+  });
+
+  const primaryRoute = routes[0];
+  const title = primaryRoute?.title;
+  const distanceKm = primaryRoute?.total_distance_km;
+  const estimatedTime = primaryRoute?.estimated_time;
+  const routeId = primaryRoute?._id;
+
+  const {
+    data: checkpointsRaw = [],
+    isFetching: checkpointsLoading,
+    isSuccess: checkpointsSuccess,
+  } = useQuery({
+    queryKey: ["rally", "checkpoints", routeId],
+    queryFn: () => fetchRouteCheckpoints(routeId),
+    enabled: Boolean(routeId),
+  });
+
+  const checkpoints = useMemo(
+    () =>
+      [...checkpointsRaw].sort(
+        (a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)
+      ),
+    [checkpointsRaw]
+  );
+
+  const showCheckpointsEmpty =
+    Boolean(routeId) && checkpointsSuccess && checkpoints.length === 0;
+  const showRoutesEmpty = shouldShowRoutesEmpty({
+    eventId,
+    activeCategory,
+    routes,
+    routesSuccess,
+  });
+
+  const firstCp = checkpoints[0];
+  const lastCp = checkpoints[checkpoints.length - 1];
+  const showStartLabel = Boolean(firstCp?.is_start);
+  const showFinishLabel = Boolean(lastCp?.is_finish);
+
+  return (
+    <div className="rm-wrapper ">
+      <header className="rm-header">
+        <div className="rm-title-row">
+          <img
+            src="/assets/images/flag.png"
+            alt="flag"
+            className="w-10 md:w-20 rotate-y-180"
+          />
+          <p className="font-gilda text-[24px] md:text-[42px]">
+            {routesLoading && !title ? "…" : title ?? "—"}
+          </p>
+          <img src="/assets/images/flag.png" alt="flag" className="w-10 md:w-20" />
+        </div>
+        <div className="rm-stats">
+          <p>
+            Total Distance:{" "}
+            <strong>
+              {distanceKm != null ? `~${distanceKm} KM` : "—"}
+            </strong>
+          </p>
+          <p>
+            Estimated Time:{" "}
+            <strong>{estimatedTime ?? "—"}</strong>
+          </p>
+        </div>
+
+        <div className="rm-toggle-container max-w-full">
+          {categories.map((category) => (
+            <button
+              key={category.key}
+              type="button"
+              className={`rm-toggle-btn whitespace-nowrap ${
+                activeCategory === category.key ? "active" : ""
+              }`}
+              onClick={() => setActiveCategory(category.key)}
+            >
+              {categoryLabels[category.key]}
+            </button>
+          ))}
+        </div>
+      </header>
+
+      <div className="rm-canvas rm-canvas-desktop">
+        {!showRoutesEmpty && showStartLabel && (
+          <div className="rm-label-start" aria-hidden>
+            Start
+          </div>
+        )}
+        {!showRoutesEmpty && showFinishLabel && (
+          <div className="rm-label-finish" aria-hidden>
+            Finish
+          </div>
+        )}
+
+        {!showRoutesEmpty && (
+          <img
+            src="/assets/images/map_line.png"
+            alt="Rally Track"
+            className={`rm-road-img${checkpointsLoading ? " rm-road-img--dim" : ""}`}
+          />
+        )}
+
+        {showRoutesEmpty && (
+          <MapEmptyState
+            title="No route added yet"
+            description="A route has not been added for this category yet. Please check back later."
+          />
+        )}
+
+        {!showRoutesEmpty &&
+          showCheckpointsEmpty && (
+            <MapEmptyState
+              title="No checkpoints yet"
+              description="Checkpoints have not been added for this route. Please check back later."
+            />
+          )}
+
+        {!showRoutesEmpty &&
+          checkpoints.map((cp, index) => {
+            const orderNum = Number(cp.order ?? index + 1);
+            const side = orderNum % 2 === 1 ? "left" : "right";
+            const top = `${topPercentForIndex(index, checkpoints.length)}%`;
+            return (
+              <CheckpointBlock
+                key={cp._id}
+                checkpoint={cp}
+                side={side}
+                style={{ top }}
+              />
+            );
+          })}
+      </div>
+
+      <div className="rm-mobile-sequence">
+        {showRoutesEmpty && (
+          <MapEmptyState
+            title="No route added yet"
+            description="A route has not been added for this category yet. Please check back later."
+          />
+        )}
+
+        {!showRoutesEmpty &&
+          showCheckpointsEmpty && (
+            <MapEmptyState
+              title="No checkpoints yet"
+              description="Checkpoints have not been added for this route. Please check back later."
+            />
+          )}
+
+        {!showRoutesEmpty &&
+          !showCheckpointsEmpty &&
+          checkpoints.map((cp, index) => (
+            <CheckpointSequenceCard
+              key={cp._id}
+              checkpoint={cp}
+              index={index}
+            />
+          ))}
+      </div>
+    </div>
+  );
+};
+
+export default Map;

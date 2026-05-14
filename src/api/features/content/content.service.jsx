@@ -1,6 +1,31 @@
 import api from "../../axios";
+import rallyAxios from "../../rallyAxios.jsx";
 import ticketingApi from "../../ticketingAxios";
 import endpoints from "../../endpoints";
+
+export const getContentStaticOrigin = () => {
+  try {
+    const base = import.meta.env.VITE_RALLY_API_BASE_URL;
+    if (base) return new URL(base).origin;
+  } catch {
+    /* ignore */
+  }
+  return "http://localhost:3000";
+}
+
+export const resolveCategoryImageUrl = (image) => {
+  if (image == null || image === "") return null;
+
+  const trimmed = String(image).trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+
+  const normalizedPath = trimmed
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
+    .replace(/\/{2,}/g, "/");
+
+  return new URL(normalizedPath, `${getContentStaticOrigin()}/`).toString();
+}
 
 export const fetchContent = async (filters = {}) => {
   const queryParams = new URLSearchParams();
@@ -68,4 +93,12 @@ export const fetchServiceContent = async (id) => {
   const url = `${endpoints.content.getServiceContent(id)}`;
   const response = await ticketingApi.get(url)
   return response?.data?.data?.[0]?.content || null
+}
+
+export const fetchCategories = async () => {
+  const response = await rallyAxios.get(endpoints.categories.getAll);
+  if (!response?.data?.success) {
+    throw new Error(response?.data?.message || "Failed to load categories");
+  }
+  return response?.data?.data || [];
 }

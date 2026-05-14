@@ -64,7 +64,7 @@ const EventsCompetitions = () => {
   ];
 
   return (
-    <section className="py-10 bg-[#F2F7F2]">
+    <section className="py-10 bg-section">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-10">

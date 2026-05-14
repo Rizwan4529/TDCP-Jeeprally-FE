@@ -38,7 +38,7 @@
 }
 
 .service-header {
-  background-color: #48AA71;
+  background-color: var(--color-primary);
   padding: 15px 25px;
   color: #fff;
 }
@@ -166,7 +166,7 @@
 
 /* Checklist Box */
 .checklist-box {
-  background-color: #F4F9F4;
+  background-color: var(--color-section);
   padding: 40px;
   border-radius: 6px;
   display: grid;
@@ -187,7 +187,7 @@
 }
 
 .check-icon {
-  color: #48AA71;
+  color: var(--color-primary);
   font-size: 20px;
 }
 
