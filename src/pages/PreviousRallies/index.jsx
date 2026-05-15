@@ -1,144 +1,106 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import './PreviousRallies.css';
-import Partners from '../JeepRally/components/Partners';
-import AnimatedButton from '../../components/common/AnimatedButton';
+import React, { useEffect, useMemo, useState } from "react";
+import { FiArrowRight } from "react-icons/fi";
+import { Link } from "react-router";
+import flagStripedRace from "../../assets/images/flag-striped-race.png";
+import { useCategoriesQuery } from "../../api/features/content/hooks.jsx";
 import {
-    useCategoriesQuery,
-    useWebsiteContentQuery,
-} from '../../api/features/content/hooks.jsx';
-import {
-    getCategoryFilterTabs,
-    getDefaultCategoryKey,
-    hasCategoryKey,
-} from '../../utils/constants.js';
-import {
-    getWebsiteContentPage,
-    getWebsiteContentSection,
-} from '../../api/features/content/websiteContent.utils.js';
+  getCategoryFilterTabs,
+  getDefaultCategoryKey,
+  hasCategoryKey,
+} from "../../utils/constants.js";
+import Partners from "../JeepRally/components/Partners";
+import { PREVIOUS_RALLIES_LIST } from "./previousRallies.data.js";
+import "./PreviousRallies.css";
+
+const ViewDetailsButton = ({ to }) => (
+  <Link to={to} className="previous-rally-cta">
+    <span>View Details</span>
+    <span className="previous-rally-cta-icon">
+      <FiArrowRight />
+    </span>
+  </Link>
+);
+
+const PreviousRallyCard = ({ rally }) => {
+  const isFeatured = rally.variant === "featured";
+
+  return (
+    <article
+      className={`previous-rally-card ${
+        isFeatured ? "previous-rally-card-featured" : "previous-rally-card-compact"
+      }`}
+    >
+      <div className="previous-rally-image-wrap">
+        <span className="previous-rally-date">{rally.date}</span>
+        <img
+          src={rally.image}
+          alt={rally.title}
+          className="previous-rally-image"
+        />
+      </div>
+
+      <div className="previous-rally-body">
+        <h2 className="previous-rally-title">{rally.title}</h2>
+        <p className="previous-rally-description">{rally.description}</p>
+        <ViewDetailsButton to={rally.detailPath} />
+      </div>
+    </article>
+  );
+};
 
 const PreviousRallies = () => {
-    const [activeCategoryKey, setActiveCategoryKey] = useState('');
-    const { data: categoriesRaw = [] } = useCategoriesQuery();
-    const { data: websiteContent } = useWebsiteContentQuery();
-    const tabs = useMemo(() => getCategoryFilterTabs(categoriesRaw), [categoriesRaw]);
+  const [activeCategoryKey, setActiveCategoryKey] = useState("");
+  const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const tabs = useMemo(
+    () => getCategoryFilterTabs(categoriesRaw),
+    [categoriesRaw]
+  );
 
-    useEffect(() => {
-        if (tabs.length === 0) return;
+  useEffect(() => {
+    if (tabs.length === 0) return;
 
-        if (!activeCategoryKey || !hasCategoryKey(categoriesRaw, activeCategoryKey)) {
-            setActiveCategoryKey(getDefaultCategoryKey(categoriesRaw));
-        }
-    }, [activeCategoryKey, categoriesRaw, tabs.length]);
+    if (!activeCategoryKey || !hasCategoryKey(categoriesRaw, activeCategoryKey)) {
+      setActiveCategoryKey(getDefaultCategoryKey(categoriesRaw));
+    }
+  }, [activeCategoryKey, categoriesRaw, tabs.length]);
 
-    const previousRalliesPage = useMemo(
-        () => getWebsiteContentPage(websiteContent, "previousRallies"),
-        [websiteContent]
-    );
-    const heroContent = useMemo(
-        () => getWebsiteContentSection(previousRalliesPage, "hero"),
-        [previousRalliesPage]
-    );
-    const cardsContent = useMemo(
-        () => getWebsiteContentSection(previousRalliesPage, "cards"),
-        [previousRalliesPage]
-    );
+  return (
+    <div className="previous-page">
+      <div className="previous-shell">
+        <header className="previous-heading">
+          <img
+            src={flagStripedRace}
+            alt="Previous rallies"
+            className="previous-heading-art"
+          />
+          <h1 className="previous-heading-title">Previous Rallies</h1>
+        </header>
 
-    const rallies = cardsContent?.items?.length ? cardsContent.items : [
-        {
-            id: 1,
-            title: 'Toronto Motorcycle',
-            date: '31 AUGUST, 2025',
-            description: 'Room Service at TDCP resorts refers to the in-room dining facility that allows guests to order food and beverages.',
-            image: '/assets/images/jeep_3_1.jpg',
-            type: 'small'
-        },
-        {
-            id: 2,
-            title: 'Cholistan Desert Rally',
-            date: '31 AUGUST, 2025',
-            description: 'Room Service at TDCP resorts refers to the in-room dining facility that allows guests to order food and beverages.',
-            image: '/assets/images/dessert_2.png',
-            type: 'large'
-        },
-        {
-            id: 3,
-            title: 'Toronto Motorcycle',
-            date: '31 AUGUST, 2025',
-            description: 'Room Service at TDCP resorts refers to the in-room dining facility that allows guests to order food and beverages.',
-            image: '/assets/images/jeep_3_2.jpg',
-            type: 'small'
-        },
-        {
-            id: 4,
-            title: 'Toronto Motorcycle',
-            date: '31 AUGUST, 2025',
-            description: 'Room Service at TDCP resorts refers to the in-room dining facility that allows guests to order food and beverages.',
-            image: '/assets/images/jeep_3_3.jpg',
-            type: 'small'
-        },
-        {
-            id: 5,
-            title: 'Toronto Motorcycle',
-            date: '31 AUGUST, 2025',
-            description: 'Room Service at TDCP resorts refers to the in-room dining facility that allows guests to order food and beverages.',
-            image: '/assets/images/jeep_3_4.jpg',
-            type: 'small'
-        }
-    ];
-
-    return (
-        <div className="previous-page">
-            <div className="container previous-container">
-                {/* Header Section */}
-                <div className="previous-header">
-                    <img src={heroContent?.frameImage || "/assets/images/header-frame.png"} alt="pattern" className="header-frame" />
-                    <h1 className="previous-title">{heroContent?.title || "Previous Rallies"}</h1>
-                </div>
-
-                {/* Filter Tabs */}
-                <div className="players-filters flex overflow-x-auto no-scrollbar gap-2 md:gap-4 mb-12">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.key}
-                            className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${activeCategoryKey === tab.key
-                                ? 'bg-brand-green text-white shadow-md'
-                                : 'bg-white/50 text-gray-600 hover:bg-white'
-                                }`}
-                            onClick={() => setActiveCategoryKey(tab.key)}
-                        >
-                            {tab.title}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Rallies Grid */}
-                <div className="rallies-grid">
-                    {rallies.map((rally) => (
-                        <div
-                            key={rally.id}
-                            className={`rally-card ${rally.type === 'large' ? 'card-vertical' : 'card-horizontal'}`}
-                        >
-                            <div className="card-image-wrapper">
-                                <span className="date-tag">{rally.date}</span>
-                                <img src={rally.image} alt={rally.title} className="rally-img" />
-                            </div>
-                            <div className="card-content">
-                                <h2 className="card-title">{rally.title}</h2>
-                                <p className="card-description">{rally.description}</p>
-                                <AnimatedButton text={cardsContent?.ctaText || 'View Details'} />
-                                {/* <a href="#" className="view-details">
-                                    View Details 
-                                    <span className="arrow-icon">→</span>
-                                </a> */}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            <Partners />
+        <div className="previous-filter-row no-scrollbar">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`previous-filter-pill ${
+                activeCategoryKey === tab.key ? "is-active" : ""
+              }`}
+              onClick={() => setActiveCategoryKey(tab.key)}
+            >
+              {tab.title}
+            </button>
+          ))}
         </div>
-    );
+
+        <section className="previous-grid">
+          {PREVIOUS_RALLIES_LIST.map((rally) => (
+            <PreviousRallyCard key={rally.id} rally={rally} />
+          ))}
+        </section>
+      </div>
+
+      <Partners />
+    </div>
+  );
 };
 
 export default PreviousRallies;

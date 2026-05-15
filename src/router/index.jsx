@@ -9,6 +9,7 @@ import Rankings from "../pages/Rankings";
 import Players from "../pages/Players";
 import Player from "../pages/PlayerProfile";
 import PreviousRallies from "../pages/PreviousRallies";
+import PreviousRallyDetail from "../pages/PreviousRallies/Detail";
 import About from "../pages/About";
 import Services from "../pages/Services";
 import { useWebsiteContentQuery } from "../api/features/content/hooks.jsx";
@@ -57,6 +58,7 @@ function AppRouter() {
           <Route path="/competitor" element={<Players />} />
           <Route path="/player/:id" element={<Player />} />
           <Route path="/previous" element={<PreviousRallies />} />
+          <Route path="/previous/:rallyId" element={<PreviousRallyDetail />} />
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<Services />} />
 

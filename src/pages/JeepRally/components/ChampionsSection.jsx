@@ -3,17 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
-import {
-  getCategoryFilterTabs,
-  getDefaultCategoryKey,
-  hasCategoryKey,
-} from "../../../utils/constants.js";
+import { getCategoryFilterTabs } from "../../../utils/constants.js";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
 import {
   fetchRallyChampions,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
-import { shouldShowChampionsEmpty } from "./championsSection.utils.js";
+import {
+  resolveChampionsCategoryKey,
+  shouldShowChampionsEmpty,
+} from "./championsSection.utils.js";
 import {
   getWebsiteContentPage,
   getWebsiteContentSection,
@@ -37,7 +36,14 @@ const POSITION_STYLES = {
   },
 };
 
-const ChampionsSection = ({ content }) => {
+const ChampionsSection = ({
+  content,
+  forcedCategoryKey = "",
+  hideFilters = false,
+  sectionClassName = "",
+  titleClassName = "text-primary",
+  subtitleClassName = "text-gray-500",
+}) => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
   const { data: categoriesRaw = [] } = useCategoriesQuery();
   const { data: websiteContent } = useWebsiteContentQuery();
@@ -49,15 +55,16 @@ const ChampionsSection = ({ content }) => {
   const eventId = activeEvent?._id;
 
   useEffect(() => {
-    if (tabs.length === 0) return;
+    const resolvedCategoryKey = resolveChampionsCategoryKey({
+      categories: categoriesRaw,
+      activeCategoryKey,
+      forcedCategoryKey,
+    });
 
-    if (
-      !activeCategoryKey ||
-      !hasCategoryKey(categoriesRaw, activeCategoryKey)
-    ) {
-      setActiveCategoryKey(getDefaultCategoryKey(categoriesRaw));
+    if (resolvedCategoryKey && resolvedCategoryKey !== activeCategoryKey) {
+      setActiveCategoryKey(resolvedCategoryKey);
     }
-  }, [activeCategoryKey, categoriesRaw, tabs.length]);
+  }, [activeCategoryKey, categoriesRaw, forcedCategoryKey, tabs.length]);
 
   const { data: championsRaw = [], isSuccess: championsSuccess } = useQuery({
     queryKey: ["rally", "champions", eventId, activeCategoryKey],
@@ -112,33 +119,37 @@ const ChampionsSection = ({ content }) => {
   }, [content, websiteContent]);
 
   return (
-    <section className="py-10 md:py-10 bg-section">
+    <section className={`py-10 md:py-10 bg-section ${sectionClassName}`}>
       <div className="container mx-auto px-4 lg:px-20">
         {/* Header */}
         <div className="text-center mb-16 space-y-4">
-          <h2 className="font-gilda text-[32px] md:text-[42px] text-primary leading-tight">
+          <h2
+            className={`font-gilda text-[32px] md:text-[42px] leading-tight ${titleClassName}`}
+          >
             {resolvedContent?.title || "Champions of the Rally"}
           </h2>
-          <p className="para text-gray-500 max-w-2xl mx-auto">
+          <p className={`para max-w-2xl mx-auto ${subtitleClassName}`}>
             {resolvedContent?.subtitle || "Celebrating the top performers who conquered the desert track"}
           </p>
         </div>
         {/* Filters Section */}
-        <div className="players-filters flex justify-center overflow-x-auto no-scrollbar gap-2 md:gap-4 mb-12">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${
-                activeCategoryKey === tab.key
-                  ? "bg-secondary text-black shadow-md"
-                  : "bg-white/50 text-gray-600 hover:bg-white"
-              }`}
-              onClick={() => setActiveCategoryKey(tab.key)}
-            >
-              {tab.title}
-            </button>
-          ))}
-        </div>
+        {!hideFilters && (
+          <div className="players-filters flex justify-center overflow-x-auto no-scrollbar gap-2 md:gap-4 mb-12">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${
+                  activeCategoryKey === tab.key
+                    ? "bg-secondary text-black shadow-md"
+                    : "bg-white/50 text-gray-600 hover:bg-white"
+                }`}
+                onClick={() => setActiveCategoryKey(tab.key)}
+              >
+                {tab.title}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Podium Layout */}
         {showChampionsEmpty ? (
           <div className="mx-auto max-w-3xl rounded-[15px] border border-primary/10 bg-white/80 px-6 py-12 text-center shadow-sm">
