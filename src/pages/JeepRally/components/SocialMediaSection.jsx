@@ -6,6 +6,7 @@ import {
   TWITTER_ICON,
 } from "../../../assets";
 import { ensureExternalUrl } from "../../../api/features/content/websiteContent.utils.js";
+import { resolveImageUrl, handleImageError } from "../../../utils/constants.js";
 
 const DEFAULT_POSTS = [
   {
@@ -54,7 +55,7 @@ const SOCIAL_ICON_COMPONENTS = {
 
 function normalizePost(item) {
   return {
-    image: item?.image || "/assets/images/heroimg.png",
+    image: resolveImageUrl(item?.image, "/assets/images/heroimg.png"),
     alt: item?.title || "Social media post",
     title: item?.title || "TDCP Jeep Rally",
     description: item?.description || "see you in january, lahore....",
@@ -84,6 +85,7 @@ const SocialPostCard = ({ post, featured = false }) => (
             ? "h-[240px] md:h-[320px] xl:h-[380px]"
             : "h-[170px] md:h-[180px]"
         }`}
+        onError={handleImageError}
       />
       <InstagramBadge />
     </div>

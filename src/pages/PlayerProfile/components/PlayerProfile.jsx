@@ -138,14 +138,20 @@ const PlayerProfile = () => {
   const [expandedOtherRaces, setExpandedOtherRaces] = useState(0);
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const { data: categoriesRaw = [] } = useCategoriesQuery();
-  const eventId = activeEvent?._id;
+  const eventIdFromQuery = searchParams.get("eventId") || "";
+  const eventId = eventIdFromQuery || activeEvent?._id;
   const requestedCategory = searchParams.get("category") || "";
+  const isPastEventProfile = Boolean(eventIdFromQuery);
+
   const activeCategoryKey = useMemo(() => {
+    if (isPastEventProfile) {
+      return requestedCategory;
+    }
     if (hasCategoryKey(categoriesRaw, requestedCategory)) {
       return requestedCategory;
     }
     return getDefaultCategoryKey(categoriesRaw);
-  }, [categoriesRaw, requestedCategory]);
+  }, [categoriesRaw, isPastEventProfile, requestedCategory]);
 
   const fallbackProfile = useMemo(
     () =>
@@ -159,10 +165,16 @@ const PlayerProfile = () => {
       "champions",
       "player-profile",
       eventId,
-      activeCategoryKey,
+      activeCategoryKey || "all",
     ],
-    queryFn: () => fetchRallyChampions(eventId, activeCategoryKey),
-    enabled: Boolean(eventId && activeCategoryKey),
+    queryFn: () =>
+      fetchRallyChampions(
+        eventId,
+        activeCategoryKey || undefined,
+      ),
+    enabled: Boolean(
+      eventId && (isPastEventProfile || activeCategoryKey),
+    ),
     refetchOnWindowFocus: false,
   });
 

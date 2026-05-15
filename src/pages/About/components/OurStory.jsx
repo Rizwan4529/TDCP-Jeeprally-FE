@@ -2,6 +2,7 @@ import React from 'react'
 import {
     getWebsiteNestedSection,
 } from '../../../api/features/content/websiteContent.utils.js'
+import { resolveImageUrl, handleImageError } from '../../../utils/constants.js'
 
 const OurStory = ({ heroContent, introContent }) => {
     const visionContent = getWebsiteNestedSection(introContent, "vision");
@@ -15,7 +16,7 @@ const OurStory = ({ heroContent, introContent }) => {
                 <div
                     className="about-hero-bg"
                     style={{
-                        backgroundImage: `url('${heroContent?.bgImg || "/assets/images/s1.jpg"}')`,
+                        backgroundImage: `url('${resolveImageUrl(heroContent?.bgImg, "/assets/images/s1.jpg")}')`,
                     }}
                 ></div>
                 <div className="about-hero-overlay"></div>
@@ -59,9 +60,10 @@ const OurStory = ({ heroContent, introContent }) => {
                             <div className="stats-card">
                                 <div className="stats-img-wrapper">
                                     <img
-                                        src={cardContent.image}
+                                        src={resolveImageUrl(cardContent.image)}
                                         alt={cardContent.subTitle || "Rally Action"}
                                         className="stats-img"
+                                        onError={handleImageError}
                                     />
                                 </div>
                                 <div className="stats-content">

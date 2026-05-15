@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Button from "../../../components/common/Button";
 import RoughTexture1 from "../../../assets/images/rough-patches-1.png";
 import RoughTexture2 from "../../../assets/images/rough-patches-2.png";
+import { resolveImageUrl } from "../../../utils/constants.js";
 
 const HERO_TARGET_DATE = new Date("2027-01-14T00:00:00");
 
@@ -54,7 +55,7 @@ const Hero = ({ content }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft());
   const heroTitle = content?.title || DEFAULT_HERO_TITLE;
   const heroSubtitle = content?.subTitle || DEFAULT_HERO_SUBTITLE;
-  const heroBackgroundImage = content?.bgImg || "/assets/images/hero_1.jpg";
+  const heroBackgroundImage = resolveImageUrl(content?.bgImg, "/assets/images/hero_1.jpg");
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -1,34 +1,20 @@
 import rallyAxios from "../../rallyAxios.jsx";
-
-function resolveRallyStaticUrl(assetPath) {
-  if (assetPath == null || assetPath === "") return null;
-  const trimmed = String(assetPath).trim();
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  const normalized = trimmed.replace(/\\/g, "/");
-  const path = normalized.startsWith("/") ? normalized : `/${normalized}`;
-  return `${getRallyStaticOrigin()}${path}`;
-}
+import { getBackendOrigin, resolveImageUrl } from "../../../utils/constants.js";
 
 /** Origin for static uploads (served from app root, not under `/api/v1`). */
 export function getRallyStaticOrigin() {
-  try {
-    const base = import.meta.env.VITE_RALLY_API_BASE_URL;
-    if (base) return new URL(base).origin;
-  } catch {
-    /* ignore */
-  }
-  return "http://localhost:3000";
+  return getBackendOrigin();
 }
 
 /**
  * Turns API paths like `uploads\\images\\file.png` into a full URL on the backend origin.
  */
 export function resolveCheckpointImageUrl(image) {
-  return resolveRallyStaticUrl(image);
+  return resolveImageUrl(image);
 }
 
 export function resolveRallyVideoUrl(videoUrl) {
-  return resolveRallyStaticUrl(videoUrl);
+  return resolveImageUrl(videoUrl, null);
 }
 
 export async function fetchActiveRally() {
@@ -37,6 +23,14 @@ export async function fetchActiveRally() {
     throw new Error(data?.message || "Failed to load active rally");
   }
   return data.data;
+}
+
+export async function fetchPastRallies() {
+  const { data } = await rallyAxios.get("/rally", { params: { type: "past" } });
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load past rallies");
+  }
+  return data.data ?? [];
 }
 
 export async function fetchRallyRoutes(eventId, category) {
@@ -103,7 +97,7 @@ export async function fetchRallyRankings(eventId, category) {
 
 export async function fetchRallyChampions(eventId, category) {
   const { data } = await rallyAxios.get(`/rally/${eventId}/champions`, {
-    params: { category },
+    params: category ? { category } : undefined,
   });
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load champions");

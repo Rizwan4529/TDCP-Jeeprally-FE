@@ -86,6 +86,7 @@ function VideoTile({
 const AdventureSection = ({ content }) => {
   const videoRefs = useRef(new Map());
   const swiperRef = useRef(null);
+  const [swiperInstance, setSwiperInstance] = useState(null);
   const prevButtonRef = useRef(null);
   const nextButtonRef = useRef(null);
   const [activeVideoId, setActiveVideoId] = useState(null);
@@ -125,7 +126,14 @@ const AdventureSection = ({ content }) => {
   const canNavigate = shouldShowAdventureCarouselControls(videos);
 
   useEffect(() => {
-    const swiper = swiperRef.current;
+    if (!canNavigate) {
+      setSwiperInstance(null);
+      swiperRef.current = null;
+    }
+  }, [canNavigate]);
+
+  useEffect(() => {
+    const swiper = swiperInstance;
     if (
       !swiper ||
       !canNavigate ||
@@ -133,6 +141,10 @@ const AdventureSection = ({ content }) => {
       !nextButtonRef.current
     ) {
       return;
+    }
+
+    if (!swiper.params.navigation) {
+      swiper.params.navigation = {};
     }
 
     swiper.params.navigation.prevEl = prevButtonRef.current;
@@ -145,7 +157,7 @@ const AdventureSection = ({ content }) => {
     }
 
     swiper.update();
-  }, [canNavigate, videoSlides.length]);
+  }, [swiperInstance, canNavigate, videoSlides.length]);
 
   const pauseVideoById = useCallback((videoId) => {
     const videoNode = videoRefs.current.get(videoId);
@@ -280,6 +292,7 @@ const AdventureSection = ({ content }) => {
             modules={[Navigation]}
             onSwiper={(swiper) => {
               swiperRef.current = swiper;
+              setSwiperInstance(swiper);
             }}
             navigation={
               canNavigate

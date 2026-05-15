@@ -2,30 +2,11 @@ import api from "../../axios";
 import rallyAxios from "../../rallyAxios.jsx";
 import ticketingApi from "../../ticketingAxios";
 import endpoints from "../../endpoints";
+import { getBackendOrigin, resolveImageUrl } from "../../../utils/constants.js";
 
-export const getContentStaticOrigin = () => {
-  try {
-    const base = import.meta.env.VITE_RALLY_API_BASE_URL;
-    if (base) return new URL(base).origin;
-  } catch {
-    /* ignore */
-  }
-  return "http://localhost:3000";
-}
+export const getContentStaticOrigin = () => getBackendOrigin();
 
-export const resolveCategoryImageUrl = (image) => {
-  if (image == null || image === "") return null;
-
-  const trimmed = String(image).trim();
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-
-  const normalizedPath = trimmed
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "")
-    .replace(/\/{2,}/g, "/");
-
-  return new URL(normalizedPath, `${getContentStaticOrigin()}/`).toString();
-}
+export const resolveCategoryImageUrl = (image) => resolveImageUrl(image);
 
 export const fetchContent = async (filters = {}) => {
   const queryParams = new URLSearchParams();
@@ -40,9 +21,9 @@ export const fetchContent = async (filters = {}) => {
 
   const url = `${endpoints.content.getContent}?${queryParams.toString()}`;
 
-  const response = await api.get(url)
-  return response.data?.content || []
-}
+  const response = await api.get(url);
+  return response.data?.content || [];
+};
 
 export const fetchAllContent = async (filters = {}) => {
   const queryParams = new URLSearchParams();
@@ -53,9 +34,9 @@ export const fetchAllContent = async (filters = {}) => {
     queryParams.append("districtId", filters.districtId);
   }
   const url = `${endpoints.content.getAllContent}?${queryParams.toString()}`;
-  const response = await api.get(url)
-  return response.data?.contents || []
-}
+  const response = await api.get(url);
+  return response.data?.contents || [];
+};
 
 export const fetchNamesList = async (filters = {}) => {
   const queryParams = new URLSearchParams();
@@ -67,33 +48,33 @@ export const fetchNamesList = async (filters = {}) => {
 
   const url = `${endpoints.content.getNameList}?${queryParams.toString()}`;
 
-  const response = await api.get(url)
-  return response.data?.results || []
-}
+  const response = await api.get(url);
+  return response.data?.results || [];
+};
 
 export const fetchAvailableSitesLinks = async () => {
   const url = `${endpoints.content.getAvailableSitesLinks}`;
-  const response = await api.get(url)
-  return response.data?.links || []
-}
+  const response = await api.get(url);
+  return response.data?.links || [];
+};
 
 export const fetchContentBySubCategory = async (subCategory) => {
   const url = `${endpoints.content.getContentBySubCategory(subCategory)}`;
-  const response = await api.get(url)
-  return response?.data?.data || []
-}
+  const response = await api.get(url);
+  return response?.data?.data || [];
+};
 
 export const fetchContentByCategory = async (category, type) => {
   const url = `${endpoints.content.getContentByCategory(category, type)}`;
-  const response = await api.get(url)
-  return response?.data?.data || []
-}
+  const response = await api.get(url);
+  return response?.data?.data || [];
+};
 
 export const fetchServiceContent = async (id) => {
   const url = `${endpoints.content.getServiceContent(id)}`;
-  const response = await ticketingApi.get(url)
-  return response?.data?.data?.[0]?.content || null
-}
+  const response = await ticketingApi.get(url);
+  return response?.data?.data?.[0]?.content || null;
+};
 
 export const fetchCategories = async () => {
   const response = await rallyAxios.get(endpoints.categories.getAll);
@@ -101,4 +82,4 @@ export const fetchCategories = async () => {
     throw new Error(response?.data?.message || "Failed to load categories");
   }
   return response?.data?.data || [];
-}
+};

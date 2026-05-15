@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveImageUrl, handleImageError } from '../../../utils/constants.js';
 
 const DEFAULT_FEATURES = [
         {
@@ -26,7 +27,7 @@ const DEFAULT_FEATURES = [
 const WhyExperience = ({ content }) => {
     const features = content?.items?.length
         ? content.items.map((item) => ({
-            icon: item?.image || '/assets/images/ic1.png',
+            icon: resolveImageUrl(item?.image, '/assets/images/ic1.png'),
             title: item?.title || 'Feature',
             desc: item?.subTitle || '',
         }))
@@ -46,9 +47,10 @@ const WhyExperience = ({ content }) => {
                             <div className="solid-circle"></div>
                             {/* The Jeep Image */}
                             <img
-                                src={content?.image || "/assets/images/yellow-jeep.png"}
+                                src={resolveImageUrl(content?.image, "/assets/images/yellow-jeep.png")}
                                 alt={content?.title || "Yellow Jeep"}
                                 className="relative z-10 w-full max-w-[500px] h-auto drop-shadow-2xl"
+                                onError={handleImageError}
                             />
                             {/* Green Indicator Dot */}
                             <div className="green-indicator"></div>
@@ -73,7 +75,7 @@ const WhyExperience = ({ content }) => {
                                 {features.map((feature, index) => (
                                     <div key={index} className="feature-item flex items-start gap-4">
                                         <div className="feature-icon-wrapper flex-shrink-0">
-                                            <img src={feature.icon} alt={feature.title} className="w-12 h-12 pt-2" />
+                                            <img src={feature.icon} alt={feature.title} className="w-12 h-12 pt-2" onError={handleImageError} />
                                         </div>
                                         <div className="feature-text">
                                             <h3 className="feature-title text-xl font-gilda text-[#222] mb-2">

@@ -1,15 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { FiArrowRight } from "react-icons/fi";
 import { Link } from "react-router";
 import flagStripedRace from "../../assets/images/flag-striped-race.png";
+import { fetchPastRallies } from "../../api/features/rally/rally.service.jsx";
 import { useCategoriesQuery } from "../../api/features/content/hooks.jsx";
 import {
   getCategoryFilterTabs,
   getDefaultCategoryKey,
+  handleImageError,
   hasCategoryKey,
 } from "../../utils/constants.js";
 import Partners from "../JeepRally/components/Partners";
-import { PREVIOUS_RALLIES_LIST } from "./previousRallies.data.js";
+import { mapPastRallyToListingCard } from "./previousRallies.utils.js";
 import "./PreviousRallies.css";
 
 const ViewDetailsButton = ({ to }) => (
@@ -36,6 +39,7 @@ const PreviousRallyCard = ({ rally }) => {
           src={rally.image}
           alt={rally.title}
           className="previous-rally-image"
+          onError={handleImageError}
         />
       </div>
 
@@ -51,9 +55,24 @@ const PreviousRallyCard = ({ rally }) => {
 const PreviousRallies = () => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
   const { data: categoriesRaw = [] } = useCategoriesQuery();
+  const {
+    data: pastRalliesRaw = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["rally", "past"],
+    queryFn: fetchPastRallies,
+    refetchOnWindowFocus: false,
+  });
+
   const tabs = useMemo(
     () => getCategoryFilterTabs(categoriesRaw),
-    [categoriesRaw]
+    [categoriesRaw],
+  );
+
+  const rallies = useMemo(
+    () => pastRalliesRaw.map(mapPastRallyToListingCard),
+    [pastRalliesRaw],
   );
 
   useEffect(() => {
@@ -92,9 +111,28 @@ const PreviousRallies = () => {
         </div>
 
         <section className="previous-grid">
-          {PREVIOUS_RALLIES_LIST.map((rally) => (
-            <PreviousRallyCard key={rally.id} rally={rally} />
-          ))}
+          {isPending && (
+            <p className="col-span-full text-center text-gray-500 py-12">
+              Loading previous rallies…
+            </p>
+          )}
+          {isError && (
+            <p className="col-span-full text-center text-red-600 py-12">
+              Could not load previous rallies. Please try again later.
+            </p>
+          )}
+          {!isPending &&
+            !isError &&
+            rallies.length === 0 && (
+              <p className="col-span-full text-center text-gray-500 py-12">
+                No previous rallies available yet.
+              </p>
+            )}
+          {!isPending &&
+            !isError &&
+            rallies.map((rally) => (
+              <PreviousRallyCard key={rally.id} rally={rally} />
+            ))}
         </section>
       </div>
 

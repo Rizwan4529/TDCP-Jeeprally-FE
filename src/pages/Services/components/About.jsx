@@ -1,5 +1,6 @@
 import React from 'react';
 import '../Tours.css';
+import { resolveImageUrl, handleImageError } from '../../../utils/constants.js';
 
 const DEFAULT_CHECKLIST_ITEMS = [
     '120+ Professional Racing Events',
@@ -24,7 +25,7 @@ const About = ({
             <section className="about-hero">
                 <div
                     className="about-hero-bg"
-                    style={{ backgroundImage: `url('${heroContent?.bgImg || "/assets/images/jeep_5_1.jpg"}')` }}
+                    style={{ backgroundImage: `url('${resolveImageUrl(heroContent?.bgImg, "/assets/images/jeep_5_1.jpg")}')` }}
                 ></div>
                 <div className="about-hero-overlay"></div>
                 <div className="container mx-auto px-4 md:px-20 about-hero-content">
@@ -92,7 +93,7 @@ const About = ({
 
                         {/* Main Section (Right) */}
                         <div className="tour-main-content">
-                            <img src={mainContent?.image || "/assets/images/jeep_5_3.jpg"} alt={mainContent?.title || "Rally Car"} className="tour-featured-img" />
+                            <img src={resolveImageUrl(mainContent?.image, "/assets/images/jeep_5_3.jpg")} alt={mainContent?.title || "Rally Car"} className="tour-featured-img" onError={handleImageError} />
 
                             <h2 className="tour-title">{mainContent?.title || "Cholistan Desert Rally"}</h2>
 

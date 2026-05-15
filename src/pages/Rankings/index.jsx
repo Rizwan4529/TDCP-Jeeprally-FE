@@ -7,6 +7,8 @@ import {
   getDefaultCategoryKey,
   hasCategoryKey,
   normalizeCategories,
+  resolveImageUrl,
+  handleImageError,
 } from "../../utils/constants.js";
 import { fetchRallyRankings } from "../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../api/features/rally/rally.queryOptions.jsx";
@@ -119,9 +121,10 @@ const Rankings = () => {
           <div className="rankings-banner">
             <div className="banner-frame-container">
               <img
-                src={heroContent?.frameImage || "/assets/images/frame.png"}
+                src={resolveImageUrl(heroContent?.frameImage, "/assets/images/frame.png")}
                 alt="TDCP Jeep Rally Frame"
                 className="banner-frame-img"
+                onError={handleImageError}
               />
               <div className="banner-text-overlay">
                 <h1 className="banner-title">{heroContent?.title || "TDCP JEEP RALLY"}</h1>
@@ -169,9 +172,10 @@ const Rankings = () => {
             <div className="table-title-bar">
               <h2>{tableChromeContent?.tableTitle || "Team Standing"}</h2>
               <img
-                src={tableChromeContent?.headerPatternImage || "/assets/images/head.png"}
+                src={resolveImageUrl(tableChromeContent?.headerPatternImage, "/assets/images/head.png")}
                 alt="pattern"
                 className="header-pattern"
+                onError={handleImageError}
               />
             </div>
             <table className="rankings-table">
@@ -241,9 +245,10 @@ const Rankings = () => {
           <div className="rankings-footer">
             <div className="footer-flags-wrapper">
               <img
-                src={tableChromeContent?.footerFlagImage || "/assets/images/flag_black.png"}
+                src={resolveImageUrl(tableChromeContent?.footerFlagImage, "/assets/images/flag_black.png")}
                 alt="flag"
                 className="w-20 md:w-60 "
+                onError={handleImageError}
               />
             </div>
           </div>

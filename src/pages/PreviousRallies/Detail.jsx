@@ -1,20 +1,59 @@
 import React, { useMemo } from "react";
 import { FiCheck } from "react-icons/fi";
+import { useQuery } from "@tanstack/react-query";
 import { Navigate, useParams } from "react-router";
 import RoughTexture1 from "../../assets/images/rough-patches-1.png";
 import RoughTexture2 from "../../assets/images/rough-patches-2.png";
+import { fetchPastRallies } from "../../api/features/rally/rally.service.jsx";
+import { handleImageError } from "../../utils/constants.js";
 import ChampionsSection from "../JeepRally/components/ChampionsSection";
 import Partners from "../JeepRally/components/Partners";
 import RecentGallery from "../JeepRally/components/RecentGallery";
 import {
-  DEFAULT_PREVIOUS_RALLY_ID,
-  getPreviousRallyDetail,
-} from "./previousRallies.data.js";
+  findPastRallyById,
+  mapPastRallyToDetail,
+} from "./previousRallies.utils.js";
 import "./PreviousRallyDetail.css";
 
 const PreviousRallyDetail = () => {
-  const { rallyId = DEFAULT_PREVIOUS_RALLY_ID } = useParams();
-  const detail = useMemo(() => getPreviousRallyDetail(rallyId), [rallyId]);
+  const { rallyId } = useParams();
+  const {
+    data: pastRalliesRaw = [],
+    isPending,
+    isError,
+  } = useQuery({
+    queryKey: ["rally", "past"],
+    queryFn: fetchPastRallies,
+    refetchOnWindowFocus: false,
+  });
+
+  const rally = useMemo(
+    () => findPastRallyById(pastRalliesRaw, rallyId),
+    [pastRalliesRaw, rallyId],
+  );
+
+  const detail = useMemo(
+    () => (rally ? mapPastRallyToDetail(rally) : null),
+    [rally],
+  );
+
+  if (isPending) {
+    return (
+      <div className="previous-rally-detail-page flex min-h-[50vh] items-center justify-center">
+        <p className="text-gray-500">Loading rally details…</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="previous-rally-detail-page flex min-h-[50vh] items-center justify-center">
+        <p className="text-red-600">
+          Could not load rally details. Please try again later.
+        </p>
+      </div>
+    );
+  }
 
   if (!detail) {
     return <Navigate to="/previous" replace />;
@@ -26,7 +65,7 @@ const PreviousRallyDetail = () => {
     promoBannerContent,
     mainContent,
     championsContent,
-    championsCategoryKey,
+    eventId,
   } = detail;
 
   return (
@@ -38,7 +77,7 @@ const PreviousRallyDetail = () => {
         />
         <div className="previous-rally-detail-hero-overlay" />
         <div className="container mx-auto px-4 md:px-20 previous-rally-detail-hero-content">
-          <h1 className="previous-rally-detail-hero-title">
+          <h1 className="previous-rally-detail-hero-title whitespace-pre-line">
             {heroContent.title}
           </h1>
         </div>
@@ -88,10 +127,9 @@ const PreviousRallyDetail = () => {
               >
                 <div className="previous-rally-detail-promo-overlay" />
                 <div className="previous-rally-detail-promo-content">
-                  <h2>{promoBannerContent.title}</h2>
-                  {promoBannerContent.subTitle ? (
-                    <p>{promoBannerContent.subTitle}</p>
-                  ) : null}
+                  <h2 className="whitespace-pre-line">
+                    {promoBannerContent.title}
+                  </h2>
                 </div>
               </div>
             </aside>
@@ -101,6 +139,7 @@ const PreviousRallyDetail = () => {
                 src={mainContent.image}
                 alt={mainContent.title}
                 className="previous-rally-detail-featured-image"
+                onError={handleImageError}
               />
 
               <h2 className="previous-rally-detail-title">
@@ -142,8 +181,8 @@ const PreviousRallyDetail = () => {
 
       <ChampionsSection
         content={championsContent}
-        forcedCategoryKey={championsCategoryKey}
-        hideFilters
+        eventId={eventId}
+        useApiCategories
         titleClassName="text-black"
         subtitleClassName="text-[#6f6f6f]"
       />
