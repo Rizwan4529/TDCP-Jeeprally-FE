@@ -32,14 +32,14 @@ const DestinationSlot = ({ data, isLarge = false }) => {
     <div
       className={`
         transition-all duration-700 ease-in-out
-        ${isLarge ? 'flex-[1.4] h-[480px] md:h-[550px]' : 'flex-1 h-[380px] md:h-[450px]'}
+        ${isLarge ? "flex-[1.4] h-[480px] md:h-[550px]" : "flex-1 h-[380px] md:h-[450px]"}
         relative group cursor-pointer
       `}
     >
       <div
         className={`
           w-full h-full rounded-md overflow-hidden shadow-sm group-hover:shadow-2xl transition-all duration-500
-          ${isTransitioning ? 'opacity-80 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}
+          ${isTransitioning ? "opacity-80 scale-95 blur-sm" : "opacity-100 scale-100 blur-0"}
         `}
       >
         <img
@@ -48,7 +48,9 @@ const DestinationSlot = ({ data, isLarge = false }) => {
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
         />
       </div>
-      <div className={`mt-6 transition-all duration-500 ${isTransitioning ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}>
+      <div
+        className={`mt-6 transition-all duration-500 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}
+      >
         <h3 className="text-2xl font-gilda text-black group-hover:text-brand-green transition-colors">
           {displayData.title}
         </h3>
@@ -97,7 +99,7 @@ const Destinations = ({ content }) => {
   }
 
   return (
-    <section className="py-12 bg-section">
+    <section className="py-section-break bg-section">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-16 px-4">
           <h2 className="text-[29px] md:text-[42px] font-gilda text-black">

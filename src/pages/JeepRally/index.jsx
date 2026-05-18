@@ -27,7 +27,7 @@ const JeepRally = () => {
   );
 
   return (
-    <div className="bg-white">
+    <div className="bg-white overflow-x-clip">
       <HeroReveal>
         <Hero content={getWebsiteContentSection(homePage, "hero")} />
       </HeroReveal>
@@ -47,6 +47,7 @@ const JeepRally = () => {
       <ScrollReveal variant="scaleIn" duration={0.8}>
         <ChampionsSection
           content={getWebsiteContentSection(homePage, "champions")}
+          filterCategoriesWithChampions
         />
       </ScrollReveal>
 

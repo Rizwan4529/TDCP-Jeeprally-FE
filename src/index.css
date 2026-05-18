@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Gilda+Display&family=Manrope:wght@200..800&family=Nanum+Myeongjo&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Gilda+Display&family=Manrope:wght@200..800&family=Nanum+Myeongjo:wght@400;700;800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Germania+One&display=swap");
 @import url("https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.core.css");
 @import "tailwindcss";
@@ -7,14 +7,14 @@
 @theme {
   --container: 1536px;
 
-  --color-primary: #B44423;
-  --color-primary-dark: #91371D;
-  --color-secondary: #F9DA4A;
-  --color-secondary-soft: #FBE79C;
-  --color-accent: #F9DA4A;
-  --color-brand-green: #B44423;
-  --color-brand-green-hover: #91371D;
-  --color-section: #FFF7D8;
+  --color-primary: #b44423;
+  --color-primary-dark: #91371d;
+  --color-secondary: #f9da4a;
+  --color-secondary-soft: #fbe79c;
+  --color-accent: #f9da4a;
+  --color-brand-green: #b44423;
+  --color-brand-green-hover: #91371d;
+  --color-section: #fdfbef;
 
   --spacing-sm: 0.5rem;
   /* 8px */
@@ -24,18 +24,24 @@
   /* 40px */
   --spacing-xl: 3.125rem;
   /* 50px */
+  --spacing-section-break: 80px;
 
   --font-sans: "Poppins", sans-serif;
   --font-manrope: "Manrope", sans-serif;
   --font-gilda: "Gilda Display", serif;
   --font-nanum: "Nanum Myeongjo", serif;
+  --font-nanum-myeongjo: "Nanum Myeongjo", serif;
   --font-germania: "Germania One", serif;
 }
 
 @layer base {
+  html,
+  body {
+    @apply overflow-x-hidden;
+  }
+
   body {
     font-family: var(--font-sans);
-    @apply overflow-x-hidden;
     /* Poppins by default */
   }
 }
@@ -61,8 +67,9 @@
     font-family: var(--font-germania);
   }
 
-  .font-nanum {
-    font-family: var(--font-nanum);
+  .font-nanum,
+  .font-nanum-myeongjo {
+    font-family: var(--font-nanum-myeongjo);
   }
 
   .hero-heading {
@@ -86,11 +93,11 @@
   }
 
   .extra-b-margin {
-    @apply md:mb-[35px]
+    @apply md:mb-[35px];
   }
 
   .extra-block-margin {
-    @apply md:my-[50px]
+    @apply md:my-[50px];
   }
 
   .text-muted {
@@ -101,16 +108,20 @@
     @apply py-8 md:px-20 md:py-12;
   }
 
+  .section-break {
+    @apply mt-section-break;
+  }
+
   .spacing-y-sm {
-    @apply space-y-2
+    @apply space-y-2;
   }
 
   .spacing-y-md {
-    @apply space-y-2 md:space-y-4
+    @apply space-y-2 md:space-y-4;
   }
 
   .g-md {
-    @apply gap-4 md:gap-8
+    @apply gap-4 md:gap-8;
   }
 
   .traveller-photo-gallery-swiper .swiper {
@@ -160,7 +171,7 @@
 
   /* Search result highlighting */
   mark {
-    background-color: #F9DA4A;
+    background-color: #f9da4a;
     color: inherit;
     padding: 0 2px;
     border-radius: 2px;
@@ -187,8 +198,12 @@
 
 /* Partners Marquee Animation */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {

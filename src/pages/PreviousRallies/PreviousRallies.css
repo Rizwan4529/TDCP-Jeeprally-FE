@@ -32,43 +32,6 @@
   color: #101010;
 }
 
-.previous-filter-row {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  margin-bottom: 42px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-}
-
-.previous-filter-pill {
-  min-width: 130px;
-  padding: 12px 28px;
-  border: none;
-  border-radius: 999px;
-  background: #eef0f6;
-  color: #848484;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-  white-space: nowrap;
-}
-
-.previous-filter-pill:hover {
-  transform: translateY(-1px);
-}
-
-.previous-filter-pill.is-active {
-  background: var(--color-primary);
-  color: #fff;
-  box-shadow: 0 8px 18px rgba(180, 68, 35, 0.22);
-}
-
 .previous-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -210,13 +173,6 @@
     width: min(1180px, calc(100% - 32px));
   }
 
-  .previous-filter-row {
-    justify-content: flex-start;
-  }
-
-  .previous-filter-pill {
-    min-width: 150px;
-  }
 }
 
 @media (max-width: 991px) {
@@ -254,17 +210,6 @@
 
   .previous-heading-title {
     font-size: 2.1rem;
-  }
-
-  .previous-filter-row {
-    gap: 12px;
-    margin-bottom: 26px;
-  }
-
-  .previous-filter-pill {
-    min-width: 128px;
-    padding: 11px 18px;
-    font-size: 13px;
   }
 
   .previous-rally-card-compact {

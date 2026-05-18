@@ -1,18 +1,25 @@
-export const ADVENTURE_VIDEO_SLOT_COUNT = 5;
+import {
+  canNavigateSlidingWindow,
+  DEFAULT_SLIDING_WINDOW_SIZE,
+  getWindowDirection,
+  getWindowItems,
+  normalizeWindowOffset,
+} from "../../../utils/slidingWindowCarousel.utils.js";
 
-export function chunkAdventureVideos(videos = []) {
-  if (!Array.isArray(videos) || videos.length === 0) return [[]];
+export const ADVENTURE_VIDEO_SLOT_COUNT = DEFAULT_SLIDING_WINDOW_SIZE;
 
-  const chunks = [];
-  for (let index = 0; index < videos.length; index += ADVENTURE_VIDEO_SLOT_COUNT) {
-    chunks.push(videos.slice(index, index + ADVENTURE_VIDEO_SLOT_COUNT));
-  }
-  return chunks;
-}
+export const normalizeAdventureWindowOffset = normalizeWindowOffset;
+export const getAdventureWindowDirection = getWindowDirection;
+export const getAdventureWindowVideos = getWindowItems;
+export const shouldShowAdventureSection = (videos = []) =>
+  Array.isArray(videos) && videos.length >= ADVENTURE_VIDEO_SLOT_COUNT;
 
-export function shouldShowAdventureCarouselControls(videos = []) {
-  return Array.isArray(videos) && videos.length > ADVENTURE_VIDEO_SLOT_COUNT;
-}
+export const shouldShowAdventureCarouselControls = (videos = []) =>
+  canNavigateSlidingWindow(videos, ADVENTURE_VIDEO_SLOT_COUNT);
+
+/** Dots when there are more videos than visible slots (window size). */
+export const shouldShowAdventureDotPagination = (videos = []) =>
+  shouldShowAdventureCarouselControls(videos);
 
 export function getAdventureVideoColumns(slideVideos = []) {
   return {

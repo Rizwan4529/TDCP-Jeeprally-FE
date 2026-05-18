@@ -26,7 +26,7 @@ const Layout = () => {
     <>
       <ActiveRallySync />
       <Header />
-      <main>
+      <main className="overflow-x-clip">
         <Outlet />
       </main>
       <Footer />

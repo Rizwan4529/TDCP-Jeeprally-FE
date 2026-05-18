@@ -62,7 +62,7 @@ export default function ScrollReveal({
 
   return (
     <Component
-      className={className}
+      className={`overflow-x-clip ${className}`.trim()}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount, margin: "0px 0px -40px 0px" }}

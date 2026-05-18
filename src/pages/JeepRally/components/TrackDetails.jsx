@@ -2,9 +2,9 @@ import React from "react";
 
 const TrackDetails = ({ content }) => {
   return (
-    <section className="py-8 bg-white relative overflow-hidden">
+    <section className="py-section-break bg-section relative overflow-hidden">
       {/* Decorative Finish Pattern */}
-      <div className="absolute top-0 right-0 w-64 h-64 opacity-5 pointer-events-none -translate-y-12 translate-x-12">
+      <div className="absolute top-0 right-0 h-64 w-64 -translate-y-12 opacity-5 pointer-events-none">
         <div
           className="w-full h-full"
           style={{

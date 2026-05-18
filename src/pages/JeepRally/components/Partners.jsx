@@ -34,7 +34,7 @@ const Partners = ({ content }) => {
   });
   const resolvedContent = useMemo(
     () => content || getWebsiteContentPage(websiteContent, "partners"),
-    [content, websiteContent]
+    [content, websiteContent],
   );
 
   const partnerSlots = useMemo(() => {
@@ -69,7 +69,7 @@ const Partners = ({ content }) => {
   }, [partnerSlots]);
 
   return (
-    <section className="py-10 bg-section overflow-hidden">
+    <section className="py-section-break bg-section overflow-hidden">
       <div className="container mx-auto px-4 mb-10">
         <h2 className="text-[29px] md:text-[42px] font-gilda text-black text-center">
           {resolvedContent?.title || "Our Partners"}

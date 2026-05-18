@@ -43,15 +43,15 @@ const Header = () => {
   const hash = location.hash;
   const siteHeaderPage = useMemo(
     () => getWebsiteContentPage(websiteContent, "siteHeader"),
-    [websiteContent]
+    [websiteContent],
   );
   const topBarSection = useMemo(
     () => getWebsiteContentSection(siteHeaderPage, "topBar"),
-    [siteHeaderPage]
+    [siteHeaderPage],
   );
   const primaryNavSection = useMemo(
     () => getWebsiteContentSection(siteHeaderPage, "primaryNav"),
-    [siteHeaderPage]
+    [siteHeaderPage],
   );
   const utilityLinks = useMemo(() => {
     const links = getWebsiteSectionItems(topBarSection, "utilityLinks");
@@ -149,14 +149,17 @@ const Header = () => {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="bg-primary text-white">
-        <div className="mx-auto hidden h-7 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 text-[10px] lg:grid xl:px-10">
+        <div className="mx-auto hidden h-11 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-6 text-[14px] lg:grid xl:px-10">
           <div className="flex items-center gap-3 whitespace-nowrap">
             {utilityLinks.map((link, index) => (
-              <div key={link.id ?? link.title} className="flex items-center gap-3">
+              <div
+                key={link.id ?? link.title}
+                className="flex items-center gap-3"
+              >
                 {index > 0 && <span className="h-3 w-px bg-white/40" />}
                 {renderLink(
                   link,
-                  "transition-opacity duration-200 hover:opacity-80"
+                  "transition-opacity duration-200 hover:opacity-80",
                 )}
               </div>
             ))}
@@ -169,7 +172,7 @@ const Header = () => {
                 href={social.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-opacity duration-200 hover:opacity-80"
+                className="transition-opacity duration-200 hover:opacity-80 border border-white rounded-full p-2"
               >
                 <social.icon className="size-3.5" />
               </a>
@@ -178,7 +181,7 @@ const Header = () => {
 
           <div className="flex items-center justify-end gap-6 whitespace-nowrap">
             <span className="tracking-[0.02em]">
-              helpline:{contactInfo.helpline}
+              Helpline: {contactInfo.helpline}
             </span>
             <span>{contactInfo.phone}</span>
           </div>
@@ -186,7 +189,7 @@ const Header = () => {
 
         <div className="flex h-7 items-center justify-between px-4 text-[10px] lg:hidden">
           <span className="tracking-[0.02em]">
-            helpline:{contactInfo.helpline}
+            Helpline: {contactInfo.helpline}
           </span>
           <span>{contactInfo.phone}</span>
         </div>
@@ -197,12 +200,12 @@ const Header = () => {
           <div className="pointer-events-auto relative flex h-[78px] w-[92px] items-center justify-center rounded-b-[4px] border-primary/20 bg-secondary">
             <Link
               to="/"
-              className="flex h-full w-full items-center justify-center pt-1"
+              className="flex h-full w-full items-center justify-center"
             >
               <img
                 src={LOGO_WHITE}
                 alt="TDCP logo"
-                className="h-[50px] w-[50px] object-contain"
+                className="size-[70px] shrink-0 object-contain"
               />
             </Link>
           </div>
@@ -219,7 +222,7 @@ const Header = () => {
                       !isActive(link)
                         ? "text-black"
                         : "text-primary/85 hover:text-black"
-                    }`
+                    }`,
                   )}
                 </li>
               ))}
@@ -239,7 +242,7 @@ const Header = () => {
                         !isActive(link)
                           ? "text-black"
                           : "text-primary/85 hover:text-black"
-                      }`
+                      }`,
                     )}
                   </li>
                 ))}
@@ -267,16 +270,16 @@ const Header = () => {
           </button>
 
           <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-            <div className="pointer-events-auto relative flex h-[68px] w-[78px] items-center justify-center rounded-b-[10px] border-x border-b border-primary/20 bg-secondary shadow-[0_8px_16px_rgba(91,52,17,0.16)]">
+            <div className="pointer-events-auto relative flex h-[80px] w-[92px] items-center justify-center rounded-b-[10px] border-x border-b border-primary/20 bg-secondary shadow-[0_8px_16px_rgba(91,52,17,0.16)]">
               <Link
                 to="/"
                 onClick={() => setMobileOpen(false)}
-                className="flex h-full w-full items-center justify-center pt-1"
+                className="flex h-full w-full items-center justify-center"
               >
                 <img
                   src={LOGO_WHITE}
                   alt="TDCP logo"
-                  className="h-[42px] w-[42px] object-contain"
+                  className="size-[60px] shrink-0 object-contain"
                 />
               </Link>
             </div>
@@ -329,7 +332,7 @@ const Header = () => {
                 {renderLink(
                   link,
                   "transition-opacity duration-200 hover:opacity-80",
-                  () => setMobileOpen(false)
+                  () => setMobileOpen(false),
                 )}
               </div>
             ))}
@@ -349,7 +352,7 @@ const Header = () => {
                     ? "text-primary"
                     : "text-[#3B2A1F] hover:text-primary"
                 }`,
-                () => setMobileOpen(false)
+                () => setMobileOpen(false),
               )}
             </li>
           ))}
@@ -357,7 +360,7 @@ const Header = () => {
 
         <div className="space-y-5 px-4 py-5">
           <div className="flex items-center justify-between rounded-2xl bg-[#FFF9E8] px-4 py-3 text-[12px] text-[#5C4938]">
-            <span>helpline:{contactInfo.helpline}</span>
+            <span>Helpline: {contactInfo.helpline}</span>
             <span>{contactInfo.phone}</span>
           </div>
 

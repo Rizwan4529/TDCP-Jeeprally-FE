@@ -24,6 +24,7 @@ import {
   getWebsiteContentPage,
   getWebsiteContentSection,
 } from "../../api/features/content/websiteContent.utils.js";
+import CategoryFilter from "../../components/common/CategoryFilter.jsx";
 
 const Players = () => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
@@ -121,20 +122,12 @@ const Players = () => {
           </div>
         </div>
 
-        {/* Filters Section */}
-        <div className="players-filters">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className={`filter-btn ${
-                activeCategoryKey === tab.key ? "active" : ""
-              }`}
-              onClick={() => setActiveCategoryKey(tab.key)}
-            >
-              {tab.title}
-            </button>
-          ))}
-        </div>
+        <CategoryFilter
+          tabs={tabs}
+          activeKey={activeCategoryKey}
+          onChange={setActiveCategoryKey}
+          className="mb-14"
+        />
 
         {/* Players Grid Section */}
         <div className="players-grid">

@@ -240,3 +240,26 @@ describe("fetchRallyChallenges", () => {
     );
   });
 });
+
+describe("fetchCompletedRallies", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("fetches completed rally events", async () => {
+    rallyAxios.get.mockResolvedValue({
+      data: {
+        success: true,
+        data: [{ _id: "event-1", status: "completed" }],
+      },
+    });
+
+    await expect(rallyService.fetchCompletedRallies()).resolves.toEqual([
+      { _id: "event-1", status: "completed" },
+    ]);
+
+    expect(rallyAxios.get).toHaveBeenCalledWith("/rally", {
+      params: { status: "completed" },
+    });
+  });
+});

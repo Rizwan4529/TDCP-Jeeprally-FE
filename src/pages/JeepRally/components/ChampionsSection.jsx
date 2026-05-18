@@ -1,23 +1,23 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
-import { Navigation } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
 import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
 import {
   getCategoryFilterTabs,
   handleImageError,
 } from "../../../utils/constants.js";
-import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
+import {
+  activeRallyQueryOptions,
+  completedRalliesQueryOptions,
+} from "../../../api/features/rally/rally.queryOptions.jsx";
+import { getMostRecentCompletedRally } from "../../../api/features/rally/rallyEvents.utils.js";
 import {
   fetchRallyChampions,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
 import {
-  chunkChampions,
-  mapChampionSlideToPodium,
+  getCategoryTabsWithChampions,
   mapChampionsToPodium,
   resolveChampionsCategoryKey,
   shouldShowChampionsEmpty,
@@ -27,31 +27,31 @@ import {
   getWebsiteContentPage,
   getWebsiteContentSection,
 } from "../../../api/features/content/websiteContent.utils.js";
-import "swiper/css";
-import "swiper/css/navigation";
+import CategoryFilter from "../../../components/common/CategoryFilter.jsx";
 
 const CHAMPION_IMAGE_FALLBACK = "/assets/images/person-champion.png";
-const PODIUM_CHUNK_SIZE = 3;
 
 const ChampionPodiumRow = ({ champions, getChampionLink }) => (
-  <div className="flex flex-col md:flex-row items-end justify-center gap-6 lg:gap-8 max-w-5xl mx-auto">
+  <div className="mx-auto flex max-w-7xl flex-col items-end justify-center gap-6 md:flex-row lg:gap-8">
     {champions.map((player) => (
       <Link
         to={getChampionLink(player)}
         key={player.id}
-        className={`relative w-full md:w-1/3 flex flex-col justify-end h-full ${player.order} group`}
+        className={`group relative flex w-full flex-col justify-end md:w-1/3 ${player.order}`}
       >
-        <div className="w-full rounded-[15px] overflow-hidden shadow-lg transition-transform duration-500 hover:-translate-y-2 h-full cursor-pointer">
-          <div className="pointer-events-none w-full h-full">
+        <div className="flex w-full cursor-pointer flex-col overflow-hidden rounded-[15px] shadow-lg transition-transform duration-500 hover:-translate-y-2">
+          <div
+            className={`relative w-full shrink-0 overflow-hidden ${player.height}`}
+          >
             <img
               src={player.image}
               alt={player.name}
-              className={`w-full ${player.height} object-cover rounded-t-[15px]`}
+              className={`absolute inset-0 ${player.height} w-full object-cover object-top`}
               onError={(e) => handleImageError(e, CHAMPION_IMAGE_FALLBACK)}
             />
           </div>
 
-          <div className="py-3 px-4 bg-primary text-white text-center font-gilda text-lg tracking-wide">
+          <div className="shrink-0 bg-primary px-4 py-3 text-center font-gilda text-lg tracking-wide text-white">
             {player.name} ( {player.team} )
           </div>
         </div>
@@ -66,30 +66,88 @@ const ChampionsSection = ({
   forcedCategoryKey = "",
   hideFilters = false,
   useApiCategories = false,
+  filterCategoriesWithChampions = false,
   sectionClassName = "",
-  titleClassName = "text-primary",
-  subtitleClassName = "text-gray-500",
+  titleClassName = "",
+  subtitleClassName = "text-gray-600",
 }) => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
-  const swiperRef = useRef(null);
-  const [swiperInstance, setSwiperInstance] = useState(null);
-  const prevButtonRef = useRef(null);
-  const nextButtonRef = useRef(null);
   const { data: categoriesRaw = [] } = useCategoriesQuery();
   const { data: websiteContent } = useWebsiteContentQuery();
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
+  const isPastEventMode = Boolean(useApiCategories && eventIdOverride);
+  const shouldFilterCategoriesWithChampions =
+    filterCategoriesWithChampions && !isPastEventMode;
+
+  const {
+    data: completedRallies = [],
+    isSuccess: completedRalliesSuccess,
+    isPending: completedRalliesPending,
+  } = useQuery({
+    ...completedRalliesQueryOptions,
+    enabled: shouldFilterCategoriesWithChampions,
+  });
+
+  const mostRecentCompletedRally = useMemo(
+    () => getMostRecentCompletedRally(completedRallies),
+    [completedRallies],
+  );
+
+  const eventId = useMemo(() => {
+    if (eventIdOverride) return eventIdOverride;
+    if (shouldFilterCategoriesWithChampions) {
+      return mostRecentCompletedRally?._id ?? "";
+    }
+    return activeEvent?._id ?? "";
+  }, [
+    activeEvent?._id,
+    eventIdOverride,
+    mostRecentCompletedRally?._id,
+    shouldFilterCategoriesWithChampions,
+  ]);
+
   const tabs = useMemo(
     () => getCategoryFilterTabs(categoriesRaw),
     [categoriesRaw],
   );
-  const eventId = eventIdOverride || activeEvent?._id;
-  const isPastEventMode = Boolean(useApiCategories && eventIdOverride);
+
+  const {
+    data: allHomeChampionsRaw = [],
+    isSuccess: allHomeChampionsSuccess,
+    isPending: allHomeChampionsPending,
+  } = useQuery({
+    queryKey: ["rally", "champions", eventId, "all-categories"],
+    queryFn: () => fetchRallyChampions(eventId),
+    enabled: Boolean(
+      shouldFilterCategoriesWithChampions && eventId && completedRalliesSuccess,
+    ),
+    refetchOnWindowFocus: false,
+  });
+
+  const visibleTabs = useMemo(() => {
+    if (!shouldFilterCategoriesWithChampions) {
+      return tabs;
+    }
+
+    return getCategoryTabsWithChampions(tabs, allHomeChampionsRaw);
+  }, [allHomeChampionsRaw, shouldFilterCategoriesWithChampions, tabs]);
+
+  const filterCategories = useMemo(
+    () =>
+      visibleTabs.map((tab) => ({
+        key: tab.key,
+        title: tab.title,
+      })),
+    [visibleTabs],
+  );
 
   useEffect(() => {
     if (isPastEventMode) return;
 
     const resolvedCategoryKey = resolveChampionsCategoryKey({
-      categories: categoriesRaw,
+      categories: shouldFilterCategoriesWithChampions
+        ? filterCategories
+        : categoriesRaw,
       activeCategoryKey,
       forcedCategoryKey,
     });
@@ -100,9 +158,11 @@ const ChampionsSection = ({
   }, [
     activeCategoryKey,
     categoriesRaw,
+    filterCategories,
     forcedCategoryKey,
     isPastEventMode,
-    tabs.length,
+    shouldFilterCategoriesWithChampions,
+    visibleTabs.length,
   ]);
 
   const {
@@ -123,88 +183,77 @@ const ChampionsSection = ({
   } = useQuery({
     queryKey: ["rally", "champions", eventId, activeCategoryKey],
     queryFn: () => fetchRallyChampions(eventId, activeCategoryKey),
-    enabled: Boolean(!isPastEventMode && eventId && activeCategoryKey),
+    enabled: Boolean(
+      !isPastEventMode &&
+      !shouldFilterCategoriesWithChampions &&
+      eventId &&
+      activeCategoryKey,
+    ),
     refetchOnWindowFocus: false,
   });
 
-  const championsRaw = isPastEventMode ? pastChampionsRaw : websiteChampionsRaw;
+  const homeChampionsRaw = useMemo(() => {
+    if (!shouldFilterCategoriesWithChampions || !activeCategoryKey) {
+      return [];
+    }
+
+    return allHomeChampionsRaw.filter(
+      (champion) => String(champion?.category ?? "") === activeCategoryKey,
+    );
+  }, [
+    activeCategoryKey,
+    allHomeChampionsRaw,
+    shouldFilterCategoriesWithChampions,
+  ]);
+
+  const championsRaw = isPastEventMode
+    ? pastChampionsRaw
+    : shouldFilterCategoriesWithChampions
+      ? homeChampionsRaw
+      : websiteChampionsRaw;
   const championsSuccess = isPastEventMode
     ? pastChampionsSuccess
-    : websiteChampionsSuccess;
+    : shouldFilterCategoriesWithChampions
+      ? allHomeChampionsSuccess
+      : websiteChampionsSuccess;
   const championsPending = isPastEventMode
     ? pastChampionsPending
-    : websiteChampionsPending;
+    : shouldFilterCategoriesWithChampions
+      ? completedRalliesPending || allHomeChampionsPending
+      : websiteChampionsPending;
 
   const resolveChampionImage = (image) =>
     resolveCheckpointImageUrl(image) || CHAMPION_IMAGE_FALLBACK;
 
-  const sortedPastChampions = useMemo(
-    () => sortChampionsList(pastChampionsRaw),
-    [pastChampionsRaw],
+  const sortedChampionsRaw = useMemo(
+    () => sortChampionsList(championsRaw),
+    [championsRaw],
   );
 
-  const championSlides = useMemo(() => {
-    if (!isPastEventMode) return [];
+  const champions = useMemo(
+    () => mapChampionsToPodium(championsRaw, resolveChampionImage),
+    [championsRaw],
+  );
 
-    return chunkChampions(sortedPastChampions, PODIUM_CHUNK_SIZE).map((slide) =>
-      mapChampionSlideToPodium(slide, resolveChampionImage),
-    );
-  }, [isPastEventMode, sortedPastChampions]);
-
-  const champions = useMemo(() => {
-    if (isPastEventMode) {
-      return championSlides[0] ?? [];
-    }
-
-    return mapChampionsToPodium(championsRaw, resolveChampionImage);
-  }, [championSlides, championsRaw, isPastEventMode]);
-
-  const canCarousel = isPastEventMode && championSlides.length > 1;
-
-  useEffect(() => {
-    if (!canCarousel) {
-      setSwiperInstance(null);
-      swiperRef.current = null;
-    }
-  }, [canCarousel]);
-
-  useEffect(() => {
-    const swiper = swiperInstance;
-    if (
-      !swiper ||
-      !canCarousel ||
-      !prevButtonRef.current ||
-      !nextButtonRef.current
-    ) {
-      return;
-    }
-
-    if (!swiper.params.navigation) {
-      swiper.params.navigation = {};
-    }
-
-    swiper.params.navigation.prevEl = prevButtonRef.current;
-    swiper.params.navigation.nextEl = nextButtonRef.current;
-
-    if (swiper.navigation) {
-      swiper.navigation.destroy();
-      swiper.navigation.init();
-      swiper.navigation.update();
-    }
-
-    swiper.update();
-  }, [canCarousel, championSlides.length, swiperInstance]);
-
-  const showChampionsEmpty = shouldShowChampionsEmpty({
-    eventId,
-    activeCategoryKey: isPastEventMode ? "all" : activeCategoryKey,
-    champions: isPastEventMode ? sortedPastChampions : champions,
-    championsSuccess,
-    requireCategory: !isPastEventMode,
-  });
+  const showChampionsEmpty =
+    (shouldFilterCategoriesWithChampions &&
+      completedRalliesSuccess &&
+      !mostRecentCompletedRally) ||
+    (shouldFilterCategoriesWithChampions &&
+      allHomeChampionsSuccess &&
+      visibleTabs.length === 0) ||
+    shouldShowChampionsEmpty({
+      eventId,
+      activeCategoryKey: isPastEventMode ? "all" : activeCategoryKey,
+      champions: sortedChampionsRaw,
+      championsSuccess,
+      requireCategory: !isPastEventMode,
+    });
 
   const showCategoryFilters =
-    !hideFilters && !isPastEventMode && tabs.length > 0;
+    !hideFilters &&
+    !isPastEventMode &&
+    visibleTabs.length > (shouldFilterCategoriesWithChampions ? 1 : 0);
 
   const resolvedContent = useMemo(() => {
     if (content) return content;
@@ -223,45 +272,48 @@ const ChampionsSection = ({
       return `/player/${player.id}?${params.toString()}`;
     }
 
-    return `/player/${player.id}?category=${encodeURIComponent(activeCategoryKey)}`;
+    const params = new URLSearchParams({
+      category: activeCategoryKey,
+    });
+    if (eventId) {
+      params.set("eventId", eventId);
+    }
+    return `/player/${player.id}?${params.toString()}`;
   };
 
   return (
-    <section className={`py-10 md:py-10 bg-section ${sectionClassName}`}>
+    <section
+      className={`overflow-x-clip bg-section py-section-break ${sectionClassName}`}
+    >
       <div className="container mx-auto px-4 lg:px-20">
-        <div className="text-center mb-16 space-y-4">
+        <div className="mb-8 space-y-4 text-center">
           <h2
-            className={`font-gilda text-[32px] md:text-[42px] leading-tight ${titleClassName}`}
+            className={`mb-2 font-gilda text-[32px] font-semibold leading-tight md:text-[42px] ${titleClassName}`}
           >
             {resolvedContent?.title || "Champions of the Rally"}
           </h2>
-          <p className={`para max-w-2xl mx-auto ${subtitleClassName}`}>
+          <p className={`para mx-auto max-w-2xl ${subtitleClassName}`}>
             {resolvedContent?.subtitle ||
               "Celebrating the top performers who conquered the desert track"}
           </p>
+          {/* {shouldFilterCategoriesWithChampions && mostRecentCompletedRally?.name ? (
+            <p className="text-sm text-gray-500 md:text-base">
+              Showing champions from {mostRecentCompletedRally.name}
+            </p>
+          ) : null} */}
         </div>
 
         {showCategoryFilters && (
-          <div className="players-filters flex justify-center overflow-x-auto no-scrollbar gap-2 md:gap-4 mb-12">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`px-6 py-2 rounded-full text-sm transition-all duration-300 whitespace-nowrap ${
-                  activeCategoryKey === tab.key
-                    ? "bg-secondary text-black shadow-md"
-                    : "bg-white/50 text-gray-600 hover:bg-white"
-                }`}
-                onClick={() => setActiveCategoryKey(tab.key)}
-              >
-                {tab.title}
-              </button>
-            ))}
-          </div>
+          <CategoryFilter
+            tabs={visibleTabs}
+            activeKey={activeCategoryKey}
+            onChange={setActiveCategoryKey}
+            className="mb-12"
+          />
         )}
 
         {championsPending && (
-          <p className="text-center text-gray-500 py-12">Loading champions…</p>
+          <p className="py-12 text-center text-gray-500">Loading champions…</p>
         )}
 
         {!championsPending && showChampionsEmpty ? (
@@ -276,73 +328,13 @@ const ChampionsSection = ({
           </div>
         ) : null}
 
-        {!championsPending && !showChampionsEmpty && canCarousel ? (
-          <div className="relative mb-4">
-            <Swiper
-              key={`${championSlides.length}-carousel`}
-              modules={[Navigation]}
-              onSwiper={(swiper) => {
-                swiperRef.current = swiper;
-                setSwiperInstance(swiper);
-              }}
-              navigation={{
-                prevEl: prevButtonRef.current,
-                nextEl: nextButtonRef.current,
-              }}
-              loop={canCarousel}
-              loopedSlides={Math.min(championSlides.length, 2)}
-              allowTouchMove={canCarousel}
-              className="w-full"
-            >
-              {championSlides.map((slideChampions, slideIndex) => (
-                <SwiperSlide key={`champions-slide-${slideIndex}`}>
-                  <ChampionPodiumRow
-                    champions={slideChampions}
-                    getChampionLink={getChampionLink}
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            <button
-              ref={prevButtonRef}
-              type="button"
-              aria-label="Show previous champions"
-              className="absolute -left-20 top-1/2 z-40 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-xl transition-all duration-300 hover:bg-brand-green hover:text-white"
-            >
-              <FiArrowLeft className="text-2xl" />
-            </button>
-            <button
-              ref={nextButtonRef}
-              type="button"
-              aria-label="Show next champions"
-              className="absolute -right-20 top-1/2 z-40 flex h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-xl transition-all duration-300 hover:bg-brand-green hover:text-white"
-            >
-              <FiArrowRight className="text-2xl" />
-            </button>
-          </div>
-        ) : null}
-
-        {!championsPending && !showChampionsEmpty && !canCarousel ? (
+        {!championsPending && !showChampionsEmpty && champions.length > 0 ? (
           <ChampionPodiumRow
             champions={champions}
             getChampionLink={getChampionLink}
           />
         ) : null}
       </div>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .swiper-button-prev, .swiper-button-next { display: none !important; }
-        @media (max-width: 767px) {
-          .order-1 { order: 2; }
-          .order-2 { order: 1; }
-          .order-3 { order: 3; }
-        }
-      `,
-        }}
-      />
     </section>
   );
 };

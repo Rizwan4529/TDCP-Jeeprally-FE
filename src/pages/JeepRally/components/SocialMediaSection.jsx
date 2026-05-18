@@ -127,7 +127,7 @@ const SocialMediaSection = ({ content }) => {
     : DEFAULT_SOCIAL_LINKS;
 
   return (
-    <section className="bg-white py-10 md:py-14">
+    <section className="bg-white py-section-break">
       <div className="container mx-auto px-4">
         <div className="mb-8 text-center md:mb-12">
           <h2 className="font-gilda text-[30px] leading-tight text-black md:text-[52px]">

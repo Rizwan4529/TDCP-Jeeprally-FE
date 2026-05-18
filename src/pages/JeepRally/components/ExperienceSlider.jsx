@@ -24,7 +24,7 @@ const ExperienceSlider = () => {
   );
 
   return (
-    <section className="relative w-full py-0 overflow-hidden group/section">
+    <section className="relative w-full pt-section-break overflow-hidden group/section">
       <Swiper
         modules={[Navigation]}
         onBeforeInit={(swiper) => {
@@ -62,7 +62,7 @@ const ExperienceSlider = () => {
 
               {/* Content Area */}
               <div className="absolute bottom-0 left-0 right-0 p-8 md:p-10 lg:p-14 transition-all duration-500 bg-transparent group-hover:bg-brand-green">
-                <h3 className="text-2xl md:text-3xl lg:text-3xl font-gilda leading-snug text-white max-w-[300px]">
+                <h3 className="font-gilda capitalize text-2xl leading-snug text-white max-w-[300px] md:text-3xl lg:text-3xl">
                   {exp.title}
                 </h3>
 

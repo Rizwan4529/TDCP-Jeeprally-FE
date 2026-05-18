@@ -33,34 +33,6 @@
   margin: 10px 0;
 }
 
-/* Toggle Pill */
-.rm-toggle-container {
-  display: inline-flex;
-  background: #eee;
-  padding: 5px;
-  border-radius: 30px;
-  margin-top: 20px;
-  max-width: 100%;
-}
-
-.rm-toggle-btn {
-  border: none;
-  background: none;
-  padding: 8px 25px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #777;
-  transition: 0.3s;
-  white-space: nowrap;
-}
-
-.rm-toggle-btn.active {
-  background: var(--color-primary);
-  /* Primary brand color */
-  color: white;
-}
-
 /* Canvas & Labels */
 .rm-canvas {
   position: relative;
@@ -348,28 +320,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-  }
-
-  .rm-toggle-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.625rem;
-    background: transparent;
-    padding: 0;
-    margin-inline: auto;
-    width: min(100%, 26rem);
-  }
-
-  .rm-toggle-btn {
-    padding: 0.7rem 1rem;
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-    font-size: 0.8125rem;
-  }
-
-  .rm-toggle-btn.active {
-    color: #fff;
   }
 
   .rm-canvas-desktop {

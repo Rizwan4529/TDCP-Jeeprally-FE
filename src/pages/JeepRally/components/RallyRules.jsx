@@ -1,17 +1,24 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchRallyDocuments,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
+import SlidingWindowDotPagination from "../../../components/common/SlidingWindowDotPagination.jsx";
+import { useSlidingWindowCarousel } from "../../../hooks/useSlidingWindowCarousel.js";
+import {
+  getRulesCardSlotStyle,
+  normalizeRallyDocuments,
+  RALLY_RULES_WINDOW_SIZE,
+  resolveRallyDocumentBgImage,
+  shouldShowRulesDotPagination,
+} from "./rallyRules.utils.js";
 
-function chunkPairs(docs) {
-  const pages = [];
-  for (let i = 0; i < docs.length; i += 2) {
-    pages.push(docs.slice(i, i + 2));
-  }
-  return pages;
+function normalizeFileUrlString(raw) {
+  if (raw == null) return null;
+  const s = String(raw).trim();
+  return s || null;
 }
 
 async function downloadRallyFile(url, title) {
@@ -54,70 +61,63 @@ async function downloadRallyFile(url, title) {
   document.body.removeChild(a);
 }
 
-function normalizeFileUrlString(raw) {
-  if (raw == null) return null;
-  const s = String(raw).trim();
-  return s || null;
-}
-
-const RulesCard = ({
-  title,
-  bgColor,
-  buttonBg,
-  titleColor = "#FFFFFF",
-  isDark = false,
-  fileUrl,
-}) => {
+const RulesCard = ({ title, slotIndex = 0, fileUrl, bgImage }) => {
   const rawPath = normalizeFileUrlString(fileUrl);
   const canDownload = Boolean(rawPath);
+  const slotStyle = getRulesCardSlotStyle(slotIndex);
+  const hasBgImage = Boolean(bgImage);
 
   return (
     <div
-      className={`flex-1 min-h-[400px] md:min-h-[450px] rounded-md p-8 md:p-12 flex flex-col items-center justify-center text-center space-y-10 transition-transform duration-500 hover:-translate-y-2`}
-      style={{ backgroundColor: bgColor }}
+      className={`relative flex min-h-[400px] flex-1 flex-col items-center justify-center overflow-hidden rounded-md p-8 text-center transition-transform duration-500 hover:-translate-y-2 md:min-h-[450px] md:p-12 ${
+        hasBgImage ? "bg-cover bg-center bg-no-repeat" : slotStyle.bgClass
+      }`}
+      style={hasBgImage ? { backgroundImage: `url('${bgImage}')` } : undefined}
     >
-      <h3
-        className="text-2xl md:text-3xl font-gilda leading-tight tracking-wide"
-        style={{ color: titleColor }}
-      >
-        {title}
-      </h3>
+      {hasBgImage ? (
+        <div className="absolute inset-0 bg-black/35" aria-hidden />
+      ) : null}
 
-      <button
-        type="button"
-        disabled={!canDownload}
-        onClick={() => {
-          if (!rawPath) return;
-          const url = resolveCheckpointImageUrl(rawPath);
-          if (url) void downloadRallyFile(url, title);
-        }}
-        className={`px-10 py-3 rounded-full  transition-all duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed`}
-        style={{ backgroundColor: buttonBg, color: isDark ? "white" : "black" }}
-      >
-        Download
-      </button>
+      <div className="relative z-10 flex flex-col items-center space-y-10">
+        <h3
+          className={`font-gilda text-2xl capitalize leading-tight tracking-wide md:text-3xl ${slotStyle.titleClass}`}
+        >
+          {title}
+        </h3>
+
+        <button
+          type="button"
+          disabled={!canDownload}
+          onClick={() => {
+            if (!rawPath) return;
+            const url = resolveCheckpointImageUrl(rawPath);
+            if (url) void downloadRallyFile(url, title);
+          }}
+          className={`rounded-full px-10 py-3 transition-all duration-300 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50 ${slotStyle.buttonClass}`}
+        >
+          Download
+        </button>
+      </div>
     </div>
   );
 };
 
-const STATIC_FALLBACK_PAGES = [
-  [
-    {
-      _id: "static-a",
-      title: "CDR 2026, RALLY COMPETITION RULES",
-      file_url: null,
-    },
-    {
-      _id: "static-b",
-      title: "DIRT BIKE CDR 2026, RALLY COMPETITION RULES",
-      file_url: null,
-    },
-  ],
+const STATIC_FALLBACK_DOCUMENTS = [
+  {
+  _id: "static-a",
+    title: "CDR 2026, RALLY COMPETITION RULES",
+    file_url: null,
+    bg_image: null,
+  },
+  {
+    _id: "static-b",
+    title: "DIRT BIKE CDR 2026, RALLY COMPETITION RULES",
+    file_url: null,
+    bg_image: null,
+  },
 ];
 
 const RallyRules = ({ content }) => {
-  const [pageIndex, setPageIndex] = useState(0);
-
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const eventId = activeEvent?._id;
 
@@ -129,126 +129,73 @@ const RallyRules = ({ content }) => {
   });
 
   const documents = useMemo(() => {
-    const list = (documentsRaw ?? [])
-      .map((d) => ({
-        ...d,
-        file_url: d.file_url ?? d.fileUrl ?? d.document_url ?? null,
-      }))
-      .filter((d) => d.is_public !== false)
-      .filter((d) => {
-        const c = (d.category ?? "").toString().toLowerCase();
-        return !c || c === "rules";
-      })
-      .sort(
-        (a, b) =>
-          new Date(a.created_at || 0).getTime() -
-          new Date(b.created_at || 0).getTime(),
-      );
-    return list.length > 0 ? list : null;
+    const list = normalizeRallyDocuments(documentsRaw);
+    return list.length > 0 ? list : STATIC_FALLBACK_DOCUMENTS;
   }, [documentsRaw]);
 
-  const pages = useMemo(() => {
-    if (!documents || documents.length === 0) return STATIC_FALLBACK_PAGES;
-    return chunkPairs(documents);
-  }, [documents]);
+  const carousel = useSlidingWindowCarousel(documents, {
+    windowSize: RALLY_RULES_WINDOW_SIZE,
+  });
+  const { windowOffset, visibleItems, goToIndex } = carousel;
 
-  const pageCount = Math.max(1, pages.length);
-  const showNav = documents && documents.length > 2;
+  const showDots = shouldShowRulesDotPagination(documents.length);
 
-  useEffect(() => {
-    setPageIndex((i) => Math.min(i, pageCount - 1));
-  }, [pageCount]);
-
-  const handleNext = () => {
-    setPageIndex((i) => Math.min(i + 1, pageCount - 1));
-  };
-
-  const handlePrev = () => {
-    setPageIndex((i) => Math.max(i - 1, 0));
-  };
+  const visibleCards = useMemo(
+    () =>
+      visibleItems.map((document, index) => ({
+        document,
+        slotIndex: index,
+        bgImage: resolveRallyDocumentBgImage(document),
+      })),
+    [visibleItems],
+  );
 
   return (
-    <section className="py-24 bg-white">
+    <section className="bg-white py-section-break">
       <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row gap-16 lg:items-center">
-          <div className="w-full lg:w-[35%] space-y-8">
-            <h2 className="text-[29px] md:text-[42px] font-gilda leading-tight text-black">
+        <div className="flex flex-col gap-16 lg:flex-row lg:items-center">
+          <div className="w-full space-y-8 lg:w-[35%]">
+            <h2 className="font-gilda text-[29px] leading-tight text-black md:text-[42px]">
               {content?.title || (
                 <>
                   Rally Rules and <br className="hidden md:block" /> Documents
                 </>
               )}
             </h2>
-            <p className="para text-gray-500 leading-relaxed max-w-3xl">
+            <p className="para max-w-3xl leading-relaxed text-gray-500">
               {content?.subTitle ||
                 "Welcome to the Cholistan Desert Rally 2026 Rules and Documents area. All Rally Racers, looking to read the rules for competition or application for registration and Rally safety guidelines, then this is the place to get them."}
             </p>
           </div>
 
-          <div className="w-full lg:w-[65%] relative">
-            {showNav && (
-              <div className="absolute top-0 right-0 z-10 flex gap-3">
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  disabled={pageIndex <= 0}
-                  className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center bg-white hover:bg-black hover:text-white transition-all duration-300 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                  aria-label="Previous documents"
-                >
-                  <span className="text-lg rotate-180">→</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={pageIndex >= pageCount - 1}
-                  className="w-10 h-10 rounded-full bg-brand-green text-white flex items-center justify-center hover:bg-brand-green-hover transition-all duration-300 shadow-md shadow-brand-green/20 disabled:opacity-40 disabled:cursor-not-allowed"
-                  aria-label="Next documents"
-                >
-                  <span className="text-lg">→</span>
-                </button>
-              </div>
-            )}
-
-            <div className="overflow-hidden w-full">
-              <div
-                className="flex transition-transform duration-500 ease-out"
-                style={{
-                  width: `${pageCount * 100}%`,
-                  transform: `translateX(-${(pageIndex * 100) / pageCount}%)`,
-                }}
-              >
-                {pages.map((pair, pIdx) => (
-                  <div
-                    key={pair[0]?._id ?? pIdx}
-                    className="flex flex-col md:flex-row gap-6 md:gap-8 shrink-0"
-                    style={{ width: `${100 / pageCount}%` }}
-                  >
-                    <RulesCard
-                      title={pair[0]?.title ?? ""}
-                      bgColor="#F9DA4A"
-                      titleColor="#111111"
-                      buttonBg="#B44423"
-                      isDark={true}
-                      fileUrl={pair[0]?.file_url}
-                    />
-                    {pair[1] ? (
-                      <RulesCard
-                        title={pair[1].title}
-                        bgColor="#B44423"
-                        buttonBg="#F9DA4A"
-                        isDark={false}
-                        fileUrl={pair[1].file_url}
-                      />
-                    ) : (
-                      <div
-                        className="flex-1 min-h-[400px] md:min-h-[450px] rounded-md opacity-0 pointer-events-none hidden md:block"
-                        aria-hidden
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
+          <div className="w-full lg:w-[65%]">
+            <div className="flex w-full flex-col gap-6 md:flex-row md:gap-8">
+              {visibleCards.map(({ document, slotIndex, bgImage }) => (
+                <RulesCard
+                  key={`${document._id}-${slotIndex}`}
+                  title={document.title ?? ""}
+                  slotIndex={slotIndex}
+                  fileUrl={document.file_url}
+                  bgImage={bgImage}
+                />
+              ))}
+              {visibleCards.length === 1 ? (
+                <div
+                  className="pointer-events-none hidden min-h-[400px] flex-1 rounded-md opacity-0 md:block md:min-h-[450px]"
+                  aria-hidden
+                />
+              ) : null}
             </div>
+
+            {showDots ? (
+              <SlidingWindowDotPagination
+                count={documents.length}
+                activeIndex={windowOffset}
+                onSelect={goToIndex}
+                className="mt-6"
+                ariaLabel="Rally documents position"
+              />
+            ) : null}
           </div>
         </div>
       </div>

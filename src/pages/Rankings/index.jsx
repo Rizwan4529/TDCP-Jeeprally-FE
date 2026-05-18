@@ -21,6 +21,7 @@ import {
   getWebsiteContentSection,
 } from "../../api/features/content/websiteContent.utils.js";
 import ScrollReveal, { HeroReveal } from "../../components/common/ScrollReveal.jsx";
+import CategoryFilter from "../../components/common/CategoryFilter.jsx";
 
 function mapRankingRows(apiRows) {
   return (apiRows ?? [])
@@ -157,20 +158,13 @@ const Rankings = () => {
             </div>
           </div>
 
-          <div className="rankings-filters no-scrollbar">
-            {categories.map((category) => (
-              <button
-                key={category.key}
-                type="button"
-                className={`filter-btn ${
-                  activeCategory === category.key ? "active" : ""
-                }`}
-                onClick={() => setActiveCategory(category.key)}
-              >
-                {categoryLabels[category.key]}
-              </button>
-            ))}
-          </div>
+          <CategoryFilter
+            categories={categories}
+            categoryLabels={categoryLabels}
+            activeKey={activeCategory}
+            onChange={setActiveCategory}
+            className="mb-10"
+          />
 
           <div className="rankings-table-wrapper">
             <div className="table-title-bar">

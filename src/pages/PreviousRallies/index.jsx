@@ -15,6 +15,7 @@ import Partners from "../JeepRally/components/Partners";
 import ScrollReveal, { HeroReveal } from "../../components/common/ScrollReveal.jsx";
 import { mapPastRallyToListingCard } from "./previousRallies.utils.js";
 import "./PreviousRallies.css";
+import CategoryFilter from "../../components/common/CategoryFilter.jsx";
 
 const ViewDetailsButton = ({ to }) => (
   <Link to={to} className="previous-rally-cta">
@@ -97,20 +98,12 @@ const PreviousRallies = () => {
             <h1 className="previous-heading-title">Previous Rallies</h1>
           </header>
 
-          <div className="previous-filter-row no-scrollbar">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                className={`previous-filter-pill ${
-                  activeCategoryKey === tab.key ? "is-active" : ""
-                }`}
-                onClick={() => setActiveCategoryKey(tab.key)}
-              >
-                {tab.title}
-              </button>
-            ))}
-          </div>
+          <CategoryFilter
+            tabs={tabs}
+            activeKey={activeCategoryKey}
+            onChange={setActiveCategoryKey}
+            className="mb-[42px]"
+          />
         </HeroReveal>
 
         <ScrollReveal variant="fadeLeft" duration={0.8}>

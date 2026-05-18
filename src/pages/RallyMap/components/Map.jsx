@@ -23,6 +23,7 @@ import {
   getWebsiteContentPage,
   getWebsiteContentSection,
 } from "../../../api/features/content/websiteContent.utils.js";
+import CategoryFilter from "../../../components/common/CategoryFilter.jsx";
 
 function topPercentForIndex(index, total) {
   if (total <= 0) return 0;
@@ -269,20 +270,13 @@ const Map = () => {
           </p>
         </div>
 
-        <div className="rm-toggle-container max-w-full">
-          {categories.map((category) => (
-            <button
-              key={category.key}
-              type="button"
-              className={`rm-toggle-btn whitespace-nowrap ${
-                activeCategory === category.key ? "active" : ""
-              }`}
-              onClick={() => setActiveCategory(category.key)}
-            >
-              {categoryLabels[category.key]}
-            </button>
-          ))}
-        </div>
+        <CategoryFilter
+          categories={categories}
+          categoryLabels={categoryLabels}
+          activeKey={activeCategory}
+          onChange={setActiveCategory}
+          className="mt-5"
+        />
       </header>
 
       <div

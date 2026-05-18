@@ -18,7 +18,7 @@ const DISPLAY_SLOTS = 7;
 const FALLBACK_IMG_SRC =
   "data:image/svg+xml," +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#e5e7eb"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#e5e7eb"/></svg>',
   );
 
 function slotImagesFromApi(images) {
@@ -47,13 +47,13 @@ const RecentGallery = ({ content }) => {
 
   const displayImages = useMemo(
     () => slotImagesFromApi(data?.images),
-    [data?.images]
+    [data?.images],
   );
   const resolvedContent = useMemo(() => {
     if (content) return content;
     return getWebsiteContentSection(
       getWebsiteContentPage(websiteContent, "home"),
-      "recentGallery"
+      "recentGallery",
     );
   }, [content, websiteContent]);
 
@@ -75,7 +75,7 @@ const RecentGallery = ({ content }) => {
   const nextDisabled = navDisabled || page >= totalPages;
 
   return (
-    <section className="py-10 md:py-10 bg-white relative overflow-hidden">
+    <section className="py-section-break bg-white relative overflow-hidden">
       <div className="absolute top-0 left-0 z-0 pointer-events-none select-none">
         <div className="relative w-48 md:w-64 lg:w-80 h-48 md:h-64 lg:h-80">
           <img

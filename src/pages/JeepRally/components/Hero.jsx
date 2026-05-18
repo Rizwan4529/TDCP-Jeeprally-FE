@@ -4,11 +4,18 @@ import RoughTexture1 from "../../../assets/images/rough-patches-1.png";
 import RoughTexture2 from "../../../assets/images/rough-patches-2.png";
 import { resolveImageUrl } from "../../../utils/constants.js";
 
-const HERO_TARGET_DATE = new Date("2027-01-14T00:00:00");
+const REGISTRATION_TARGET_DATE = new Date("2027-01-14T00:00:00");
+
+const formatRegistrationDate = (date) =>
+  date.toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
 
 const getTimeLeft = () => {
   const now = new Date();
-  const difference = HERO_TARGET_DATE.getTime() - now.getTime();
+  const difference = REGISTRATION_TARGET_DATE.getTime() - now.getTime();
 
   if (difference <= 0) {
     return {
@@ -55,7 +62,10 @@ const Hero = ({ content }) => {
   const [timeLeft, setTimeLeft] = useState(getTimeLeft());
   const heroTitle = content?.title || DEFAULT_HERO_TITLE;
   const heroSubtitle = content?.subTitle || DEFAULT_HERO_SUBTITLE;
-  const heroBackgroundImage = resolveImageUrl(content?.bgImg, "/assets/images/hero_1.jpg");
+  const heroBackgroundImage = resolveImageUrl(
+    content?.bgImg,
+    "/assets/images/hero_1.jpg",
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -76,18 +86,18 @@ const Hero = ({ content }) => {
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#151922]/88 via-[#171A20]/44 to-[#8E5A32]/28"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(246,177,114,0.30),transparent_34%)]"></div>
-        <div className="absolute inset-0 bg-black/24"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#151922]/55 via-[#171A20]/28 to-[#8E5A32]/16"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(246,177,114,0.18),transparent_34%)]"></div>
+        <div className="absolute inset-0 bg-black/10"></div>
       </div>
 
       {/* Main Content Wrapper */}
       <div className="relative z-10 flex h-full w-full items-center">
         <div className="mx-auto flex h-full w-full max-w-[1536px] items-center px-4 pb-24 pt-10 md:px-10 md:pb-28 md:pt-14 xl:px-16">
           <div className="grid w-full items-end gap-8 lg:grid-cols-12 lg:items-center xl:gap-10">
-            <div className="col-span-12 lg:col-span-7 text-white">
+            <div className="col-span-12 lg:col-span-6 text-white">
               <div className="space-y-5 md:space-y-7">
-                <h1 className="font-gilda text-[42px] leading-[0.92] tracking-[-0.03em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.38)] sm:text-[52px] md:text-[66px] xl:text-[78px]">
+                <h1 className="font-nanum-myeongjo text-[42px] font-bold capitalize leading-[1.1] tracking-[-0.02em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.38)] sm:text-[52px] md:text-[66px] xl:text-[80px]">
                   {heroTitle}
                 </h1>
 
@@ -112,17 +122,24 @@ const Hero = ({ content }) => {
               </div>
             </div>
 
-            <div className="col-span-12 flex justify-start lg:col-span-5 lg:justify-end">
+            <div className="col-span-12 flex justify-start lg:col-span-6 lg:justify-end">
               <div className="relative w-full  overflow-hidden rounded-[8px] border border-white/[0.11] bg-[linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.07))] p-4 text-white font-manrope backdrop-blur-[25px] shadow-[inset_0_1px_40px_rgba(36,36,37,0.20),inset_0_4px_18px_rgba(62,63,64,0.30),inset_0_98px_100px_-48px_rgba(125,127,128,0.30),inset_0_-82px_68px_-64px_rgba(98,98,98,0.30),inset_0_7px_11px_-4px_rgba(255,255,255,1),inset_0_39px_56px_-36px_rgba(255,255,255,0.50)] md:max-w-[483px] md:p-6">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,rgba(142,90,50,0.26),transparent_34%)]" />
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02))]" />
 
-                <div className="relative z-10 space-y-3 md:space-y-4">
-                  <p className="text-[24px] font-normal leading-none text-white">
-                    Days Remain: {timeLeft.days}
+                <div className="relative z-10 space-y-2 md:space-y-3">
+                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/75">
+                    Registration
                   </p>
-                  <p className="text-[36px] font-semibold tracking-[0.12em] text-white ">
-                    01/14/2027
+                  <p className="text-[22px] font-normal leading-snug text-white md:text-[24px]">
+                    <span className="font-semibold">{timeLeft.days}</span>{" "}
+                    {timeLeft.days === 1 ? "day" : "days"} remaining
+                  </p>
+                  <p className="text-[13px] leading-relaxed text-white/80">
+                    Registration coming soon
+                  </p>
+                  <p className="pt-1 text-[32px] font-semibold tracking-[0.12em] text-white md:text-[36px]">
+                    {formatRegistrationDate(REGISTRATION_TARGET_DATE)}
                   </p>
                 </div>
 

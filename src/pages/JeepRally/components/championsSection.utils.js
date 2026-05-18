@@ -9,8 +9,22 @@ const POSITION_STYLES = {
   3: { height: "h-[320px] md:h-[400px]", order: "order-3" },
 };
 
-/** Visual podium positions for up to 3 cards in a carousel slide (left, center, right). */
-const SLIDE_PODIUM_POSITIONS = [2, 1, 3];
+export const PODIUM_DISPLAY_COUNT = 3;
+
+export function getCategoryTabsWithChampions(tabs = [], champions = []) {
+  if (!Array.isArray(tabs) || tabs.length === 0) {
+    return [];
+  }
+
+  const keysWithChampions = new Set(
+    (champions ?? [])
+      .map((champion) => champion?.category)
+      .filter(Boolean)
+      .map(String),
+  );
+
+  return tabs.filter((tab) => keysWithChampions.has(tab.key));
+}
 
 export function resolveChampionsCategoryKey({
   categories = [],
@@ -55,14 +69,11 @@ export function sortChampionsList(champions = []) {
   });
 }
 
-export function chunkChampions(champions = [], size = 3) {
-  if (!champions.length) return [];
-
-  const chunks = [];
-  for (let index = 0; index < champions.length; index += size) {
-    chunks.push(champions.slice(index, index + size));
-  }
-  return chunks;
+export function getTopChampionsByPosition(
+  champions = [],
+  limit = PODIUM_DISPLAY_COUNT,
+) {
+  return sortChampionsList(champions).slice(0, limit);
 }
 
 function mapChampionRecord(champion, visualPosition, resolveImage) {
@@ -88,18 +99,26 @@ function mapChampionRecord(champion, visualPosition, resolveImage) {
   };
 }
 
+function resolvePodiumPosition(champion, fallbackPosition) {
+  const rank = Number(champion?.position);
+  if (rank >= 1 && rank <= PODIUM_DISPLAY_COUNT) {
+    return rank;
+  }
+  return fallbackPosition;
+}
+
 export function mapChampionSlideToPodium(championsInSlide = [], resolveImage) {
-  return championsInSlide
-    .map((champion, index) => {
-      const visualPosition = SLIDE_PODIUM_POSITIONS[index] ?? index + 1;
-      return mapChampionRecord(champion, visualPosition, resolveImage);
-    })
+  return getTopChampionsByPosition(championsInSlide)
+    .map((champion, index) =>
+      mapChampionRecord(
+        champion,
+        resolvePodiumPosition(champion, index + 1),
+        resolveImage,
+      ),
+    )
     .sort((a, b) => a.podiumOrder - b.podiumOrder);
 }
 
 export function mapChampionsToPodium(champions = [], resolveImage) {
-  return mapChampionSlideToPodium(
-    sortChampionsList(champions).slice(0, 3),
-    resolveImage,
-  );
+  return mapChampionSlideToPodium(champions, resolveImage);
 }
