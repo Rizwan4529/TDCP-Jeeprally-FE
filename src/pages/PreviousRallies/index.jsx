@@ -12,6 +12,7 @@ import {
   hasCategoryKey,
 } from "../../utils/constants.js";
 import Partners from "../JeepRally/components/Partners";
+import ScrollReveal, { HeroReveal } from "../../components/common/ScrollReveal.jsx";
 import { mapPastRallyToListingCard } from "./previousRallies.utils.js";
 import "./PreviousRallies.css";
 
@@ -86,57 +87,63 @@ const PreviousRallies = () => {
   return (
     <div className="previous-page">
       <div className="previous-shell">
-        <header className="previous-heading">
-          <img
-            src={flagStripedRace}
-            alt="Previous rallies"
-            className="previous-heading-art"
-          />
-          <h1 className="previous-heading-title">Previous Rallies</h1>
-        </header>
+        <HeroReveal>
+          <header className="previous-heading">
+            <img
+              src={flagStripedRace}
+              alt="Previous rallies"
+              className="previous-heading-art"
+            />
+            <h1 className="previous-heading-title">Previous Rallies</h1>
+          </header>
 
-        <div className="previous-filter-row no-scrollbar">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`previous-filter-pill ${
-                activeCategoryKey === tab.key ? "is-active" : ""
-              }`}
-              onClick={() => setActiveCategoryKey(tab.key)}
-            >
-              {tab.title}
-            </button>
-          ))}
-        </div>
+          <div className="previous-filter-row no-scrollbar">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                className={`previous-filter-pill ${
+                  activeCategoryKey === tab.key ? "is-active" : ""
+                }`}
+                onClick={() => setActiveCategoryKey(tab.key)}
+              >
+                {tab.title}
+              </button>
+            ))}
+          </div>
+        </HeroReveal>
 
-        <section className="previous-grid">
-          {isPending && (
-            <p className="col-span-full text-center text-gray-500 py-12">
-              Loading previous rallies…
-            </p>
-          )}
-          {isError && (
-            <p className="col-span-full text-center text-red-600 py-12">
-              Could not load previous rallies. Please try again later.
-            </p>
-          )}
-          {!isPending &&
-            !isError &&
-            rallies.length === 0 && (
+        <ScrollReveal variant="fadeLeft" duration={0.8}>
+          <section className="previous-grid">
+            {isPending && (
               <p className="col-span-full text-center text-gray-500 py-12">
-                No previous rallies available yet.
+                Loading previous rallies…
               </p>
             )}
-          {!isPending &&
-            !isError &&
-            rallies.map((rally) => (
-              <PreviousRallyCard key={rally.id} rally={rally} />
-            ))}
-        </section>
+            {isError && (
+              <p className="col-span-full text-center text-red-600 py-12">
+                Could not load previous rallies. Please try again later.
+              </p>
+            )}
+            {!isPending &&
+              !isError &&
+              rallies.length === 0 && (
+                <p className="col-span-full text-center text-gray-500 py-12">
+                  No previous rallies available yet.
+                </p>
+              )}
+            {!isPending &&
+              !isError &&
+              rallies.map((rally) => (
+                <PreviousRallyCard key={rally.id} rally={rally} />
+              ))}
+          </section>
+        </ScrollReveal>
       </div>
 
-      <Partners />
+      <ScrollReveal variant="fadeUp" delay={0.1} duration={0.7}>
+        <Partners />
+      </ScrollReveal>
     </div>
   );
 };

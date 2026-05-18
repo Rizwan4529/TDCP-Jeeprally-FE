@@ -13,6 +13,7 @@ import {
   findPastRallyById,
   mapPastRallyToDetail,
 } from "./previousRallies.utils.js";
+import ScrollReveal, { HeroReveal } from "../../components/common/ScrollReveal.jsx";
 import "./PreviousRallyDetail.css";
 
 const PreviousRallyDetail = () => {
@@ -70,6 +71,7 @@ const PreviousRallyDetail = () => {
 
   return (
     <div className="previous-rally-detail-page">
+      <HeroReveal>
       <section className="relative previous-rally-detail-hero">
         <div
           className="previous-rally-detail-hero-bg"
@@ -94,7 +96,9 @@ const PreviousRallyDetail = () => {
           />
         </div>
       </section>
+      </HeroReveal>
 
+      <ScrollReveal variant="fadeRight" duration={0.8}>
       <section className="previous-rally-detail-main">
         <div className="container mx-auto px-4 md:px-20">
           <div className="previous-rally-detail-grid">
@@ -178,16 +182,25 @@ const PreviousRallyDetail = () => {
           </div>
         </div>
       </section>
+      </ScrollReveal>
 
-      <ChampionsSection
-        content={championsContent}
-        eventId={eventId}
-        useApiCategories
-        titleClassName="text-black"
-        subtitleClassName="text-[#6f6f6f]"
-      />
-      <RecentGallery />
-      <Partners />
+      <ScrollReveal variant="scaleIn" duration={0.75}>
+        <ChampionsSection
+          content={championsContent}
+          eventId={eventId}
+          useApiCategories
+          titleClassName="text-black"
+          subtitleClassName="text-[#6f6f6f]"
+        />
+      </ScrollReveal>
+
+      <ScrollReveal variant="zoomIn" duration={0.8}>
+        <RecentGallery />
+      </ScrollReveal>
+
+      <ScrollReveal variant="fadeUp" delay={0.08} duration={0.7}>
+        <Partners />
+      </ScrollReveal>
     </div>
   );
 };

@@ -6,7 +6,10 @@ import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
-import { getCategoryFilterTabs, handleImageError } from "../../../utils/constants.js";
+import {
+  getCategoryFilterTabs,
+  handleImageError,
+} from "../../../utils/constants.js";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
 import {
   fetchRallyChampions,
@@ -200,7 +203,8 @@ const ChampionsSection = ({
     requireCategory: !isPastEventMode,
   });
 
-  const showCategoryFilters = !hideFilters && !isPastEventMode && tabs.length > 0;
+  const showCategoryFilters =
+    !hideFilters && !isPastEventMode && tabs.length > 0;
 
   const resolvedContent = useMemo(() => {
     if (content) return content;

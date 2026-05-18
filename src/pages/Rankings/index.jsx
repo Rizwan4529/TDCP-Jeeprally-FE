@@ -20,6 +20,7 @@ import {
   getWebsiteContentPage,
   getWebsiteContentSection,
 } from "../../api/features/content/websiteContent.utils.js";
+import ScrollReveal, { HeroReveal } from "../../components/common/ScrollReveal.jsx";
 
 function mapRankingRows(apiRows) {
   return (apiRows ?? [])
@@ -118,6 +119,7 @@ const Rankings = () => {
     <>
       <div className="rankings-page !mt-[100px]">
         <div className="rankings-container">
+          <HeroReveal>
           <div className="rankings-banner">
             <div className="banner-frame-container">
               <img
@@ -132,7 +134,9 @@ const Rankings = () => {
             </div>
             <p className="banner-subtitle">{heroContent?.subTitle || "Cholistan 2026"}</p>
           </div>
+          </HeroReveal>
 
+          <ScrollReveal variant="fadeUp" duration={0.75}>
           <div className="rankings-header-row">
             <h1 className="rankings-title">
               {afterStage != null
@@ -252,9 +256,12 @@ const Rankings = () => {
               />
             </div>
           </div>
+          </ScrollReveal>
         </div>
       </div>
-      <Partners />
+      <ScrollReveal variant="zoomIn" delay={0.06} duration={0.7}>
+        <Partners />
+      </ScrollReveal>
     </>
   );
 };

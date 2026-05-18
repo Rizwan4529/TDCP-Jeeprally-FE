@@ -9,8 +9,8 @@ const TrackDetails = ({ content }) => {
           className="w-full h-full"
           style={{
             backgroundImage: `radial-gradient(#000 2px, transparent 2px)`,
-            backgroundSize: '20px 20px',
-            maskImage: 'linear-gradient(to top left, black, transparent)'
+            backgroundSize: "20px 20px",
+            maskImage: "linear-gradient(to top left, black, transparent)",
           }}
         ></div>
       </div>
@@ -22,7 +22,8 @@ const TrackDetails = ({ content }) => {
             {content?.title || "Rally Track Details"}
           </h2>
           <p className="para text-gray-500">
-            {content?.subtitle || "Get a closer look at the terrain, distance, and key checkpoints of the race."}
+            {content?.subtitle ||
+              "Get a closer look at the terrain, distance, and key checkpoints of the race."}
           </p>
         </div>
 

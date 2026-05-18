@@ -51,6 +51,9 @@ describe("previousRallies utils", () => {
 
     expect(detail.heroContent.title).toBe(DEFAULT_HERO_TITLE);
     expect(detail.heroContent.bgImg).toContain("uploads/images/hero-bg.png");
+    expect(detail.promoBannerContent.image).toContain(
+      "uploads/images/hero-bg.png",
+    );
     expect(detail.mainContent.title).toBe(sampleRally.name);
     expect(detail.mainContent.subTitle).toBe(STATIC_EVENT_SUBTITLE);
     expect(detail.mainContent.paragraphs).toEqual([sampleRally.description]);

@@ -69,6 +69,22 @@
   max-width: 100%;
 }
 
+.rm-canvas--empty {
+  height: auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.rm-canvas--empty .rm-checkpoints-empty {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+}
+
 .rm-mobile-sequence {
   display: none;
 }

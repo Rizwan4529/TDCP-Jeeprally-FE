@@ -37,9 +37,17 @@ const SLOT_CLASSES = {
 };
 
 const DEFAULT_STATS = [
-  { value: "600+", label: "Registered Racers", subLabel: "competing each year" },
+  {
+    value: "600+",
+    label: "Registered Racers",
+    subLabel: "competing each year",
+  },
   { value: "95+", label: "Professional Routes", subLabel: "carefully mapped" },
-  { value: "500+", label: "Dedicated Volunteers", subLabel: "supporting the event" },
+  {
+    value: "500+",
+    label: "Dedicated Volunteers",
+    subLabel: "supporting the event",
+  },
 ];
 
 function VideoTile({
@@ -108,7 +116,7 @@ const AdventureSection = ({ content }) => {
     if (content) return content;
     return getWebsiteContentSection(
       getWebsiteContentPage(websiteContent, "home"),
-      "stats"
+      "stats",
     );
   }, [content, websiteContent]);
   const stats = useMemo(() => {
@@ -424,13 +432,14 @@ const AdventureSection = ({ content }) => {
         {/* Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 py-0 md:py-0 ">
           {stats.map((item) => (
-            <div key={`${item.value}-${item.label}`} className="flex items-center gap-4 md:gap-6">
+            <div
+              key={`${item.value}-${item.label}`}
+              className="flex items-center gap-4 md:gap-6"
+            >
               <span className="text-[42px] lg:text-[64px] font-sans font-medium text-brand-green leading-none">
                 {item.value}
               </span>
-              <p className="text-sm text-gray-500 leading-snug">
-                {item.label}
-              </p>
+              <p className="text-sm text-gray-500 leading-snug">{item.label}</p>
             </div>
           ))}
         </div>

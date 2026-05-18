@@ -168,7 +168,7 @@ const RallyRules = ({ content }) => {
   };
 
   return (
-    <section className="py-24 bg-section">
+    <section className="py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex flex-col lg:flex-row gap-16 lg:items-center">
           <div className="w-full lg:w-[35%] space-y-8">

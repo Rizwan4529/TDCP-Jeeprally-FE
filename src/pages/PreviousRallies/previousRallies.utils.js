@@ -74,7 +74,7 @@ export function mapPastRallyToDetail(rally) {
     },
     promoBannerContent: {
       title: DEFAULT_PROMO_TITLE,
-      image: thumbnailImage,
+      image: bannerImage,
     },
     mainContent: {
       image: thumbnailImage,

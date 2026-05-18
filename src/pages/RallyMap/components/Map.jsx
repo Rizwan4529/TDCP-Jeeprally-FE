@@ -285,7 +285,9 @@ const Map = () => {
         </div>
       </header>
 
-      <div className="rm-canvas rm-canvas-desktop">
+      <div
+        className={`rm-canvas rm-canvas-desktop${showRoutesEmpty ? " rm-canvas--empty" : ""}`}
+      >
         {!showRoutesEmpty && showStartLabel && (
           <div className="rm-label-start" aria-hidden>
             {chromeContent?.startLabel || "Start"}

@@ -19,6 +19,7 @@ import {
   STATIC_TEAM_STANDING,
 } from "../playerProfile.data.js";
 import { buildPlayerProfile } from "../playerProfile.utils.js";
+import ScrollReveal, { HeroReveal } from "../../../components/common/ScrollReveal.jsx";
 
 const BADGE_ICON = (
   <svg
@@ -193,6 +194,7 @@ const PlayerProfile = () => {
 
   return (
     <div className="mt-[50px] min-h-screen bg-white">
+      <HeroReveal>
       <section className="relative h-[360px] z-20 md:h-[420px] lg:h-[470px] ">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -217,8 +219,10 @@ const PlayerProfile = () => {
           </p>
         </div>
       </section>
+      </HeroReveal>
 
       <section className="container relative z-0 mx-auto px-4 pb-20 pt-28 md:pt-32">
+        <ScrollReveal variant="blurUp" duration={0.8}>
         <div className="mx-auto flex max-w-[460px] items-end justify-center gap-5 md:gap-8">
           <ProfileRoleCard
             label="Driver"
@@ -244,8 +248,10 @@ const PlayerProfile = () => {
             ))}
           </div>
         </div>
+        </ScrollReveal>
 
         <div className="mx-auto mt-14 grid max-w-[1020px] gap-6 lg:grid-cols-2">
+          <ScrollReveal variant="fadeLeft" duration={0.75}>
           <StandingPanel
             title="Team Standing"
             headerClassName="bg-primary"
@@ -260,7 +266,9 @@ const PlayerProfile = () => {
               </div>
             )}
           />
+          </ScrollReveal>
 
+          <ScrollReveal variant="fadeRight" duration={0.75} delay={0.05}>
           <StandingPanel
             title="Other Races"
             headerClassName="bg-[#333333]"
@@ -275,6 +283,7 @@ const PlayerProfile = () => {
               </div>
             )}
           />
+          </ScrollReveal>
         </div>
       </section>
     </div>
