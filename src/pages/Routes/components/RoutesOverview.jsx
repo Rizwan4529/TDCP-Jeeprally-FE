@@ -19,18 +19,34 @@ import {
 
 const DEFAULT_ROUTE_IMAGE = "/assets/images/map_line.png";
 
+const skeletonClass = "rounded-md bg-black/5 animate-pulse";
+const pageClass = "min-h-screen bg-white px-4 pb-12 pt-24 mt-[100px] md:px-8";
+
 function RouteOverviewSkeleton() {
   return (
-    <div className="ro-page" aria-busy="true" aria-label="Loading route">
-      <div className="ro-hero">
-        <div className="ro-skeleton ro-skeleton-title" />
-        <div className="ro-skeleton ro-skeleton-text" />
-        <div className="ro-skeleton ro-skeleton-text ro-skeleton-text--short" />
-        <div className="ro-skeleton ro-skeleton-image" />
-        <div className="ro-skeleton ro-skeleton-heading" />
-        <div className="ro-skeleton ro-skeleton-table" />
+    <div className={pageClass} aria-busy="true" aria-label="Loading route">
+      <div className="mx-auto max-w-4xl space-y-6 text-center">
+        <div className={`mx-auto h-10 max-w-xs ${skeletonClass}`} />
+        <div className={`mx-auto h-4 max-w-lg ${skeletonClass}`} />
+        <div className={`mx-auto h-4 max-w-md ${skeletonClass}`} />
+        <div className={`mx-auto h-72 max-w-md ${skeletonClass}`} />
+        <div className={`h-8 max-w-40 ${skeletonClass}`} />
+        <div className={`h-60 w-full ${skeletonClass}`} />
       </div>
     </div>
+  );
+}
+
+function EmptyMessage({ children, isError = false }) {
+  return (
+    <p
+      className={`py-8 text-center font-manrope text-sm ${
+        isError ? "text-primary" : "text-muted"
+      }`}
+      role={isError ? "alert" : "status"}
+    >
+      {children}
+    </p>
   );
 }
 
@@ -71,11 +87,11 @@ function RoutesOverview() {
 
   if (!eventId) {
     return (
-      <div className="ro-page">
-        <div className="ro-container">
-          <p className="ro-empty" role="status">
+      <div className={pageClass}>
+        <div className="mx-auto max-w-4xl">
+          <EmptyMessage>
             No active rally event is available right now.
-          </p>
+          </EmptyMessage>
         </div>
       </div>
     );
@@ -87,11 +103,11 @@ function RoutesOverview() {
 
   if (routeError) {
     return (
-      <div className="ro-page">
-        <div className="ro-container">
-          <p className="ro-empty ro-empty--error" role="alert">
+      <div className={pageClass}>
+        <div className="mx-auto max-w-4xl">
+          <EmptyMessage isError>
             Could not load route details. Please try again later.
-          </p>
+          </EmptyMessage>
         </div>
       </div>
     );
@@ -99,85 +115,104 @@ function RoutesOverview() {
 
   if (!route) {
     return (
-      <div className="ro-page">
-        <div className="ro-container">
-          <p className="ro-empty" role="status">
+      <div className={pageClass}>
+        <div className="mx-auto max-w-4xl">
+          <EmptyMessage>
             No route has been published for this event yet.
-          </p>
+          </EmptyMessage>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="ro-page">
-      <div className="ro-container">
-        <header className="ro-hero">
-          <h1 className="ro-title font-gilda">
+    <div className={pageClass}>
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-12 text-center">
+          <h1 className="font-gilda text-[clamp(2rem,5vw,2.75rem)] leading-tight text-[#1a1a1a]">
             {route.title || "Rally Route"}
           </h1>
           {route.description ? (
-            <p className="ro-description">{route.description}</p>
+            <p className="mx-auto mt-5 max-w-2xl font-manrope text-base leading-relaxed text-[#444]">
+              {route.description}
+            </p>
           ) : null}
 
           {(route.total_distance_km != null || route.estimated_time) && (
-            <div className="ro-stats">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               {route.total_distance_km != null && (
-                <span className="ro-stat">
-                  <span className="ro-stat-label">Total distance</span>
-                  <span className="ro-stat-value">
+                <span className="inline-flex flex-col items-center gap-0.5 rounded-full  border border-primary/20 bg-primary/5 px-10 py-2">
+                  <span className="font-manrope text-[11px] font-semibold uppercase tracking-wider text-[#888]">
+                    Total distance
+                  </span>
+                  <span className="font-manrope text-[15px] font-bold text-primary">
                     ~{route.total_distance_km} KM
                   </span>
                 </span>
               )}
               {route.estimated_time ? (
-                <span className="ro-stat">
-                  <span className="ro-stat-label">Estimated time</span>
-                  <span className="ro-stat-value">{route.estimated_time}</span>
+                <span className="inline-flex flex-col items-center gap-0.5 rounded-full  border border-primary/20 bg-primary/5 px-10 py-2">
+                  <span className="font-manrope text-[11px] font-semibold uppercase tracking-wider text-[#888]">
+                    Estimated time
+                  </span>
+                  <span className="font-manrope text-[15px] font-bold text-primary">
+                    {route.estimated_time}
+                  </span>
                 </span>
               ) : null}
             </div>
           )}
 
-          <figure className="ro-figure">
+          <figure className="mx-auto mt-10 max-w-2xl">
             <img
               src={trackImageSrc}
               alt={route.title ? `${route.title} track map` : "Rally track map"}
-              className="ro-track-image"
+              className="block w-full rounded-lg shadow-[0_16px_40px_rgba(0,0,0,0.1)]"
               onError={(event) => handleImageError(event, DEFAULT_ROUTE_IMAGE)}
             />
           </figure>
         </header>
 
-        <section className="ro-stages" aria-labelledby="ro-stages-heading">
-          <div className="ro-stages-head">
-            <h2 id="ro-stages-heading" className="ro-stages-title font-gilda">
+        <section aria-labelledby="routes-stages-heading">
+          <div className="mb-5">
+            <h2
+              id="routes-stages-heading"
+              className="font-gilda text-[clamp(1.5rem,3vw,2rem)] text-[#1a1a1a]"
+            >
               Stages
             </h2>
-            <p className="ro-stages-subtitle">
+            <p className="mt-2 font-manrope text-[15px] text-[#666]">
               Select a stage to view checkpoints and route details on the map.
             </p>
           </div>
 
           {stagesError ? (
-            <p className="ro-empty ro-empty--error" role="alert">
+            <EmptyMessage isError>
               Could not load stages. Please try again later.
-            </p>
+            </EmptyMessage>
           ) : stages.length === 0 ? (
-            <p className="ro-empty" role="status">
+            <EmptyMessage>
               No stages have been published for this event yet.
-            </p>
+            </EmptyMessage>
           ) : (
-            <div className="ro-table-wrapper">
-              <div className="ro-table-scroll">
-                <table className="ro-table">
-                  <thead>
+            <div className="overflow-hidden rounded-md border-t-4 border-primary bg-white shadow-[0_8px_28px_rgba(0,0,0,0.06)]">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px] border-collapse font-manrope text-sm">
+                  <thead className="bg-[#faf8f2]">
                     <tr>
-                      <th scope="col">Stage</th>
-                      <th scope="col">Date</th>
-                      <th scope="col">Start & Finish</th>
-                      <th scope="col">Time</th>
-                      <th scope="col" className="ro-table-action-col">
+                      <th className="whitespace-nowrap border-b border-[#ece7d2] px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-[#666]">
+                        Stage
+                      </th>
+                      <th className="whitespace-nowrap border-b border-[#ece7d2] px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-[#666]">
+                        Date
+                      </th>
+                      <th className="whitespace-nowrap border-b border-[#ece7d2] px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-[#666]">
+                        Start & Finish
+                      </th>
+                      <th className="whitespace-nowrap border-b border-[#ece7d2] px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-[#666]">
+                        Time
+                      </th>
+                      <th className="w-px whitespace-nowrap border-b border-[#ece7d2] px-4 py-3.5 text-left text-[11px] font-bold uppercase tracking-widest text-[#666]">
                         <span className="sr-only">View</span>
                       </th>
                     </tr>
@@ -188,8 +223,8 @@ function RoutesOverview() {
                       return (
                         <tr
                           key={stage._id}
-                          className="ro-table-row"
                           tabIndex={0}
+                          className="cursor-pointer border-b border-[#f0ebe0] transition-colors last:border-b-0 hover:bg-primary/[0.06] focus-visible:bg-primary/[0.06] focus-visible:outline-none"
                           onClick={() =>
                             stage._id && navigate(getStageRoutePath(stage._id))
                           }
@@ -201,28 +236,38 @@ function RoutesOverview() {
                               navigate(getStageRoutePath(stage._id));
                           }}
                         >
-                          <td>
-                            <span className="ro-stage-badge">
+                          <td className="px-4 py-4 align-middle text-[#333]">
+                            <span className="block text-[11px] font-extrabold uppercase tracking-widest text-primary">
                               {formatStageHeading(stage)}
                             </span>
                             {stage.stage_name ? (
-                              <span className="ro-stage-name">
+                              <span className="mt-0.5 block text-[15px] font-semibold text-[#222]">
                                 {stage.stage_name}
                               </span>
                             ) : null}
                           </td>
-                          <td>{formatStageDateReadable(stage)}</td>
-                          <td>
-                            <span className="ro-route-locations">
-                              <FiMapPin aria-hidden className="ro-route-icon" />
+                          <td className="px-4 py-4 align-middle text-[#333]">
+                            {formatStageDateReadable(stage)}
+                          </td>
+                          <td className="px-4 py-4 align-middle text-[#333]">
+                            <span className="inline-flex items-start gap-1.5 text-[13px] leading-snug text-[#444]">
+                              <FiMapPin
+                                aria-hidden
+                                className="mt-0.5 size-3.5 shrink-0 text-primary"
+                              />
                               {formatStageLocationRoute(stage)}
                             </span>
                           </td>
-                          <td>{schedule || "—"}</td>
-                          <td className="ro-table-action-col">
-                            <span className="ro-view-link" aria-hidden>
+                          <td className="px-4 py-4 align-middle text-[#333]">
+                            {schedule || "—"}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-4 align-middle">
+                            <span
+                              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary max-md:text-[0px] max-md:[&_svg]:size-[18px]"
+                              aria-hidden
+                            >
                               View
-                              <FiArrowRight />
+                              <FiArrowRight className="size-3.5" />
                             </span>
                           </td>
                         </tr>

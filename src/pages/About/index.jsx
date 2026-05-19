@@ -36,11 +36,9 @@ const About = () => {
         <AdventureSection />
       </ScrollReveal>
 
-      {whyExperienceSection ? (
-        <ScrollReveal variant="scaleIn" duration={0.75} delay={0.05}>
-          <WhyExperience content={whyExperienceSection} />
-        </ScrollReveal>
-      ) : null}
+      <ScrollReveal variant="scaleIn" duration={0.75} delay={0.05}>
+        <WhyExperience content={whyExperienceSection} />
+      </ScrollReveal>
 
       <ScrollReveal variant="zoomIn" duration={0.8} amount={0.15}>
         <RecentGallery />

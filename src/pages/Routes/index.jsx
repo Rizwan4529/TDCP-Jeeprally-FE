@@ -1,10 +1,11 @@
 import { useParams } from "react-router";
 import "./Routes.css";
-import "./RoutesOverview.css";
 import Partners from "../JeepRally/components/Partners";
 import RouteStageView from "./components/RouteStageView";
 import RoutesOverview from "./components/RoutesOverview";
-import ScrollReveal, { HeroReveal } from "../../components/common/ScrollReveal.jsx";
+import ScrollReveal, {
+  HeroReveal,
+} from "../../components/common/ScrollReveal.jsx";
 
 const Routes = () => {
   const { stageId } = useParams();

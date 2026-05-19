@@ -49,7 +49,9 @@ function GallerySideImage({ image, className, showSkeleton, onImageClick }) {
         className={`h-full w-full overflow-hidden rounded-[6px] text-left ${
           clickable ? "cursor-zoom-in" : "cursor-default"
         }`}
-        aria-label={clickable ? `View ${image?.alt || "gallery image"}` : undefined}
+        aria-label={
+          clickable ? `View ${image?.alt || "gallery image"}` : undefined
+        }
       >
         <img
           src={image?.src ?? GALLERY_FALLBACK_IMG_SRC}
