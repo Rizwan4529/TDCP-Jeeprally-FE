@@ -1,49 +1,131 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FiCalendar, FiLock } from "react-icons/fi";
 import Button from "../../../components/common/Button";
 import RoughTexture1 from "../../../assets/images/rough-patches-1.png";
 import RoughTexture2 from "../../../assets/images/rough-patches-2.png";
+import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
 import { resolveImageUrl } from "../../../utils/constants.js";
-
-const REGISTRATION_TARGET_DATE = new Date("2027-01-14T00:00:00");
-
-const formatRegistrationDate = (date) =>
-  date.toLocaleDateString("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  });
-
-const getTimeLeft = () => {
-  const now = new Date();
-  const difference = REGISTRATION_TARGET_DATE.getTime() - now.getTime();
-
-  if (difference <= 0) {
-    return {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-      seconds: 0,
-    };
-  }
-
-  return {
-    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-    minutes: Math.floor((difference / (1000 * 60)) % 60),
-    seconds: Math.floor((difference / 1000) % 60),
-  };
-};
+import {
+  REGISTRATION_PHASE,
+  formatHeroRegistrationDate,
+  formatHeroRegistrationDateShort,
+  getHeroRegistrationTiming,
+} from "./heroRegistration.utils.js";
 
 const TimeTile = ({ value, label }) => (
-  <div className="flex min-h-[112px] min-w-[93px] flex-col items-center justify-center rounded-[8px] border border-white/85 bg-white/[0.025] px-3 py-3 text-center  md:min-h-[148px] md:min-w-[104px] md:px-4 md:py-4">
+  <div className="flex min-h-[112px] min-w-[93px] flex-col items-center justify-center rounded-[8px] border border-white/85 bg-white/[0.025] px-3 py-3 text-center md:min-h-[148px] md:min-w-[104px] md:px-4 md:py-4">
     <div className="text-[50px] font-semibold leading-none tracking-[0.04em] text-white">
       {String(value).padStart(2, "0")}
     </div>
-    <div className="mt-3 text-[12px] uppercase tracking-[0.08em] text-white/90 ">
+    <div className="mt-3 text-[12px] uppercase tracking-[0.08em] text-white/90">
       {label}
     </div>
   </div>
 );
+
+function RegistrationPanel({ activeEvent, isLoading }) {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timing = useMemo(
+    () => getHeroRegistrationTiming(activeEvent, now),
+    [activeEvent, now],
+  );
+
+  const isClosed = timing?.phase === REGISTRATION_PHASE.CLOSED;
+  const daysRemaining = timing?.timeLeft?.days ?? 0;
+  const registrationDisplayDate = timing?.registrationStart;
+  const rallyStartDate = timing?.rallyStart;
+
+  if (isLoading) {
+    return (
+      <div className="relative w-full overflow-hidden rounded-[8px] border border-white/[0.11] bg-[linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.07))] p-4 text-white font-manrope backdrop-blur-[25px] md:max-w-[483px] md:p-6">
+        <div className="space-y-3 animate-pulse">
+          <div className="h-3 w-24 rounded bg-white/20" />
+          <div className="h-7 w-48 rounded bg-white/25" />
+          <div className="h-4 w-full rounded bg-white/15" />
+          <div className="mt-6 flex gap-3">
+            <div className="h-[112px] flex-1 rounded-[8px] bg-white/10 md:h-[148px]" />
+            <div className="h-[112px] flex-1 rounded-[8px] bg-white/10 md:h-[148px]" />
+            <div className="h-[112px] flex-1 rounded-[8px] bg-white/10 md:h-[148px]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-[8px] border border-white/[0.11] bg-[linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.07))] p-4 text-white font-manrope backdrop-blur-[25px] shadow-[inset_0_1px_40px_rgba(36,36,37,0.20),inset_0_4px_18px_rgba(62,63,64,0.30),inset_0_98px_100px_-48px_rgba(125,127,128,0.30),inset_0_-82px_68px_-64px_rgba(98,98,98,0.30),inset_0_7px_11px_-4px_rgba(255,255,255,1),inset_0_39px_56px_-36px_rgba(255,255,255,0.50)] md:max-w-[483px] md:p-6">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,rgba(142,90,50,0.26),transparent_34%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02))]" />
+
+      <div className="relative z-10 space-y-2 md:space-y-3">
+        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/75">
+          Registration
+        </p>
+        <p className="text-[22px] font-normal leading-snug text-white md:text-[24px]">
+          <span className="font-semibold">{daysRemaining}</span>{" "}
+          {daysRemaining === 1 ? "day" : "days"} remaining
+        </p>
+        <p className="text-[13px] leading-relaxed text-white/80">
+          Registration coming soon
+        </p>
+        {registrationDisplayDate ? (
+          <p className="pt-1 text-[32px] font-semibold tracking-[0.12em] text-white md:text-[36px]">
+            {formatHeroRegistrationDateShort(registrationDisplayDate)}
+          </p>
+        ) : null}
+
+        {isClosed ? (
+          <div className="mt-4 space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/[0.08] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90">
+              <FiLock className="text-secondary" aria-hidden />
+              Registration closed
+            </div>
+
+            {rallyStartDate ? (
+              <div className="rounded-[10px] border border-secondary/35 bg-[linear-gradient(135deg,rgba(236,202,48,0.14),rgba(255,255,255,0.06))] px-4 py-4 md:px-5 md:py-5">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-secondary/40 bg-secondary/15 text-secondary">
+                    <FiCalendar className="size-5" aria-hidden />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/70">
+                      Rally starts on
+                    </p>
+                    <p className="mt-1 text-[28px] font-semibold leading-tight tracking-[0.02em] text-white md:text-[32px]">
+                      {formatHeroRegistrationDate(rallyStartDate)}
+                    </p>
+                    <p className="mt-1 text-[12px] text-white/65">
+                      {formatHeroRegistrationDateShort(rallyStartDate)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : timing?.timeLeft ? (
+              <div className="mt-6 flex items-center justify-between gap-2 md:mt-7 md:gap-4">
+                <TimeTile value={timing.timeLeft.hours} label="Hours" />
+                <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
+                  :
+                </div>
+                <TimeTile value={timing.timeLeft.minutes} label="Minutes" />
+                <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
+                  :
+                </div>
+                <TimeTile value={timing.timeLeft.seconds} label="Seconds" />
+              </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 const DEFAULT_HERO_TITLE = (
   <>
@@ -59,25 +141,17 @@ const DEFAULT_HERO_SUBTITLE =
   "This text presents my research journey on the topic of Music and Tourism Imaginaries and gives the context which led to the publication of this special issue of Via Tourism Review.";
 
 const Hero = ({ content }) => {
-  const [timeLeft, setTimeLeft] = useState(getTimeLeft());
+  const { data: activeEvent, isPending, isFetching } = useQuery(activeRallyQueryOptions);
   const heroTitle = content?.title || DEFAULT_HERO_TITLE;
   const heroSubtitle = content?.subTitle || DEFAULT_HERO_SUBTITLE;
   const heroBackgroundImage = resolveImageUrl(
     content?.bgImg,
     "/assets/images/hero_1.jpg",
   );
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(getTimeLeft());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const isRegistrationLoading = isPending || (isFetching && !activeEvent);
 
   return (
-    <section className="relative mt-[84px] pt-20 md:pt-0 md:mt-[86px] h-[100vh] md:h-screen w-full bg-black overflow-hidden">
-      {/* Background Layer */}
+    <section className="relative mt-[84px] h-[100vh] w-full overflow-hidden bg-black pt-20 md:mt-[86px] md:h-screen md:pt-0">
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -91,11 +165,10 @@ const Hero = ({ content }) => {
         <div className="absolute inset-0 bg-black/10"></div>
       </div>
 
-      {/* Main Content Wrapper */}
       <div className="relative z-10 flex h-full w-full items-center">
         <div className="mx-auto flex h-full w-full max-w-[1536px] items-center px-4 pb-24 pt-10 md:px-10 md:pb-28 md:pt-14 xl:px-16">
           <div className="grid w-full items-end gap-8 lg:grid-cols-12 lg:items-center xl:gap-10">
-            <div className="col-span-12 lg:col-span-6 text-white">
+            <div className="col-span-12 text-white lg:col-span-6">
               <div className="space-y-5 md:space-y-7">
                 <h1 className="font-nanum-myeongjo text-[42px] font-bold capitalize leading-[1.1] tracking-[-0.02em] text-white drop-shadow-[0_10px_24px_rgba(0,0,0,0.38)] sm:text-[52px] md:text-[66px] xl:text-[80px]">
                   {heroTitle}
@@ -123,52 +196,25 @@ const Hero = ({ content }) => {
             </div>
 
             <div className="col-span-12 flex justify-start lg:col-span-6 lg:justify-end">
-              <div className="relative w-full  overflow-hidden rounded-[8px] border border-white/[0.11] bg-[linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.07))] p-4 text-white font-manrope backdrop-blur-[25px] shadow-[inset_0_1px_40px_rgba(36,36,37,0.20),inset_0_4px_18px_rgba(62,63,64,0.30),inset_0_98px_100px_-48px_rgba(125,127,128,0.30),inset_0_-82px_68px_-64px_rgba(98,98,98,0.30),inset_0_7px_11px_-4px_rgba(255,255,255,1),inset_0_39px_56px_-36px_rgba(255,255,255,0.50)] md:max-w-[483px] md:p-6">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,rgba(142,90,50,0.26),transparent_34%)]" />
-                <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02))]" />
-
-                <div className="relative z-10 space-y-2 md:space-y-3">
-                  <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/75">
-                    Registration
-                  </p>
-                  <p className="text-[22px] font-normal leading-snug text-white md:text-[24px]">
-                    <span className="font-semibold">{timeLeft.days}</span>{" "}
-                    {timeLeft.days === 1 ? "day" : "days"} remaining
-                  </p>
-                  <p className="text-[13px] leading-relaxed text-white/80">
-                    Registration coming soon
-                  </p>
-                  <p className="pt-1 text-[32px] font-semibold tracking-[0.12em] text-white md:text-[36px]">
-                    {formatRegistrationDate(REGISTRATION_TARGET_DATE)}
-                  </p>
-                </div>
-
-                <div className="relative z-10 mt-6 flex items-center justify-between gap-2 md:mt-7 md:gap-4">
-                  <TimeTile value={timeLeft.hours} label="Hours" />
-                  <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
-                    :
-                  </div>
-                  <TimeTile value={timeLeft.minutes} label="Minutes" />
-                  <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
-                    :
-                  </div>
-                  <TimeTile value={timeLeft.seconds} label="Seconds" />
-                </div>
-              </div>
+              <RegistrationPanel
+                activeEvent={activeEvent}
+                isLoading={isRegistrationLoading}
+              />
             </div>
           </div>
         </div>
       </div>
-      <div className="absolute -bottom-32 left-0 w-full flex items-center">
+
+      <div className="absolute -bottom-32 left-0 flex w-full items-center">
         <img
           src={RoughTexture1}
           alt="Jeep Rally"
-          className="w-[50%] h-40 object-cover"
+          className="h-40 w-[50%] object-cover"
         />
         <img
           src={RoughTexture2}
           alt="Jeep Rally"
-          className="w-[50%] h-40 object-cover"
+          className="h-40 w-[50%] object-cover"
         />
       </div>
     </section>

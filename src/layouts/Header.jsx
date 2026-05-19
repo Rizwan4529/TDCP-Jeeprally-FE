@@ -9,6 +9,8 @@ import {
 import { FiAlignRight, FiX } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
 import AuthModal from "../components/auth/AuthModal";
+import RoutesNavDropdown from "../components/rally/RoutesNavDropdown";
+import { isRoutesNavLink } from "../pages/RallyMap/rallyStages.utils";
 import {
   contactInfo as defaultContactInfo,
   leftNavLinks as defaultLeftNavLinks,
@@ -146,6 +148,18 @@ const Header = () => {
     }
   }, [mobileOpen]);
 
+  const navLinkClass = (link) =>
+    `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
+      !isActive(link) ? "text-black" : "text-primary/85 hover:text-black"
+    }`;
+
+  const mobileNavLinkClass = (link) =>
+    `block w-full py-4 text-left text-[16px] font-medium transition-colors duration-200 ${
+      isActive(link)
+        ? "text-primary"
+        : "text-[#3B2A1F] hover:text-primary"
+    }`;
+
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="bg-primary text-white">
@@ -195,7 +209,7 @@ const Header = () => {
         </div>
       </div>
 
-      <div className="relative bg-secondary shadow-[0_6px_20px_rgba(62,34,12,0.10)]">
+      <div className="relative overflow-visible bg-secondary shadow-[0_6px_20px_rgba(62,34,12,0.10)]">
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 hidden justify-center lg:flex">
           <div className="pointer-events-auto relative flex h-[78px] w-[92px] items-center justify-center rounded-b-[4px] border-primary/20 bg-secondary">
             <Link
@@ -212,17 +226,18 @@ const Header = () => {
         </div>
 
         <div className="mx-auto hidden h-[58px] max-w-[1440px] grid-cols-[minmax(0,1fr)_120px_minmax(0,1fr)] items-center px-6 lg:grid xl:px-10">
-          <nav className="justify-self-start">
-            <ul className="flex items-center gap-8 xl:gap-10">
+          <nav className="justify-self-start overflow-visible">
+            <ul className="flex items-center gap-8 overflow-visible xl:gap-10">
               {leftNavLinks.map((link) => (
-                <li key={link.id ?? link.title}>
-                  {renderLink(
-                    link,
-                    `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
-                      !isActive(link)
-                        ? "text-black"
-                        : "text-primary/85 hover:text-black"
-                    }`,
+                <li key={link.id ?? link.title} className="overflow-visible">
+                  {isRoutesNavLink(link) ? (
+                    <RoutesNavDropdown
+                      title={link.title}
+                      className={navLinkClass(link)}
+                      align="left"
+                    />
+                  ) : (
+                    renderLink(link, navLinkClass(link))
                   )}
                 </li>
               ))}
@@ -231,18 +246,22 @@ const Header = () => {
 
           <div />
 
-          <div className="flex items-center justify-self-end gap-8 xl:gap-10">
-            <nav>
-              <ul className="flex items-center gap-8 xl:gap-10">
+          <div className="flex items-center justify-self-end gap-8 overflow-visible xl:gap-10">
+            <nav className="overflow-visible">
+              <ul className="flex items-center gap-8 overflow-visible xl:gap-10">
                 {rightNavLinks.map((link, index) => (
-                  <li key={link.id ?? `${link.title}-${index}`}>
-                    {renderLink(
-                      link,
-                      `text-[15px] font-medium tracking-[0.01em] transition-colors duration-200 ${
-                        !isActive(link)
-                          ? "text-black"
-                          : "text-primary/85 hover:text-black"
-                      }`,
+                  <li
+                    key={link.id ?? `${link.title}-${index}`}
+                    className="overflow-visible"
+                  >
+                    {isRoutesNavLink(link) ? (
+                      <RoutesNavDropdown
+                        title={link.title}
+                        className={navLinkClass(link)}
+                        align="right"
+                      />
+                    ) : (
+                      renderLink(link, navLinkClass(link))
                     )}
                   </li>
                 ))}
@@ -345,14 +364,18 @@ const Header = () => {
               key={link.id ?? link.title}
               className="border-b border-primary/8 last:border-b-0"
             >
-              {renderLink(
-                link,
-                `block py-4 text-[16px] font-medium transition-colors duration-200 ${
-                  isActive(link)
-                    ? "text-primary"
-                    : "text-[#3B2A1F] hover:text-primary"
-                }`,
-                () => setMobileOpen(false),
+              {isRoutesNavLink(link) ? (
+                <RoutesNavDropdown
+                  title={link.title}
+                  className={mobileNavLinkClass(link)}
+                  variant="inline"
+                />
+              ) : (
+                renderLink(
+                  link,
+                  mobileNavLinkClass(link),
+                  () => setMobileOpen(false),
+                )
               )}
             </li>
           ))}

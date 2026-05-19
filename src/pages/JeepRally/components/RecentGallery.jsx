@@ -1,54 +1,74 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
-import {
-  fetchGeneralGallery,
-  resolveCheckpointImageUrl,
-} from "../../../api/features/rally/rally.service.jsx";
+import { fetchGeneralGallery } from "../../../api/features/rally/rally.service.jsx";
 import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
 import {
   getWebsiteContentPage,
   getWebsiteContentSection,
 } from "../../../api/features/content/websiteContent.utils.js";
+import SlidingWindowPrimarySlot from "../../../components/common/SlidingWindowPrimarySlot";
+import SlidingWindowSideSlot from "../../../components/common/SlidingWindowSideSlot";
+import { useSlidingWindowCarousel } from "../../../hooks/useSlidingWindowCarousel.js";
+import {
+  GALLERY_FALLBACK_IMG_SRC,
+  GALLERY_WINDOW_SIZE,
+  getGalleryLayoutSlots,
+  normalizeGalleryImagesFromApi,
+  shouldShowGalleryCarouselControls,
+} from "./recentGallery.utils.js";
 
 const GALLERY_TITLE = "Recent Gallery";
-const GALLERY_LIMIT = 10;
-const DISPLAY_SLOTS = 7;
+const GALLERY_LIMIT = 20;
 
-const FALLBACK_IMG_SRC =
-  "data:image/svg+xml," +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#e5e7eb"/></svg>',
-  );
-
-function slotImagesFromApi(images) {
-  const list = (images ?? []).slice(0, DISPLAY_SLOTS).map((img) => {
-    const resolved = resolveCheckpointImageUrl(img.image_url);
-    return {
-      src: resolved || FALLBACK_IMG_SRC,
-      alt: img.caption || "Gallery image",
-    };
-  });
-  while (list.length < DISPLAY_SLOTS) {
-    list.push({ src: FALLBACK_IMG_SRC, alt: "" });
+function GallerySideImage({ image, className, showSkeleton }) {
+  if (showSkeleton) {
+    return (
+      <div
+        className={`w-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm ${className}`}
+      />
+    );
   }
-  return list;
+
+  return (
+    <SlidingWindowSideSlot
+      itemKey={image?.id ?? "gallery-side-empty"}
+      className={`rounded-[6px] ${className}`}
+    >
+      <img
+        src={image?.src ?? GALLERY_FALLBACK_IMG_SRC}
+        alt={image?.alt ?? ""}
+        className="h-full w-full object-cover shadow-sm transition-shadow duration-300 hover:shadow-md"
+      />
+    </SlidingWindowSideSlot>
+  );
 }
 
 const RecentGallery = ({ content }) => {
-  const [page, setPage] = useState(1);
   const { data: websiteContent } = useWebsiteContentQuery();
 
   const { data, isPending, isFetching, isError } = useQuery({
-    queryKey: ["gallery", "general", page, GALLERY_LIMIT],
-    queryFn: () => fetchGeneralGallery({ page, limit: GALLERY_LIMIT }),
+    queryKey: ["gallery", "general", GALLERY_LIMIT],
+    queryFn: () => fetchGeneralGallery({ page: 1, limit: GALLERY_LIMIT }),
     refetchOnWindowFocus: false,
   });
 
-  const displayImages = useMemo(
-    () => slotImagesFromApi(data?.images),
+  const images = useMemo(
+    () => normalizeGalleryImagesFromApi(data?.images),
     [data?.images],
   );
+
+  const carousel = useSlidingWindowCarousel(images, {
+    windowSize: GALLERY_WINDOW_SIZE,
+  });
+
+  const { direction, visibleItems, canNavigate, next, previous } = carousel;
+
+  const slots = useMemo(
+    () => getGalleryLayoutSlots(visibleItems),
+    [visibleItems],
+  );
+
   const resolvedContent = useMemo(() => {
     if (content) return content;
     return getWebsiteContentSection(
@@ -57,162 +77,134 @@ const RecentGallery = ({ content }) => {
     );
   }, [content, websiteContent]);
 
-  const totalPages = Math.max(1, Number(data?.pagination?.pages ?? 1));
   const showSkeleton = isPending || isFetching;
+  const showControls = shouldShowGalleryCarouselControls(images);
+  const navDisabled = showSkeleton || isError || !showControls || !canNavigate;
 
   const handleNext = () => {
-    setPage((p) => (p < totalPages ? p + 1 : p));
+    if (navDisabled) return;
+    next();
   };
 
   const handlePrev = () => {
-    setPage((p) => (p > 1 ? p - 1 : p));
+    if (navDisabled) return;
+    previous();
   };
 
-  const getImage = (offset) => displayImages[offset] || {};
-
-  const navDisabled = showSkeleton || isError;
-  const prevDisabled = navDisabled || page <= 1;
-  const nextDisabled = navDisabled || page >= totalPages;
-
   return (
-    <section className="py-section-break bg-white relative overflow-hidden">
-      <div className="absolute top-0 left-0 z-0 pointer-events-none select-none">
-        <div className="relative w-48 md:w-64 lg:w-80 h-48 md:h-64 lg:h-80">
-          <img
-            src={"/assets/images/flag_3.png"}
-            alt=""
-            className="absolute top-[0%] left-[-65%] w-[300px] h-auto opacity-10 rotate-[50deg]"
-          />
-        </div>
+    <section className="relative overflow-hidden bg-white py-section-break">
+      <div className="absolute left-0 top-0 h-48 w-48 md:h-64 md:w-64 lg:h-80 lg:w-[400px]">
+        <img
+          src="/assets/images/flag_4.png"
+          alt=""
+          className="h-[300px] w-[300px] rotate-[50deg] object-cover opacity-10"
+        />
       </div>
 
-      <div className="container mx-auto relative z-10">
+      <div className="container relative z-10 mx-auto">
         <div className="px-4 lg:px-20">
-          <div className="text-center mb-10 md:mb-10">
-            <h2 className="font-gilda text-primary text-[29px] md:text-[42px]">
+          <div className="mb-10 text-center md:mb-10">
+            <h2 className="font-gilda text-[29px] text-primary md:text-[42px]">
               {resolvedContent?.title || GALLERY_TITLE}
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 lg:gap-6 lg:h-[500px] items-center">
-            <div className="col-span-1 h-[180px] md:h-[240px] lg:h-[220px] transition-all duration-500 ease-in-out">
+          <div className="grid grid-cols-2 items-center gap-3 md:gap-4 lg:h-[500px] lg:grid-cols-5 lg:gap-6">
+            <div className="col-span-1 h-[180px] md:h-[240px] lg:h-[220px]">
+              <GallerySideImage
+                image={slots.leftOuter}
+                showSkeleton={showSkeleton}
+                className="h-full"
+              />
+            </div>
+
+            <div className="col-span-1 flex h-full flex-col justify-center gap-3 md:gap-4 lg:gap-6">
+              <div className="h-[120px] md:h-[180px] lg:h-[238px]">
+                <GallerySideImage
+                  image={slots.leftStackTop}
+                  showSkeleton={showSkeleton}
+                  className="h-full"
+                />
+              </div>
+              <div className="h-[120px] md:h-[180px] lg:h-[238px]">
+                <GallerySideImage
+                  image={slots.leftStackBottom}
+                  showSkeleton={showSkeleton}
+                  className="h-full"
+                />
+              </div>
+            </div>
+
+            <SlidingWindowPrimarySlot
+              itemKey={slots.main?.id}
+              direction={direction}
+              className="order-first col-span-2 h-[280px] md:h-[400px] lg:order-none lg:col-span-1 lg:h-full"
+            >
               {showSkeleton ? (
-                <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm" />
+                <div className="h-full w-full animate-pulse rounded-[6px] border-4 border-white bg-gray-200 shadow-md" />
               ) : (
                 <img
-                  key={getImage(0).src}
-                  src={getImage(0).src}
-                  alt={getImage(0).alt}
-                  className="w-full h-full object-cover rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300"
+                  src={slots.main?.src ?? GALLERY_FALLBACK_IMG_SRC}
+                  alt={slots.main?.alt ?? ""}
+                  className="h-full w-full rounded-[6px] border-4 border-white object-cover shadow-md transition-transform duration-500 hover:scale-[1.02]"
                 />
               )}
-            </div>
+            </SlidingWindowPrimarySlot>
 
-            <div className="col-span-1 flex flex-col gap-3 md:gap-4 lg:gap-6 h-full justify-center">
-              <div className="h-[120px] md:h-[180px] lg:h-[238px] transition-all duration-500 ease-in-out">
-                {showSkeleton ? (
-                  <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm" />
-                ) : (
-                  <img
-                    key={getImage(1).src}
-                    src={getImage(1).src}
-                    alt={getImage(1).alt}
-                    className="w-full h-full object-cover rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300"
-                  />
-                )}
-              </div>
-              <div className="h-[120px] md:h-[180px] lg:h-[238px] transition-all duration-500 ease-in-out">
-                {showSkeleton ? (
-                  <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm" />
-                ) : (
-                  <img
-                    key={getImage(2).src}
-                    src={getImage(2).src}
-                    alt={getImage(2).alt}
-                    className="w-full h-full object-cover rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300"
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="col-span-2 lg:col-span-1 h-[280px] md:h-[400px] lg:h-full order-first lg:order-none transition-all duration-500 ease-in-out">
-              {showSkeleton ? (
-                <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-md border-4 border-white" />
-              ) : (
-                <img
-                  key={getImage(3).src}
-                  src={getImage(3).src}
-                  alt={getImage(3).alt}
-                  className="w-full h-full object-cover rounded-[6px] shadow-md border-4 border-white hover:scale-[1.02] transition-all duration-500"
+            <div className="col-span-1 flex h-full flex-col justify-center gap-3 md:gap-4 lg:gap-6">
+              <div className="h-[120px] md:h-[180px] lg:h-[238px]">
+                <GallerySideImage
+                  image={slots.rightStackTop}
+                  showSkeleton={showSkeleton}
+                  className="h-full"
                 />
-              )}
-            </div>
-
-            <div className="col-span-1 flex flex-col gap-3 md:gap-4 lg:gap-6 h-full justify-center">
-              <div className="h-[120px] md:h-[180px] lg:h-[238px] transition-all duration-500 ease-in-out">
-                {showSkeleton ? (
-                  <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm" />
-                ) : (
-                  <img
-                    key={getImage(4).src}
-                    src={getImage(4).src}
-                    alt={getImage(4).alt}
-                    className="w-full h-full object-cover rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300"
-                  />
-                )}
               </div>
-              <div className="h-[120px] md:h-[180px] lg:h-[238px] transition-all duration-500 ease-in-out">
-                {showSkeleton ? (
-                  <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm" />
-                ) : (
-                  <img
-                    key={getImage(5).src}
-                    src={getImage(5).src}
-                    alt={getImage(5).alt}
-                    className="w-full h-full object-cover rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300"
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="col-span-1 h-[180px] md:h-[240px] lg:h-[220px] transition-all duration-500 ease-in-out">
-              {showSkeleton ? (
-                <div className="w-full h-full rounded-[6px] bg-gray-200 animate-pulse shadow-sm" />
-              ) : (
-                <img
-                  key={getImage(6).src}
-                  src={getImage(6).src}
-                  alt={getImage(6).alt}
-                  className="w-full h-full object-cover rounded-[6px] shadow-sm hover:shadow-md transition-all duration-300"
+              <div className="h-[120px] md:h-[180px] lg:h-[238px]">
+                <GallerySideImage
+                  image={slots.rightStackBottom}
+                  showSkeleton={showSkeleton}
+                  className="h-full"
                 />
-              )}
+              </div>
+            </div>
+
+            <div className="col-span-1 h-[180px] md:h-[240px] lg:h-[220px]">
+              <GallerySideImage
+                image={slots.rightOuter}
+                showSkeleton={showSkeleton}
+                className="h-full"
+              />
             </div>
           </div>
 
           {isError && (
-            <p className="text-center text-sm text-red-600 mt-4">
+            <p className="mt-4 text-center text-sm text-red-600">
               Gallery could not be loaded. Please try again later.
             </p>
           )}
 
-          <div className="flex items-center justify-center gap-4 mt-12 md:mt-16">
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={prevDisabled}
-              className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-primary hover:text-white bg-white hover:bg-primary transition-all duration-300 cursor-pointer group shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FiArrowLeft className="text-xl group-hover:-translate-x-1 transition-transform" />
-            </button>
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={nextDisabled}
-              className="w-12 h-12 rounded-full flex items-center justify-center hover:text-white hover:bg-primary bg-white transition-all duration-300 cursor-pointer group shadow-md shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FiArrowRight className="text-xl group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
+          {showControls ? (
+            <div className="mt-12 flex items-center justify-center gap-4 md:mt-16">
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={navDisabled}
+                className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border border-gray-200 bg-white text-primary shadow-sm transition-all duration-300 hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Previous gallery image"
+              >
+                <FiArrowLeft className="text-xl transition-transform group-hover:-translate-x-1" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={navDisabled}
+                className="group flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-white shadow-md shadow-accent/20 transition-all duration-300 hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Next gallery image"
+              >
+                <FiArrowRight className="text-xl transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

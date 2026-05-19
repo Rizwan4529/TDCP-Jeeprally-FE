@@ -43,6 +43,14 @@ export async function fetchCompletedRallies() {
   return data.data ?? [];
 }
 
+export async function fetchRallyStages(eventId) {
+  const { data } = await rallyAxios.get(`/rally/${eventId}/stages`);
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load stages");
+  }
+  return data.data ?? [];
+}
+
 export async function fetchRallyRoutes(eventId, category) {
   const { data } = await rallyAxios.get(`/rally/${eventId}/routes`, {
     params: { category },

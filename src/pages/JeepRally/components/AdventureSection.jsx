@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SlidingWindowDotPagination from "../../../components/common/SlidingWindowDotPagination.jsx";
 import SlidingWindowPrimarySlot from "../../../components/common/SlidingWindowPrimarySlot";
+import SlidingWindowSideSlot from "../../../components/common/SlidingWindowSideSlot";
 import VideoLightbox from "../../../components/common/VideoLightbox";
 import VideoPlayButton from "../../../components/common/VideoPlayButton";
 import { useSlidingWindowCarousel } from "../../../hooks/useSlidingWindowCarousel.js";
@@ -48,14 +49,14 @@ const DEFAULT_STATS = [
   },
 ];
 
-function VideoTile({ video, size, className, onOpen }) {
+function VideoTile({ video, size, className, onOpen, animated = false }) {
   if (!video) return null;
 
   const handleOpen = () => onOpen(video);
 
-  return (
+  const tile = (
     <div
-      className={className}
+      className={animated ? "relative h-full w-full" : className}
       onClick={handleOpen}
       onKeyDown={(event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -86,6 +87,16 @@ function VideoTile({ video, size, className, onOpen }) {
         />
       </div>
     </div>
+  );
+
+  if (!animated) {
+    return tile;
+  }
+
+  return (
+    <SlidingWindowSideSlot itemKey={video._id} className={className}>
+      {tile}
+    </SlidingWindowSideSlot>
   );
 }
 
@@ -184,6 +195,7 @@ const AdventureSection = ({ content }) => {
                     size="sm"
                     className={SLOT_CLASSES.stackTile}
                     onOpen={openVideoLightbox}
+                    animated
                   />
                 )}
                 {columns.firstStack[1] && (
@@ -192,6 +204,7 @@ const AdventureSection = ({ content }) => {
                     size="sm"
                     className={SLOT_CLASSES.stackTile}
                     onOpen={openVideoLightbox}
+                    animated
                   />
                 )}
               </div>
@@ -205,6 +218,7 @@ const AdventureSection = ({ content }) => {
                     size="sm"
                     className={SLOT_CLASSES.stackTile}
                     onOpen={openVideoLightbox}
+                    animated
                   />
                 )}
                 {columns.secondStack[1] && (
@@ -213,6 +227,7 @@ const AdventureSection = ({ content }) => {
                     size="sm"
                     className={SLOT_CLASSES.stackTile}
                     onOpen={openVideoLightbox}
+                    animated
                   />
                 )}
               </div>
