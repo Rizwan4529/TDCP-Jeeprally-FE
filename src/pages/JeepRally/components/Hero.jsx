@@ -60,7 +60,7 @@ function RegistrationPanel({ activeEvent, isLoading }) {
   }
 
   return (
-    <div className="relative w-full overflow-hidden rounded-[8px] border border-white/[0.11] bg-[linear-gradient(180deg,rgba(255,255,255,0.11),rgba(255,255,255,0.07))] p-4 text-white font-manrope backdrop-blur-[25px] shadow-[inset_0_1px_40px_rgba(36,36,37,0.20),inset_0_4px_18px_rgba(62,63,64,0.30),inset_0_98px_100px_-48px_rgba(125,127,128,0.30),inset_0_-82px_68px_-64px_rgba(98,98,98,0.30),inset_0_7px_11px_-4px_rgba(255,255,255,1),inset_0_39px_56px_-36px_rgba(255,255,255,0.50)] md:max-w-[483px] md:p-6">
+    <div className="relative w-full overflow-hidden rounded-[8px] border border-white/[0.13] bg-[linear-gradient(180deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.06)_35%,transparent_70%)] p-4 text-white font-manrope backdrop-blur-[25px] shadow-[inset_0_1px_14px_rgb(255_255_255_/_22%),inset_0_4px_12px_var(--tw-shadow-color,_rgb(250_252_255_/22%)),inset_0_60px_60px_-48px_var(--tw-shadow-color,_rgba(125,_127,_128,_0.14)),inset_0_-56px_38px_-50px_var(--tw-shadow-color,_rgb(236_225_225_/9%)),inset_0_7px_11px_-4px_var(--tw-shadow-color,_rgba(255,_255,_255,_1))] md:max-w-[483px] md:p-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,rgba(142,90,50,0.26),transparent_34%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02))]" />
 

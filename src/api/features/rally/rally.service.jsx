@@ -51,6 +51,16 @@ export async function fetchRallyStages(eventId) {
   return data.data ?? [];
 }
 
+/** Overall rally route (single object) for the routes overview page. */
+export async function fetchRallyRoute(eventId) {
+  const { data } = await rallyAxios.get(`/rally/${eventId}/routes`);
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load route");
+  }
+  return data.data ?? null;
+}
+
+/** Category-scoped routes list (checkpoint map). */
 export async function fetchRallyRoutes(eventId, category) {
   const { data } = await rallyAxios.get(`/rally/${eventId}/routes`, {
     params: { category },
@@ -58,11 +68,27 @@ export async function fetchRallyRoutes(eventId, category) {
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load routes");
   }
-  return data.data ?? [];
+  const payload = data.data;
+  if (Array.isArray(payload)) return payload;
+  if (payload && typeof payload === "object") return [payload];
+  return [];
 }
 
 export async function fetchRouteCheckpoints(routeId) {
   const { data } = await rallyAxios.get(`/routes/${routeId}/checkpoints`);
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load checkpoints");
+  }
+  return data.data ?? [];
+}
+
+export async function fetchStageCheckpoints(stageId, categoryId) {
+  const { data } = await rallyAxios.get("/checkpoints", {
+    params: {
+      stage_id: stageId,
+      category_id: categoryId,
+    },
+  });
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load checkpoints");
   }

@@ -10,7 +10,10 @@ import { FiAlignRight, FiX } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
 import AuthModal from "../components/auth/AuthModal";
 import RoutesNavDropdown from "../components/rally/RoutesNavDropdown";
-import { isRoutesNavLink } from "../pages/RallyMap/rallyStages.utils";
+import {
+  isRoutesNavActive,
+  isRoutesNavLink,
+} from "../pages/Routes/rallyStages.utils";
 import {
   contactInfo as defaultContactInfo,
   leftNavLinks as defaultLeftNavLinks,
@@ -89,6 +92,10 @@ const Header = () => {
 
   const isActive = (link) => {
     if (!link || link.external) return false;
+
+    if (isRoutesNavLink(link)) {
+      return isRoutesNavActive(path);
+    }
 
     const [linkPath, linkHash = ""] = link.path.split("#");
     const normalizedPath = linkPath || "/";

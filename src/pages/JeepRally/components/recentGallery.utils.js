@@ -33,6 +33,15 @@ export function shouldShowGalleryCarouselControls(images = []) {
   return canNavigateSlidingWindow(images, GALLERY_WINDOW_SIZE);
 }
 
+export function isGalleryImageClickable(image) {
+  return Boolean(image?.src && image.src !== GALLERY_FALLBACK_IMG_SRC);
+}
+
+export function findGalleryImageIndex(images = [], image) {
+  if (!isGalleryImageClickable(image)) return -1;
+  return images.findIndex((item) => item.id === image.id);
+}
+
 /** Maps the 7 visible window items onto the gallery grid slots. */
 export function getGalleryLayoutSlots(slideImages = []) {
   const slots = Array.from({ length: GALLERY_WINDOW_SIZE }, (_, index) => {

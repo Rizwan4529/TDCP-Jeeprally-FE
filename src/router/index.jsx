@@ -4,7 +4,7 @@ import ScrollToTop from "../components/common/ScrollToTop";
 import NotFound from "../pages/NotFound";
 import Loading from "../components/common/Loading";
 import JeepRally from "../pages/JeepRally";
-import RallyMap from "../pages/RallyMap";
+import RoutesPage from "../pages/Routes";
 import Rankings from "../pages/Rankings";
 import Players from "../pages/Players";
 import Player from "../pages/PlayerProfile";
@@ -53,7 +53,8 @@ function AppRouter() {
         <Route path="/" element={<Layout />}>
 
           <Route index element={<JeepRally />} />
-          <Route path="/routes" element={<RallyMap />} />
+          <Route path="/routes" element={<RoutesPage />} />
+          <Route path="/routes/stage/:stageId" element={<RoutesPage />} />
           <Route path="/ranking" element={<Rankings />} />
           <Route path="/competitor" element={<Players />} />
           <Route path="/player/:id" element={<Player />} />

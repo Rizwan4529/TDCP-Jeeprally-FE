@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import { fetchGeneralGallery } from "../../../api/features/rally/rally.service.jsx";
@@ -7,21 +7,26 @@ import {
   getWebsiteContentPage,
   getWebsiteContentSection,
 } from "../../../api/features/content/websiteContent.utils.js";
+import ImageLightbox from "../../../components/common/ImageLightbox.jsx";
 import SlidingWindowPrimarySlot from "../../../components/common/SlidingWindowPrimarySlot";
 import SlidingWindowSideSlot from "../../../components/common/SlidingWindowSideSlot";
+import { useImageLightbox } from "../../../hooks/useImageLightbox.js";
 import { useSlidingWindowCarousel } from "../../../hooks/useSlidingWindowCarousel.js";
 import {
+  findGalleryImageIndex,
   GALLERY_FALLBACK_IMG_SRC,
   GALLERY_WINDOW_SIZE,
   getGalleryLayoutSlots,
+  isGalleryImageClickable,
   normalizeGalleryImagesFromApi,
   shouldShowGalleryCarouselControls,
 } from "./recentGallery.utils.js";
+import FlagImg from "../../../assets/images/flag_4.png";
 
 const GALLERY_TITLE = "Recent Gallery";
 const GALLERY_LIMIT = 20;
 
-function GallerySideImage({ image, className, showSkeleton }) {
+function GallerySideImage({ image, className, showSkeleton, onImageClick }) {
   if (showSkeleton) {
     return (
       <div
@@ -30,21 +35,34 @@ function GallerySideImage({ image, className, showSkeleton }) {
     );
   }
 
+  const clickable = isGalleryImageClickable(image);
+
   return (
     <SlidingWindowSideSlot
       itemKey={image?.id ?? "gallery-side-empty"}
       className={`rounded-[6px] ${className}`}
     >
-      <img
-        src={image?.src ?? GALLERY_FALLBACK_IMG_SRC}
-        alt={image?.alt ?? ""}
-        className="h-full w-full object-cover shadow-sm transition-shadow duration-300 hover:shadow-md"
-      />
+      <button
+        type="button"
+        onClick={() => onImageClick?.(image)}
+        disabled={!clickable}
+        className={`h-full w-full overflow-hidden rounded-[6px] text-left ${
+          clickable ? "cursor-zoom-in" : "cursor-default"
+        }`}
+        aria-label={clickable ? `View ${image?.alt || "gallery image"}` : undefined}
+      >
+        <img
+          src={image?.src ?? GALLERY_FALLBACK_IMG_SRC}
+          alt={image?.alt ?? ""}
+          className="h-full w-full object-cover shadow-sm transition-shadow duration-300 hover:shadow-md"
+        />
+      </button>
     </SlidingWindowSideSlot>
   );
 }
 
 const RecentGallery = ({ content }) => {
+  const imageLightbox = useImageLightbox();
   const { data: websiteContent } = useWebsiteContentQuery();
 
   const { data, isPending, isFetching, isError } = useQuery({
@@ -56,6 +74,11 @@ const RecentGallery = ({ content }) => {
   const images = useMemo(
     () => normalizeGalleryImagesFromApi(data?.images),
     [data?.images],
+  );
+
+  const lightboxItems = useMemo(
+    () => images.map((image) => ({ src: image.src, alt: image.alt })),
+    [images],
   );
 
   const carousel = useSlidingWindowCarousel(images, {
@@ -81,6 +104,15 @@ const RecentGallery = ({ content }) => {
   const showControls = shouldShowGalleryCarouselControls(images);
   const navDisabled = showSkeleton || isError || !showControls || !canNavigate;
 
+  const openGalleryImage = useCallback(
+    (image) => {
+      const startIndex = findGalleryImageIndex(images, image);
+      if (startIndex < 0) return;
+      imageLightbox.open(lightboxItems, startIndex);
+    },
+    [imageLightbox, images, lightboxItems],
+  );
+
   const handleNext = () => {
     if (navDisabled) return;
     next();
@@ -93,9 +125,9 @@ const RecentGallery = ({ content }) => {
 
   return (
     <section className="relative overflow-hidden bg-white py-section-break">
-      <div className="absolute left-0 top-0 h-48 w-48 md:h-64 md:w-64 lg:h-80 lg:w-[400px]">
+      <div className="absolute -left-32 top-20 h-48 w-48 md:h-64 md:w-64 lg:h-80 lg:w-[400px]">
         <img
-          src="/assets/images/flag_4.png"
+          src={FlagImg}
           alt=""
           className="h-[300px] w-[300px] rotate-[50deg] object-cover opacity-10"
         />
@@ -115,6 +147,7 @@ const RecentGallery = ({ content }) => {
                 image={slots.leftOuter}
                 showSkeleton={showSkeleton}
                 className="h-full"
+                onImageClick={openGalleryImage}
               />
             </div>
 
@@ -124,6 +157,7 @@ const RecentGallery = ({ content }) => {
                   image={slots.leftStackTop}
                   showSkeleton={showSkeleton}
                   className="h-full"
+                  onImageClick={openGalleryImage}
                 />
               </div>
               <div className="h-[120px] md:h-[180px] lg:h-[238px]">
@@ -131,6 +165,7 @@ const RecentGallery = ({ content }) => {
                   image={slots.leftStackBottom}
                   showSkeleton={showSkeleton}
                   className="h-full"
+                  onImageClick={openGalleryImage}
                 />
               </div>
             </div>
@@ -143,11 +178,27 @@ const RecentGallery = ({ content }) => {
               {showSkeleton ? (
                 <div className="h-full w-full animate-pulse rounded-[6px] border-4 border-white bg-gray-200 shadow-md" />
               ) : (
-                <img
-                  src={slots.main?.src ?? GALLERY_FALLBACK_IMG_SRC}
-                  alt={slots.main?.alt ?? ""}
-                  className="h-full w-full rounded-[6px] border-4 border-white object-cover shadow-md transition-transform duration-500 hover:scale-[1.02]"
-                />
+                <button
+                  type="button"
+                  onClick={() => openGalleryImage(slots.main)}
+                  disabled={!isGalleryImageClickable(slots.main)}
+                  className={`h-full w-full overflow-hidden rounded-[6px] border-4 border-white text-left shadow-md ${
+                    isGalleryImageClickable(slots.main)
+                      ? "cursor-zoom-in"
+                      : "cursor-default"
+                  }`}
+                  aria-label={
+                    isGalleryImageClickable(slots.main)
+                      ? `View ${slots.main?.alt || "gallery image"}`
+                      : undefined
+                  }
+                >
+                  <img
+                    src={slots.main?.src ?? GALLERY_FALLBACK_IMG_SRC}
+                    alt={slots.main?.alt ?? ""}
+                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+                  />
+                </button>
               )}
             </SlidingWindowPrimarySlot>
 
@@ -157,6 +208,7 @@ const RecentGallery = ({ content }) => {
                   image={slots.rightStackTop}
                   showSkeleton={showSkeleton}
                   className="h-full"
+                  onImageClick={openGalleryImage}
                 />
               </div>
               <div className="h-[120px] md:h-[180px] lg:h-[238px]">
@@ -164,6 +216,7 @@ const RecentGallery = ({ content }) => {
                   image={slots.rightStackBottom}
                   showSkeleton={showSkeleton}
                   className="h-full"
+                  onImageClick={openGalleryImage}
                 />
               </div>
             </div>
@@ -173,6 +226,7 @@ const RecentGallery = ({ content }) => {
                 image={slots.rightOuter}
                 showSkeleton={showSkeleton}
                 className="h-full"
+                onImageClick={openGalleryImage}
               />
             </div>
           </div>
@@ -207,6 +261,16 @@ const RecentGallery = ({ content }) => {
           ) : null}
         </div>
       </div>
+
+      <ImageLightbox
+        isOpen={imageLightbox.isOpen}
+        onClose={imageLightbox.close}
+        items={imageLightbox.items}
+        index={imageLightbox.index}
+        onPrev={imageLightbox.goPrev}
+        onNext={imageLightbox.goNext}
+        label="Recent gallery"
+      />
     </section>
   );
 };

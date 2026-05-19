@@ -1,15 +1,18 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { fetchRallyStages } from "../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../api/features/rally/rally.queryOptions.jsx";
 import { SLIDING_WINDOW_CAROUSEL_EASE } from "../../constants/slidingWindowCarousel.animation.js";
 import {
   formatStageHeading,
-  formatStageRouteLine,
+  formatStageDate,
   formatStageSchedule,
+  getStageRoutePath,
+  ROUTES_NAV_PATH,
   splitStagesIntoColumns,
-} from "../../pages/RallyMap/rallyStages.utils.js";
+} from "../../pages/Routes/rallyStages.utils.js";
 
 const panelTransition = {
   duration: 0.28,
@@ -45,7 +48,7 @@ function StageRow({ stage, onSelect }) {
       </div>
       <div className="min-w-0 text-right">
         <p className="font-manrope text-[11px] font-medium uppercase leading-snug tracking-[0.04em] text-black/80 transition-colors duration-200 group-hover:text-black sm:text-[12px]">
-          {formatStageRouteLine(stage)}
+          {formatStageDate(stage)}
         </p>
         {schedule ? (
           <p className="mt-0.5 font-manrope text-[10px] text-primary/70 transition-colors duration-200 group-hover:text-primary sm:text-[11px]">
@@ -58,7 +61,7 @@ function StageRow({ stage, onSelect }) {
   );
 }
 
-function StageColumn({ stages }) {
+function StageColumn({ stages, onStageSelect }) {
   if (!stages.length) {
     return null;
   }
@@ -66,7 +69,11 @@ function StageColumn({ stages }) {
   return (
     <ul>
       {stages.map((stage) => (
-        <StageRow key={stage._id ?? `stage-${stage.stage_number}`} stage={stage} />
+        <StageRow
+          key={stage._id ?? `stage-${stage.stage_number}`}
+          stage={stage}
+          onSelect={onStageSelect}
+        />
       ))}
     </ul>
   );
@@ -94,6 +101,8 @@ function MenuPanelContent({
   activeEventName,
   isOpen,
   compact = false,
+  onStageSelect,
+  onRouteClick,
 }) {
   const {
     data: stages = [],
@@ -145,14 +154,15 @@ function MenuPanelContent({
 
       {!showSkeleton && !isError && stages.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2 sm:gap-x-10">
-          <StageColumn stages={left} />
-          <StageColumn stages={right} />
+          <StageColumn stages={left} onStageSelect={onStageSelect} />
+          <StageColumn stages={right} onStageSelect={onStageSelect} />
         </div>
       ) : null}
 
       <div className="mt-5 flex justify-center border-t border-black/[0.06] pt-4">
         <button
           type="button"
+          onClick={onRouteClick}
           className="flex min-h-10 min-w-[120px] items-center justify-center rounded-full border-2 border-primary bg-transparent px-8 font-manrope text-[13px] font-semibold uppercase tracking-[0.12em] text-primary transition-colors hover:bg-primary hover:text-white"
         >
           Route
@@ -171,8 +181,23 @@ const RallyStagesMenu = ({
   align = "right",
   variant = "dropdown",
 }) => {
+  const navigate = useNavigate();
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const eventId = activeEvent?._id;
+
+  const handleStageSelect = useCallback(
+    (stage) => {
+      if (!stage?._id) return;
+      onClose();
+      navigate(getStageRoutePath(stage._id));
+    },
+    [navigate, onClose],
+  );
+
+  const handleRouteClick = useCallback(() => {
+    onClose();
+    navigate(ROUTES_NAV_PATH);
+  }, [navigate, onClose]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -209,6 +234,8 @@ const RallyStagesMenu = ({
               activeEventName={activeEvent?.name}
               isOpen={isOpen}
               compact={variant === "inline"}
+              onStageSelect={handleStageSelect}
+              onRouteClick={handleRouteClick}
             />
           </div>
         </motion.div>

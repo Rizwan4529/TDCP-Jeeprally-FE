@@ -91,6 +91,18 @@ export function hasCategoryKey(categories = [], key) {
   );
 }
 
+export function getDefaultCategoryId(categories = []) {
+  return normalizeCategories(categories)[0]?._id ?? "";
+}
+
+export function getCategoryIdByKey(categories = [], key) {
+  if (!key) return "";
+  return (
+    normalizeCategories(categories).find((category) => category.key === key)
+      ?._id ?? ""
+  );
+}
+
 /** localStorage key for the active rally event id (set from GET /rally/active on each full page load). */
 export const ACTIVE_RALLY_EVENT_ID_KEY = "tdcp_active_rally_event_id";
 

@@ -11,7 +11,7 @@ function getButtonClassName(isActive) {
 }
 
 /**
- * Pill-style category filter (same UI as the routes / rally map page).
+ * Pill-style category filter (same UI as the Routes page).
  * Always centered horizontally with width fitting the tab labels.
  *
  * @param {{ key: string, title: string }[]} [tabs]
