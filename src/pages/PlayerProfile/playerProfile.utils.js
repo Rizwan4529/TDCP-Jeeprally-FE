@@ -5,7 +5,6 @@ export function formatChampionNumber(number) {
 }
 
 export function buildPlayerProfile(champion, fallbackProfile) {
-  console.log("Champion", champion);
   if (!champion) return fallbackProfile;
 
   const teamName = champion.team_id?.team_name || fallbackProfile.teamName;

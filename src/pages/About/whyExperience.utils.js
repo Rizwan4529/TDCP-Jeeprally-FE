@@ -86,7 +86,7 @@ export function mapWhyExperienceContent(content) {
       DEFAULT_WHY_EXPERIENCE.description,
     jeepImage: content.image || DEFAULT_WHY_EXPERIENCE.jeepImage,
     circleImage:
-      content.circleImage ||
+      content.bgImage ||
       content.circleImg ||
       DEFAULT_WHY_EXPERIENCE.circleImage,
     features,

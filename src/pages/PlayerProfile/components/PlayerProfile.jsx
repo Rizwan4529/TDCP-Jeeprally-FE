@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from "react-router";
 import raceBg from "../../../assets/images/race-bg.jpg";
 import {
   fetchRallyChampions,
+  fetchRallyCompetitors,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
@@ -142,6 +143,8 @@ const PlayerProfile = () => {
   const eventIdFromQuery = searchParams.get("eventId") || "";
   const eventId = eventIdFromQuery || activeEvent?._id;
   const requestedCategory = searchParams.get("category") || "";
+  const profileSource = searchParams.get("source") || "champion";
+  const isCompetitorProfile = profileSource === "competitor";
   const isPastEventProfile = Boolean(eventIdFromQuery);
 
   const activeCategoryKey = useMemo(() => {
@@ -169,13 +172,25 @@ const PlayerProfile = () => {
       activeCategoryKey || "all",
     ],
     queryFn: () =>
-      fetchRallyChampions(
-        eventId,
-        activeCategoryKey || undefined,
-      ),
+      fetchRallyChampions(eventId, activeCategoryKey || undefined),
     enabled: Boolean(
-      eventId && (isPastEventProfile || activeCategoryKey),
+      !isCompetitorProfile &&
+        eventId &&
+        (isPastEventProfile || activeCategoryKey),
     ),
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: competitorsRaw = [] } = useQuery({
+    queryKey: [
+      "rally",
+      "competitors",
+      "player-profile",
+      eventId,
+      activeCategoryKey,
+    ],
+    queryFn: () => fetchRallyCompetitors(eventId, activeCategoryKey),
+    enabled: Boolean(isCompetitorProfile && eventId && activeCategoryKey),
     refetchOnWindowFocus: false,
   });
 
@@ -183,10 +198,16 @@ const PlayerProfile = () => {
     () => championsRaw.find((item) => item._id === id) || null,
     [championsRaw, id],
   );
-  const profile = useMemo(
-    () => buildPlayerProfile(champion, fallbackProfile),
-    [champion, fallbackProfile],
+
+  const competitor = useMemo(
+    () => competitorsRaw.find((item) => item._id === id) || null,
+    [competitorsRaw, id],
   );
+
+  const profile = useMemo(() => {
+    const record = isCompetitorProfile ? competitor : champion;
+    return buildPlayerProfile(record, fallbackProfile);
+  }, [champion, competitor, fallbackProfile, isCompetitorProfile]);
 
   const heroImage = resolveCheckpointImageUrl(profile.heroImage);
   const driverImage = resolveCheckpointImageUrl(profile.driverImage);

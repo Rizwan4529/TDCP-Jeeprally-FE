@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatCompetitorNumber,
+  getCompetitorProfilePath,
   getPlayerSkeletonCards,
   mapCompetitorsToPlayers,
 } from "./players.utils.js";
@@ -25,7 +26,7 @@ describe("players utils", () => {
           },
         },
       ],
-      (image) => `resolved:${image}`
+      (image, fallback) => (image ? `resolved:${image}` : fallback)
     );
 
     expect(players).toEqual([
@@ -34,6 +35,7 @@ describe("players utils", () => {
         number: "#T-001",
         name: "Muhammad Rizwan",
         image: "resolved:uploads/images/profile.png",
+        imageFallback: "/assets/images/pl1.png",
       },
     ]);
   });
@@ -53,7 +55,7 @@ describe("players utils", () => {
           },
         },
       ],
-      (image) => `resolved:${image}`
+      (image, fallback) => (image ? `resolved:${image}` : fallback)
     );
 
     expect(players[0]).toEqual({
@@ -61,7 +63,18 @@ describe("players utils", () => {
       number: "#T-002",
       name: "Ali Khan",
       image: "resolved:uploads/images/driver-image.png",
+      imageFallback: "/assets/images/pl1.png",
     });
+  });
+
+  it("builds the player profile path with competitor source", () => {
+    expect(
+      getCompetitorProfilePath({
+        playerId: "registration-1",
+        category: "jeep",
+        eventId: "event-1",
+      }),
+    ).toBe("/player/registration-1?category=jeep&source=competitor&eventId=event-1");
   });
 
   it("returns a stable list of skeleton cards", () => {

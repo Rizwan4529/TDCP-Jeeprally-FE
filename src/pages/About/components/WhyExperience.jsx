@@ -16,9 +16,7 @@ function ExperienceFeature({ feature }) {
           src={iconSrc}
           alt=""
           className="h-10 w-auto max-w-full object-contain sm:h-11"
-          onError={(event) =>
-            handleImageError(event, feature.iconFallback)
-          }
+          onError={(event) => handleImageError(event, feature.iconFallback)}
           aria-hidden
         />
       </div>
@@ -36,8 +34,11 @@ function ExperienceFeature({ feature }) {
 
 const WhyExperience = ({ content }) => {
   const section = useMemo(() => mapWhyExperienceContent(content), [content]);
-  console.log("section",section);
-  const jeepSrc = resolveImageUrl(section.jeepImage, WHY_EXPERIENCE_ASSETS.jeep);
+  console.log("section", section);
+  const jeepSrc = resolveImageUrl(
+    section.jeepImage,
+    WHY_EXPERIENCE_ASSETS.jeep,
+  );
   const circleSrc = resolveImageUrl(
     section.circleImage,
     WHY_EXPERIENCE_ASSETS.circle,
@@ -66,7 +67,7 @@ const WhyExperience = ({ content }) => {
               <img
                 src={jeepSrc}
                 alt="TDCP Jeep Rally off-road vehicle"
-                className="relative z-10 mx-auto w-[88%] max-w-[440px] object-contain drop-shadow-[0_28px_48px_rgba(0,0,0,0.18)]"
+                className="relative z-10 mx-auto w-[95%] max-w-[813px] object-contain drop-shadow-[0_28px_48px_rgba(0,0,0,0.18)]"
                 onError={(event) =>
                   handleImageError(event, WHY_EXPERIENCE_ASSETS.jeep)
                 }

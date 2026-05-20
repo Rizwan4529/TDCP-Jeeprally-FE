@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
 import "./Players.css";
 import Partners from "../JeepRally/components/Partners";
 import {
@@ -9,14 +10,14 @@ import {
 import {
   getCategoryFilterTabs,
   getDefaultCategoryKey,
+  handleImageError,
   hasCategoryKey,
+  resolveImageUrl,
 } from "../../utils/constants.js";
 import { activeRallyQueryOptions } from "../../api/features/rally/rally.queryOptions.jsx";
+import { fetchRallyCompetitors } from "../../api/features/rally/rally.service.jsx";
 import {
-  fetchRallyCompetitors,
-  resolveCheckpointImageUrl,
-} from "../../api/features/rally/rally.service.jsx";
-import {
+  getCompetitorProfilePath,
   getPlayerSkeletonCards,
   mapCompetitorsToPlayers,
 } from "./players.utils.js";
@@ -61,8 +62,8 @@ const Players = () => {
   });
 
   const playersData = useMemo(
-    () => mapCompetitorsToPlayers(competitorsRaw, resolveCheckpointImageUrl),
-    [competitorsRaw]
+    () => mapCompetitorsToPlayers(competitorsRaw, resolveImageUrl),
+    [competitorsRaw],
   );
 
   const filteredPlayers = useMemo(() => {
@@ -97,7 +98,17 @@ const Players = () => {
         {/* Banner Section */}
         <div className="players-banner">
           <div className="banner-frame-container">
-            <img src={heroContent?.frameImage || "/assets/images/frame.png"} alt="TDCP Jeep Rally Frame" className="banner-frame-img" />
+            <img
+              src={resolveImageUrl(
+                heroContent?.frameImage,
+                "/assets/images/frame.png",
+              )}
+              alt="TDCP Jeep Rally Frame"
+              className="banner-frame-img"
+              onError={(event) =>
+                handleImageError(event, "/assets/images/frame.png")
+              }
+            />
             <div className="banner-text-overlay">
               <h1 className="banner-title">{heroContent?.title || "TDCP JEEP RALLY"}</h1>
             </div>
@@ -167,17 +178,28 @@ const Players = () => {
             !isPending &&
             !isError &&
             filteredPlayers.map((player) => (
-              <div key={player.id} className="player-card">
+              <Link
+                key={player.id}
+                to={getCompetitorProfilePath({
+                  playerId: player.id,
+                  category: activeCategoryKey,
+                  eventId,
+                })}
+                className="player-card block text-inherit no-underline transition-transform duration-300 hover:-translate-y-1"
+              >
                 <img
                   src={player.image}
                   alt={player.name}
                   className="player-img"
+                  onError={(event) =>
+                    handleImageError(event, player.imageFallback)
+                  }
                 />
                 <div className="player-info-box">
                   <span className="player-number">{player.number}</span>
                   <span className="player-name">{player.name}</span>
                 </div>
-              </div>
+              </Link>
             ))}
         </div>
       </div>
