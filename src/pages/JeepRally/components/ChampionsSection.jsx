@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
@@ -20,7 +20,7 @@ import {
   getCategoryTabsWithChampions,
   mapChampionsToPodium,
   resolveChampionsCategoryKey,
-  shouldShowChampionsEmpty,
+  shouldHideChampionsSection,
   sortChampionsList,
 } from "./championsSection.utils.js";
 import {
@@ -31,28 +31,45 @@ import CategoryFilter from "../../../components/common/CategoryFilter.jsx";
 
 const CHAMPION_IMAGE_FALLBACK = "/assets/images/person-champion.png";
 
-const ChampionPodiumRow = ({ champions, getChampionLink }) => (
-  <div className="mx-auto flex max-w-7xl flex-col items-end justify-center gap-6 md:flex-row lg:gap-8">
+const CHAMPION_CARD_STAGGER = {
+  "order-1": "[animation-delay:80ms]",
+  "order-2": "[animation-delay:0ms]",
+  "order-3": "[animation-delay:160ms]",
+};
+
+const ChampionPodiumRow = ({ champions, getChampionLink, animateCards = false }) => (
+  <div className="mx-auto flex max-w-7xl flex-col items-end justify-center gap-6 md:flex-row md:items-end lg:gap-8">
     {champions.map((player) => (
       <Link
         to={getChampionLink(player)}
         key={player.id}
-        className={`group relative flex w-full flex-col justify-end md:w-1/3 ${player.order}`}
+        className={`group relative flex w-full flex-col justify-end md:w-1/3 ${player.order} ${
+          animateCards
+            ? `animate-champions-card-in opacity-0 ${CHAMPION_CARD_STAGGER[player.order] ?? ""}`
+            : ""
+        }`}
       >
-        <div className="flex w-full cursor-pointer flex-col overflow-hidden rounded-[15px] shadow-lg transition-transform duration-500 hover:-translate-y-2">
-          <div
-            className={`relative w-full shrink-0 overflow-hidden ${player.height}`}
-          >
+        <div
+          className={`flex w-full cursor-pointer flex-col overflow-hidden rounded-[15px] shadow-lg transition-transform duration-500 ease-out hover:-translate-y-2 ${player.cardHeight}`}
+        >
+          <div className="relative min-h-0 w-full flex-1 overflow-hidden">
             <img
               src={player.image}
               alt={player.name}
-              className={`absolute inset-0 ${player.height} w-full object-cover object-top`}
+              className="absolute inset-0 h-full w-full object-cover object-top"
               onError={(e) => handleImageError(e, CHAMPION_IMAGE_FALLBACK)}
             />
           </div>
 
-          <div className="shrink-0 bg-primary px-4 py-3 text-center font-gilda text-lg tracking-wide text-white">
-            {player.name} ( {player.team} )
+          <div
+            className={`flex shrink-0 items-center justify-center bg-primary px-4 py-3 text-center font-gilda text-base leading-snug tracking-wide text-white md:text-lg ${player.footerHeight}`}
+          >
+            <p className="line-clamp-3">
+              {player.navigatorName
+                ? `${player.name} & ${player.navigatorName}`
+                : player.name}{" "}
+              ( {player.team} )
+            </p>
           </div>
         </div>
       </Link>
@@ -72,12 +89,18 @@ const ChampionsSection = ({
   subtitleClassName = "text-gray-600",
 }) => {
   const [activeCategoryKey, setActiveCategoryKey] = useState("");
+  const [podiumPhase, setPodiumPhase] = useState("visible");
+  const [displayedChampions, setDisplayedChampions] = useState([]);
+  const skipInitialPodiumTransition = useRef(true);
+  const championsRef = useRef([]);
   const { data: categoriesRaw = [] } = useCategoriesQuery();
   const { data: websiteContent } = useWebsiteContentQuery();
   const { data: activeEvent } = useQuery(activeRallyQueryOptions);
   const isPastEventMode = Boolean(useApiCategories && eventIdOverride);
   const shouldFilterCategoriesWithChampions =
     filterCategoriesWithChampions && !isPastEventMode;
+  const shouldFilterTabsByChampions =
+    shouldFilterCategoriesWithChampions || isPastEventMode;
 
   const {
     data: completedRallies = [],
@@ -112,6 +135,17 @@ const ChampionsSection = ({
   );
 
   const {
+    data: pastChampionsRaw = [],
+    isSuccess: pastChampionsSuccess,
+    isPending: pastChampionsPending,
+  } = useQuery({
+    queryKey: ["rally", "champions", eventId, "all"],
+    queryFn: () => fetchRallyChampions(eventId),
+    enabled: Boolean(isPastEventMode && eventId),
+    refetchOnWindowFocus: false,
+  });
+
+  const {
     data: allHomeChampionsRaw = [],
     isSuccess: allHomeChampionsSuccess,
     isPending: allHomeChampionsPending,
@@ -124,13 +158,17 @@ const ChampionsSection = ({
     refetchOnWindowFocus: false,
   });
 
+  const championsForTabFilter = isPastEventMode
+    ? pastChampionsRaw
+    : allHomeChampionsRaw;
+
   const visibleTabs = useMemo(() => {
-    if (!shouldFilterCategoriesWithChampions) {
+    if (!shouldFilterTabsByChampions) {
       return tabs;
     }
 
-    return getCategoryTabsWithChampions(tabs, allHomeChampionsRaw);
-  }, [allHomeChampionsRaw, shouldFilterCategoriesWithChampions, tabs]);
+    return getCategoryTabsWithChampions(tabs, championsForTabFilter);
+  }, [championsForTabFilter, shouldFilterTabsByChampions, tabs]);
 
   const filterCategories = useMemo(
     () =>
@@ -142,12 +180,8 @@ const ChampionsSection = ({
   );
 
   useEffect(() => {
-    if (isPastEventMode) return;
-
     const resolvedCategoryKey = resolveChampionsCategoryKey({
-      categories: shouldFilterCategoriesWithChampions
-        ? filterCategories
-        : categoriesRaw,
+      categories: shouldFilterTabsByChampions ? filterCategories : categoriesRaw,
       activeCategoryKey,
       forcedCategoryKey,
     });
@@ -160,21 +194,9 @@ const ChampionsSection = ({
     categoriesRaw,
     filterCategories,
     forcedCategoryKey,
-    isPastEventMode,
-    shouldFilterCategoriesWithChampions,
+    shouldFilterTabsByChampions,
     visibleTabs.length,
   ]);
-
-  const {
-    data: pastChampionsRaw = [],
-    isSuccess: pastChampionsSuccess,
-    isPending: pastChampionsPending,
-  } = useQuery({
-    queryKey: ["rally", "champions", eventId, "all"],
-    queryFn: () => fetchRallyChampions(eventId),
-    enabled: Boolean(isPastEventMode && eventId),
-    refetchOnWindowFocus: false,
-  });
 
   const {
     data: websiteChampionsRaw = [],
@@ -206,16 +228,21 @@ const ChampionsSection = ({
     shouldFilterCategoriesWithChampions,
   ]);
 
+  const pastChampionsByCategory = useMemo(() => {
+    if (!isPastEventMode || !activeCategoryKey) {
+      return [];
+    }
+
+    return pastChampionsRaw.filter(
+      (champion) => String(champion?.category ?? "") === activeCategoryKey,
+    );
+  }, [activeCategoryKey, isPastEventMode, pastChampionsRaw]);
+
   const championsRaw = isPastEventMode
-    ? pastChampionsRaw
+    ? pastChampionsByCategory
     : shouldFilterCategoriesWithChampions
       ? homeChampionsRaw
       : websiteChampionsRaw;
-  const championsSuccess = isPastEventMode
-    ? pastChampionsSuccess
-    : shouldFilterCategoriesWithChampions
-      ? allHomeChampionsSuccess
-      : websiteChampionsSuccess;
   const championsPending = isPastEventMode
     ? pastChampionsPending
     : shouldFilterCategoriesWithChampions
@@ -235,25 +262,69 @@ const ChampionsSection = ({
     [championsRaw],
   );
 
-  const showChampionsEmpty =
-    (shouldFilterCategoriesWithChampions &&
-      completedRalliesSuccess &&
-      !mostRecentCompletedRally) ||
-    (shouldFilterCategoriesWithChampions &&
-      allHomeChampionsSuccess &&
-      visibleTabs.length === 0) ||
-    shouldShowChampionsEmpty({
-      eventId,
-      activeCategoryKey: isPastEventMode ? "all" : activeCategoryKey,
-      champions: sortedChampionsRaw,
-      championsSuccess,
-      requireCategory: !isPastEventMode,
-    });
+  championsRef.current = champions;
+
+  useEffect(() => {
+    if (champions.length === 0) return;
+    if (podiumPhase === "out") return;
+    setDisplayedChampions(champions);
+  }, [champions, podiumPhase]);
+
+  useEffect(() => {
+    if (skipInitialPodiumTransition.current) {
+      skipInitialPodiumTransition.current = false;
+      return;
+    }
+    if (!activeCategoryKey) return;
+
+    setPodiumPhase("out");
+
+    const exitTimer = window.setTimeout(() => {
+      setDisplayedChampions(championsRef.current);
+      setPodiumPhase("in");
+    }, 280);
+
+    return () => window.clearTimeout(exitTimer);
+  }, [activeCategoryKey]);
+
+  useEffect(() => {
+    if (podiumPhase !== "in") return;
+
+    const enterTimer = window.setTimeout(() => {
+      setPodiumPhase("visible");
+    }, 550);
+
+    return () => window.clearTimeout(enterTimer);
+  }, [podiumPhase]);
+
+  const podiumAnimationClass =
+    podiumPhase === "out"
+      ? "animate-champions-podium-out pointer-events-none"
+      : podiumPhase === "in"
+        ? "animate-champions-podium-in"
+        : "";
+
+  const allChampionsReady = isPastEventMode
+    ? pastChampionsSuccess
+    : shouldFilterCategoriesWithChampions
+      ? completedRalliesSuccess && allHomeChampionsSuccess
+      : false;
+
+  const shouldHideSection = shouldHideChampionsSection({
+    isLoading: championsPending,
+    hasEvent: Boolean(eventId),
+    usesAllChampionsGate: shouldFilterTabsByChampions,
+    allChampionsReady,
+    allChampionsCount: championsForTabFilter.length,
+    visibleTabCount: visibleTabs.length,
+    usesCategoryQuery: !shouldFilterTabsByChampions,
+    categoryChampionsReady: websiteChampionsSuccess,
+    categoryChampionsCount: sortedChampionsRaw.length,
+  });
 
   const showCategoryFilters =
     !hideFilters &&
-    !isPastEventMode &&
-    visibleTabs.length > (shouldFilterCategoriesWithChampions ? 1 : 0);
+    visibleTabs.length > (shouldFilterTabsByChampions ? 1 : 0);
 
   const resolvedContent = useMemo(() => {
     if (content) return content;
@@ -262,6 +333,10 @@ const ChampionsSection = ({
       "champions",
     );
   }, [content, websiteContent]);
+
+  if (shouldHideSection) {
+    return null;
+  }
 
   const getChampionLink = (player) => {
     if (isPastEventMode) {
@@ -312,27 +387,15 @@ const ChampionsSection = ({
           />
         )}
 
-        {championsPending && (
-          <p className="py-12 text-center text-gray-500">Loading champions…</p>
-        )}
-
-        {!championsPending && showChampionsEmpty ? (
-          <div className="mx-auto max-w-3xl rounded-[15px] border border-primary/10 bg-white/80 px-6 py-12 text-center shadow-sm">
-            <p className="font-gilda text-[26px] text-primary">
-              No champions added yet
-            </p>
-            <p className="mt-3 text-sm text-gray-500 md:text-base">
-              Champions have not been published for this event yet. Please check
-              back later.
-            </p>
+        {displayedChampions.length > 0 ? (
+          <div className={`will-change-[opacity,transform] ${podiumAnimationClass}`}>
+            <ChampionPodiumRow
+              key={activeCategoryKey}
+              champions={displayedChampions}
+              getChampionLink={getChampionLink}
+              animateCards={podiumPhase === "in"}
+            />
           </div>
-        ) : null}
-
-        {!championsPending && !showChampionsEmpty && champions.length > 0 ? (
-          <ChampionPodiumRow
-            champions={champions}
-            getChampionLink={getChampionLink}
-          />
         ) : null}
       </div>
     </section>

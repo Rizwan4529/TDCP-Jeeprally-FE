@@ -1,4 +1,4 @@
-import rallyAxios from "../../rallyAxios.jsx";
+import api from "../../axios.jsx";
 import { getBackendOrigin, resolveImageUrl } from "../../../utils/constants.js";
 
 /** Origin for static uploads (served from app root, not under `/api/v1`). */
@@ -18,7 +18,7 @@ export function resolveRallyVideoUrl(videoUrl) {
 }
 
 export async function fetchActiveRally() {
-  const { data } = await rallyAxios.get("/rally/active");
+  const { data } = await api.get("/rally/active");
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load active rally");
   }
@@ -26,7 +26,7 @@ export async function fetchActiveRally() {
 }
 
 export async function fetchPastRallies() {
-  const { data } = await rallyAxios.get("/rally", { params: { type: "past" } });
+  const { data } = await api.get("/rally", { params: { type: "past" } });
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load past rallies");
   }
@@ -34,7 +34,7 @@ export async function fetchPastRallies() {
 }
 
 export async function fetchCompletedRallies() {
-  const { data } = await rallyAxios.get("/rally", {
+  const { data } = await api.get("/rally", {
     params: { status: "completed" },
   });
   if (!data?.success) {
@@ -44,7 +44,7 @@ export async function fetchCompletedRallies() {
 }
 
 export async function fetchRallyStages(eventId) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/stages`);
+  const { data } = await api.get(`/rally/${eventId}/stages`);
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load stages");
   }
@@ -53,7 +53,7 @@ export async function fetchRallyStages(eventId) {
 
 /** Overall rally route (single object) for the routes overview page. */
 export async function fetchRallyRoute(eventId) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/routes`);
+  const { data } = await api.get(`/rally/${eventId}/routes`);
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load route");
   }
@@ -62,7 +62,7 @@ export async function fetchRallyRoute(eventId) {
 
 /** Category-scoped routes list (checkpoint map). */
 export async function fetchRallyRoutes(eventId, category) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/routes`, {
+  const { data } = await api.get(`/rally/${eventId}/routes`, {
     params: { category },
   });
   if (!data?.success) {
@@ -75,7 +75,7 @@ export async function fetchRallyRoutes(eventId, category) {
 }
 
 export async function fetchRouteCheckpoints(routeId) {
-  const { data } = await rallyAxios.get(`/routes/${routeId}/checkpoints`);
+  const { data } = await api.get(`/routes/${routeId}/checkpoints`);
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load checkpoints");
   }
@@ -83,7 +83,7 @@ export async function fetchRouteCheckpoints(routeId) {
 }
 
 export async function fetchStageCheckpoints(stageId, categoryId) {
-  const { data } = await rallyAxios.get("/checkpoints", {
+  const { data } = await api.get("/checkpoints", {
     params: {
       stage_id: stageId,
       category_id: categoryId,
@@ -96,7 +96,7 @@ export async function fetchStageCheckpoints(stageId, categoryId) {
 }
 
 export async function fetchGeneralGallery({ page = 1, limit = 10 } = {}) {
-  const { data } = await rallyAxios.get("/gallery/general", {
+  const { data } = await api.get("/gallery/general", {
     params: { page, limit },
   });
   if (!data?.success) {
@@ -106,7 +106,7 @@ export async function fetchGeneralGallery({ page = 1, limit = 10 } = {}) {
 }
 
 export async function fetchPartners() {
-  const { data } = await rallyAxios.get("/partners");
+  const { data } = await api.get("/partners");
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load partners");
   }
@@ -114,7 +114,7 @@ export async function fetchPartners() {
 }
 
 export async function fetchDestinationsGeneral() {
-  const { data } = await rallyAxios.get("/destinations/general");
+  const { data } = await api.get("/destinations/general");
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load destinations");
   }
@@ -122,7 +122,7 @@ export async function fetchDestinationsGeneral() {
 }
 
 export async function fetchRallyDocuments(eventId) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/documents`);
+  const { data } = await api.get(`/rally/${eventId}/documents`);
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load documents");
   }
@@ -130,7 +130,7 @@ export async function fetchRallyDocuments(eventId) {
 }
 
 export async function fetchRallyRankings(eventId, category) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/rankings`, {
+  const { data } = await api.get(`/rally/${eventId}/rankings`, {
     params: { category },
   });
   if (!data?.success) {
@@ -140,7 +140,7 @@ export async function fetchRallyRankings(eventId, category) {
 }
 
 export async function fetchRallyChampions(eventId, category) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/champions`, {
+  const { data } = await api.get(`/rally/${eventId}/champions`, {
     params: category ? { category } : undefined,
   });
   if (!data?.success) {
@@ -150,7 +150,7 @@ export async function fetchRallyChampions(eventId, category) {
 }
 
 export async function fetchRallyChallenges(eventId) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/challenges`);
+  const { data } = await api.get(`/rally/${eventId}/challenges`);
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load challenges");
   }
@@ -158,7 +158,7 @@ export async function fetchRallyChallenges(eventId) {
 }
 
 export async function fetchRallyVideos() {
-  const { data } = await rallyAxios.get("/videos");
+  const { data } = await api.get("/videos");
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load videos");
   }
@@ -173,7 +173,7 @@ export async function fetchRallyVideos() {
 }
 
 export async function fetchRallyCompetitors(eventId, category) {
-  const { data } = await rallyAxios.get(`/rally/${eventId}/competitors`, {
+  const { data } = await api.get(`/rally/${eventId}/competitors`, {
     params: category ? { category } : undefined,
   });
   if (!data?.success) {

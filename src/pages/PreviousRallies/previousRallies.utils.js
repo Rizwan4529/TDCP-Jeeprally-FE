@@ -53,6 +53,53 @@ export function mapPastRallyToListingCard(rally) {
   };
 }
 
+/**
+ * Orders cards for a 2-column grid: first item left (compact), second right
+ * (featured, row-span 2), then alternating compact cards so the featured
+ * image aligns with the first two rows in column one.
+ */
+export const PREVIOUS_RALLIES_INITIAL_VISIBLE = 5;
+
+export function getVisibleRalliesForListing(rallies, showAll) {
+  if (!Array.isArray(rallies)) return [];
+  if (showAll || rallies.length <= PREVIOUS_RALLIES_INITIAL_VISIBLE) {
+    return rallies;
+  }
+  return rallies.slice(0, PREVIOUS_RALLIES_INITIAL_VISIBLE);
+}
+
+export function shouldShowMoreRalliesButton(rallies, showAll) {
+  return (
+    !showAll &&
+    Array.isArray(rallies) &&
+    rallies.length > PREVIOUS_RALLIES_INITIAL_VISIBLE
+  );
+}
+
+export function arrangeRalliesForListingGrid(cards) {
+  if (!Array.isArray(cards) || cards.length === 0) return [];
+  if (cards.length === 1) {
+    return [{ ...cards[0], variant: "featured" }];
+  }
+
+  const featuredSource =
+    cards.find((card) => card.variant === "featured") ??
+    (cards.length > 1 ? cards[1] : cards[0]);
+  const featured = { ...featuredSource, variant: "featured" };
+  const rest = cards.filter((card) => card.id !== featuredSource.id);
+
+  const arranged = [];
+  if (rest.length > 0) {
+    arranged.push({ ...rest[0], variant: "compact" });
+  }
+  arranged.push(featured);
+  for (let index = 1; index < rest.length; index += 1) {
+    arranged.push({ ...rest[index], variant: "compact" });
+  }
+
+  return arranged;
+}
+
 export function mapPastRallyToDetail(rally) {
   const bannerImage = resolveImageUrl(rally.banner_image);
   const thumbnailImage = resolveImageUrl(rally.thumbnail_image, bannerImage);

@@ -1,39 +1,44 @@
+/** Paths are relative to VITE_API_BASE_URL (e.g. http://localhost:3000/api/v1). */
 const endpoints = {
   services: {
-    getAllServices: '/api/get_services',
-    getService: (id) => `/api/get_service/${id}`,
-    getServiceById: (id) => `/api/get_service/${id}`,
-    getUpcomingOrPastServices: (status) => `/api/get_services/status?status=${status}`,
+    getAllServices: "/get_services",
+    getService: (id) => `/get_service/${id}`,
+    getServiceById: (id) => `/get_service/${id}`,
+    getUpcomingOrPastServices: (status) => `/get_services/status?status=${status}`,
   },
   content: {
-    getAllContent: `/api/content/all`,
-    getContent: `/api/content`,
-    getServiceContent: (id) => `/api/content/service/${id}`,
-    getNameList: `/api/content/names-list`,
-    getAvailableSitesLinks: `/api/content/available_sites_links`,
-    getContentBySubCategory: (subCategory) => `/api/content/subcategory/${encodeURIComponent(subCategory)}`,
+    getAllContent: "/content/all",
+    getContent: "/content",
+    getServiceContent: (id) => `/content/service/${id}`,
+    getNameList: "/content/names-list",
+    getAvailableSitesLinks: "/content/available_sites_links",
+    getContentBySubCategory: (subCategory) =>
+      `/content/subcategory/${encodeURIComponent(subCategory)}`,
     getContentByCategory: (category, type) => {
-      const base = `/api/content/category/${encodeURIComponent(category)}`;
+      const base = `/content/category/${encodeURIComponent(category)}`;
       return type ? `${base}?type=${encodeURIComponent(type)}` : base;
     },
   },
   search: {
-    searchContent: (query) => `/api/global_search?q=${encodeURIComponent(query)}`,
+    searchContent: (query) => `/global_search?q=${encodeURIComponent(query)}`,
   },
   fleet: {
-    getVehicles: "/api/v1/vehicles",
-    getPackages: "/api/v1/packages",
-    createCustomer: "/api/v1/customers",
-    createBooking: "/api/v1/bookings",
+    getVehicles: "/vehicles",
+    getPackages: "/packages",
+    createCustomer: "/customers",
+    createBooking: "/bookings",
   },
   auth: {
-    login: "/api/v1/auth/login",
-    signup: "/api/v1/auth/signup",
-    logout: "/api/v1/auth/logout",
+    login: "/auth/login",
+    signup: "/auth/signup",
+    logout: "/auth/logout",
   },
   categories: {
     getAll: "/categories",
-  }
-}
+  },
+  socialMedia: {
+    feed: "/social-media/feed",
+  },
+};
 
-export default endpoints
+export default endpoints;

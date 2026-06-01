@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import rallyAxios from "../../rallyAxios.jsx";
+import api from "../../axios.jsx";
 import * as rallyService from "./rally.service.jsx";
 
-vi.mock("../../rallyAxios.jsx", () => ({
+vi.mock("../../axios.jsx", () => ({
   default: {
     get: vi.fn(),
   },
@@ -16,7 +16,7 @@ describe("fetchRallyChampions", () => {
   it("unwraps champions data for an event and category", async () => {
     expect(typeof rallyService.fetchRallyChampions).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: true,
         message: "Champions fetched successfully",
@@ -45,7 +45,7 @@ describe("fetchRallyChampions", () => {
       }),
     ]);
 
-    expect(rallyAxios.get).toHaveBeenCalledWith("/rally/event-1/champions", {
+    expect(api.get).toHaveBeenCalledWith("/rally/event-1/champions", {
       params: { category: "stock_prepaid" },
     });
   });
@@ -53,7 +53,7 @@ describe("fetchRallyChampions", () => {
   it("throws when champions request is unsuccessful", async () => {
     expect(typeof rallyService.fetchRallyChampions).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: false,
         message: "Unable to fetch champions",
@@ -75,7 +75,7 @@ describe("fetchRallyVideos", () => {
   it("unwraps the videos list from the videos response", async () => {
     expect(typeof rallyService.fetchRallyVideos).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: true,
         message: "Videos fetched successfully",
@@ -105,13 +105,13 @@ describe("fetchRallyVideos", () => {
       }),
     ]);
 
-    expect(rallyAxios.get).toHaveBeenCalledWith("/videos");
+    expect(api.get).toHaveBeenCalledWith("/videos");
   });
 
   it("builds a streamable full video url on the rally backend origin", () => {
     expect(typeof rallyService.resolveRallyVideoUrl).toBe("function");
 
-    vi.stubEnv("VITE_RALLY_API_BASE_URL", "http://localhost:3000/api/v1");
+    vi.stubEnv("VITE_API_BASE_URL", "http://localhost:3000/api/v1");
 
     expect(
       rallyService.resolveRallyVideoUrl(
@@ -129,7 +129,7 @@ describe("fetchRallyCompetitors", () => {
   it("unwraps approved competitors for an event and category", async () => {
     expect(typeof rallyService.fetchRallyCompetitors).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: true,
         message: "Competitors fetched successfully",
@@ -158,7 +158,7 @@ describe("fetchRallyCompetitors", () => {
       }),
     ]);
 
-    expect(rallyAxios.get).toHaveBeenCalledWith("/rally/event-1/competitors", {
+    expect(api.get).toHaveBeenCalledWith("/rally/event-1/competitors", {
       params: { category: "stock_prepaid" },
     });
   });
@@ -166,7 +166,7 @@ describe("fetchRallyCompetitors", () => {
   it("throws when competitors request is unsuccessful", async () => {
     expect(typeof rallyService.fetchRallyCompetitors).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: false,
         message: "Unable to fetch competitors",
@@ -187,7 +187,7 @@ describe("fetchRallyChallenges", () => {
   it("unwraps challenges for an event", async () => {
     expect(typeof rallyService.fetchRallyChallenges).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: true,
         message: "Challenges fetched successfully",
@@ -222,13 +222,13 @@ describe("fetchRallyChallenges", () => {
       }),
     ]);
 
-    expect(rallyAxios.get).toHaveBeenCalledWith("/rally/event-1/challenges");
+    expect(api.get).toHaveBeenCalledWith("/rally/event-1/challenges");
   });
 
   it("throws when challenges request is unsuccessful", async () => {
     expect(typeof rallyService.fetchRallyChallenges).toBe("function");
 
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: false,
         message: "Unable to fetch challenges",
@@ -247,7 +247,7 @@ describe("fetchCompletedRallies", () => {
   });
 
   it("fetches completed rally events", async () => {
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: true,
         data: [{ _id: "event-1", status: "completed" }],
@@ -258,7 +258,7 @@ describe("fetchCompletedRallies", () => {
       { _id: "event-1", status: "completed" },
     ]);
 
-    expect(rallyAxios.get).toHaveBeenCalledWith("/rally", {
+    expect(api.get).toHaveBeenCalledWith("/rally", {
       params: { status: "completed" },
     });
   });

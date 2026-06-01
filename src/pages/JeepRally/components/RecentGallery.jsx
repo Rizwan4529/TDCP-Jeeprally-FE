@@ -115,14 +115,15 @@ const RecentGallery = ({ content }) => {
     [imageLightbox, images, lightboxItems],
   );
 
+  // Gallery layout: main is window index 3; "next" promotes the left neighbor into main.
   const handleNext = () => {
     if (navDisabled) return;
-    next();
+    previous();
   };
 
   const handlePrev = () => {
     if (navDisabled) return;
-    previous();
+    next();
   };
 
   return (
@@ -138,7 +139,7 @@ const RecentGallery = ({ content }) => {
       <div className="container relative z-10 mx-auto">
         <div className="px-4 lg:px-20">
           <div className="mb-10 text-center md:mb-10">
-            <h2 className="font-gilda text-[29px] text-primary md:text-[42px]">
+            <h2 className="font-gilda text-[29px] md:text-[42px]">
               {resolvedContent?.title || GALLERY_TITLE}
             </h2>
           </div>

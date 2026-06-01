@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FiChevronDown } from "react-icons/fi";
 import { useParams, useSearchParams } from "react-router";
@@ -12,6 +12,7 @@ import { activeRallyQueryOptions } from "../../../api/features/rally/rally.query
 import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 import {
   getDefaultCategoryKey,
+  handleImageError,
   hasCategoryKey,
 } from "../../../utils/constants.js";
 import {
@@ -100,6 +101,8 @@ const StandingPanel = ({
   </div>
 );
 
+const PROFILE_IMAGE_FALLBACK = "/assets/images/person-champion.png";
+
 const ProfileRoleCard = ({ label, image, isActive, onClick }) => (
   <button
     type="button"
@@ -117,6 +120,7 @@ const ProfileRoleCard = ({ label, image, isActive, onClick }) => (
         src={image}
         alt={label}
         className="h-[176px] w-[160px] object-cover object-top md:h-[176px] md:w-[180px]"
+        onError={(event) => handleImageError(event, PROFILE_IMAGE_FALLBACK)}
       />
     </div>
     <div
@@ -209,9 +213,30 @@ const PlayerProfile = () => {
     return buildPlayerProfile(record, fallbackProfile);
   }, [champion, competitor, fallbackProfile, isCompetitorProfile]);
 
-  const heroImage = resolveCheckpointImageUrl(profile.heroImage);
   const driverImage = resolveCheckpointImageUrl(profile.driverImage);
   const navigatorImage = resolveCheckpointImageUrl(profile.navigatorImage);
+  const hasNavigator = Boolean(profile.hasNavigator);
+  const activeDetails =
+    (activeTab === "navigator" && hasNavigator
+      ? profile.navigatorDetails
+      : profile.driverDetails) ??
+    profile.details ??
+    [];
+  const activePersonName =
+    activeTab === "navigator" && hasNavigator
+      ? profile.navigatorName
+      : profile.driverName;
+  const heroImage = resolveCheckpointImageUrl(
+    activeTab === "navigator" && hasNavigator
+      ? profile.navigatorImage || profile.driverImage
+      : profile.driverImage || profile.heroImage,
+  );
+
+  useEffect(() => {
+    if (!hasNavigator && activeTab === "navigator") {
+      setActiveTab("driver");
+    }
+  }, [activeTab, hasNavigator]);
 
   return (
     <div className="mt-[50px] min-h-screen bg-white">
@@ -244,27 +269,33 @@ const PlayerProfile = () => {
 
       <section className="container relative z-0 mx-auto px-4 pb-20 pt-28 md:pt-32">
         <ScrollReveal variant="blurUp" duration={0.8}>
-        <div className="mx-auto flex max-w-[460px] items-end justify-center gap-5 md:gap-8">
+        <div
+          className={`mx-auto flex max-w-[460px] items-end gap-5 md:gap-8 ${
+            hasNavigator ? "justify-center" : "justify-center"
+          }`}
+        >
           <ProfileRoleCard
             label="Driver"
             image={driverImage}
             isActive={activeTab === "driver"}
             onClick={() => setActiveTab("driver")}
           />
-          <ProfileRoleCard
-            label="Navigator"
-            image={navigatorImage}
-            isActive={activeTab === "navigator"}
-            onClick={() => setActiveTab("navigator")}
-          />
+          {hasNavigator ? (
+            <ProfileRoleCard
+              label="Navigator"
+              image={navigatorImage}
+              isActive={activeTab === "navigator"}
+              onClick={() => setActiveTab("navigator")}
+            />
+          ) : null}
         </div>
 
         <div className="mx-auto mt-12 max-w-[470px] rounded-[4px] border border-[#EFEFEF] bg-white px-5 py-6 shadow-[0_10px_24px_rgba(0,0,0,0.07)] md:px-6">
           <h2 className="font-gilda text-[27px] leading-none text-[#212121]">
-            {profile.driverName}
+            {activePersonName}
           </h2>
           <div className="mt-6 divide-y divide-[#F1F1F1]">
-            {profile.details.map((item) => (
+            {activeDetails.map((item) => (
               <InfoRow key={item.label} label={item.label} value={item.value} />
             ))}
           </div>

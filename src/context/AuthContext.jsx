@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import authApi from "../api/authAxios";
+import api from "../api/axios.jsx";
 import endpoints from "../api/endpoints";
 
 const AuthContext = createContext();
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await authApi.post(endpoints.auth.login, { email, password });
+      const response = await api.post(endpoints.auth.login, { email, password });
       const { data: user, token } = response.data;
       
       setUser(user);
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password) => {
     try {
-      const response = await authApi.post(endpoints.auth.signup, { name, email, password });
+      const response = await api.post(endpoints.auth.signup, { name, email, password });
       
       // Auto-login after successful signup, since signup API doesn't return a token
       return await login(email, password);
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await authApi.post(endpoints.auth.logout);
+      await api.post(endpoints.auth.logout);
     } catch (error) {
       console.error("Logout API failed", error);
     } finally {

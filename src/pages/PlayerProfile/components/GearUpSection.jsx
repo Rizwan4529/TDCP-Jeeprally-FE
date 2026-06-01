@@ -1,32 +1,71 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams, useSearchParams } from "react-router";
 import jeepPersonalProfile from "../../../assets/images/jeep-perosnal-profile.png";
 import jeepPersonalProfileBg from "../../../assets/images/jeep-personal-profile-bg.png";
+import { fetchTeamVehicle } from "../../../api/features/fleet/fleet.service.jsx";
+import {
+  fetchPastRallies,
+  fetchRallyChampions,
+  fetchRallyCompetitors,
+} from "../../../api/features/rally/rally.service.jsx";
+import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
+import {
+  getDefaultCategoryKey,
+  hasCategoryKey,
+} from "../../../utils/constants.js";
+import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
+import {
+  DEFAULT_GEAR_UP_SPECS,
+  getRallyEventDescription,
+  getRallyEventTitle,
+  getRallyTeamId,
+  mapVehicleToGearUpSpecs,
+  resolveGearUpEvent,
+  resolveGearUpEventId,
+} from "../gearUpSection.utils.js";
 
-const specs = {
-  left: [
-    { label: "Model", value: "450 RALLY", top: 30, angle: 8, left: 60 },
-    {
-      label: "Engine",
-      value: "MONOCILINDRICO DE 449.5cc",
-      top: 122,
-      angle: 4,
-      left: 10,
-    },
-    {
-      label: "Frame",
-      value: "ACERO CROMO MOLIBDENO",
-      top: 214,
-      angle: 0,
-      left: 5,
-    },
-    { label: "Power", value: "45", top: 350, angle: -10, left: 46 },
-  ],
-  right: [
-    { label: "Weight", value: "140", top: 30, angle: -8, right: 60 },
-    { label: "Length", value: "220", top: 122, angle: 0, right: 12 },
-    { label: "Tank capacity", value: "35", top: 214, angle: 0 },
-    { label: "Class", value: "Rally GP", top: 350, angle: 10, right: 46 },
-  ],
+const GearUpEventDescription = ({ description }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [canExpand, setCanExpand] = useState(false);
+  const descriptionRef = useRef(null);
+
+  useEffect(() => {
+    const element = descriptionRef.current;
+    if (!element || expanded) return;
+
+    const updateOverflow = () => {
+      setCanExpand(element.scrollHeight > element.clientHeight + 1);
+    };
+
+    updateOverflow();
+    window.addEventListener("resize", updateOverflow);
+    return () => window.removeEventListener("resize", updateOverflow);
+  }, [description, expanded]);
+
+  if (!description) return null;
+
+  return (
+    <div className="max-w-[420px]">
+      <p
+        ref={descriptionRef}
+        className={`text-[15px] leading-[1.5] text-[#606060] ${
+          expanded ? "" : "line-clamp-3"
+        }`}
+      >
+        {description}
+      </p>
+      {canExpand ? (
+        <button
+          type="button"
+          className="mt-2 text-sm font-medium text-primary underline-offset-2 hover:underline"
+          onClick={() => setExpanded((value) => !value)}
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      ) : null}
+    </div>
+  );
 };
 
 const Callout = ({ label, value, angle = 0, reverse = false }) => (
@@ -37,7 +76,7 @@ const Callout = ({ label, value, angle = 0, reverse = false }) => (
       className={`flex items-center justify-center ${reverse ? "flex-row-reverse text-right" : ""}`}
     >
       <div
-        className="w-40 h-[2px] flex-1 z-10 bg-primary"
+        className="z-10 h-[2px] w-40 flex-1 bg-primary"
         style={{
           transform: `rotate(${angle}deg)`,
           transformOrigin: reverse ? "left center" : "right center",
@@ -59,19 +98,152 @@ const Callout = ({ label, value, angle = 0, reverse = false }) => (
 );
 
 const GearUpSection = () => {
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
+  const { data: categoriesRaw = [] } = useCategoriesQuery();
+
+  const eventIdFromQuery = searchParams.get("eventId") || "";
+  const requestedCategory = searchParams.get("category") || "";
+  const isCompetitorProfile = searchParams.get("source") === "competitor";
+  const isPastEventProfile = Boolean(eventIdFromQuery);
+
+  const activeCategoryKey = useMemo(() => {
+    if (isPastEventProfile && requestedCategory) return requestedCategory;
+    if (hasCategoryKey(categoriesRaw, requestedCategory)) {
+      return requestedCategory;
+    }
+    return getDefaultCategoryKey(categoriesRaw);
+  }, [categoriesRaw, isPastEventProfile, requestedCategory]);
+
+  const resolvedListEventId = eventIdFromQuery || activeEvent?._id || "";
+
+  const canLoadCompetitor = Boolean(
+    isCompetitorProfile && id && resolvedListEventId && activeCategoryKey,
+  );
+
+  const canLoadChampion = Boolean(
+    !isCompetitorProfile &&
+      id &&
+      resolvedListEventId &&
+      (isPastEventProfile || activeCategoryKey),
+  );
+
+  const { data: competitor = null, isPending: isCompetitorPending } = useQuery({
+    queryKey: [
+      "rally",
+      "competitors",
+      "gear-up",
+      resolvedListEventId,
+      activeCategoryKey,
+      id,
+    ],
+    queryFn: async () => {
+      const competitors = await fetchRallyCompetitors(
+        resolvedListEventId,
+        activeCategoryKey,
+      );
+      return competitors.find((item) => item._id === id) ?? null;
+    },
+    enabled: canLoadCompetitor,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: champion = null, isPending: isChampionPending } = useQuery({
+    queryKey: [
+      "rally",
+      "champions",
+      "gear-up",
+      resolvedListEventId,
+      activeCategoryKey || "all",
+      id,
+    ],
+    queryFn: async () => {
+      const champions = await fetchRallyChampions(
+        resolvedListEventId,
+        isPastEventProfile && !activeCategoryKey
+          ? undefined
+          : activeCategoryKey || undefined,
+      );
+      return champions.find((item) => item._id === id) ?? null;
+    },
+    enabled: canLoadChampion,
+    refetchOnWindowFocus: false,
+  });
+
+  const profileRecord = isCompetitorProfile ? competitor : champion;
+  const isProfilePending = isCompetitorProfile
+    ? isCompetitorPending
+    : isChampionPending;
+
+  const eventId = resolveGearUpEventId({
+    eventIdFromQuery,
+    activeEventId: activeEvent?._id,
+    profileRecord,
+  });
+
+  const needsPastEventLookup = Boolean(
+    eventId && activeEvent?._id && eventId !== activeEvent._id,
+  );
+
+  const { data: pastRallies = [] } = useQuery({
+    queryKey: ["rally", "past", "gear-up"],
+    queryFn: fetchPastRallies,
+    enabled: needsPastEventLookup || (Boolean(eventIdFromQuery) && !activeEvent),
+    refetchOnWindowFocus: false,
+  });
+
+  const gearUpEvent = useMemo(
+    () =>
+      resolveGearUpEvent({
+        eventId,
+        activeEvent,
+        pastRallies,
+        profileRecord,
+      }),
+    [eventId, activeEvent, pastRallies, profileRecord],
+  );
+
+  const eventTitle = getRallyEventTitle(gearUpEvent);
+  const eventDescription = getRallyEventDescription(gearUpEvent);
+
+  const teamId = getRallyTeamId(profileRecord);
+
+  const {
+    data: vehicle = null,
+    isPending: isVehiclePending,
+  } = useQuery({
+    queryKey: ["vehicles", "team", eventId, teamId],
+    queryFn: () => fetchTeamVehicle(eventId, teamId),
+    enabled: Boolean(eventId && teamId),
+    refetchOnWindowFocus: false,
+  });
+
+  const specs = useMemo(() => {
+    if (!vehicle) return DEFAULT_GEAR_UP_SPECS;
+    return mapVehicleToGearUpSpecs(vehicle);
+  }, [vehicle]);
+
+  const showLoading =
+    (isProfilePending || (Boolean(eventId && teamId) && isVehiclePending)) &&
+    !vehicle;
+
   return (
-    <section className="bg-section py-16 md:py-20 overflow-hidden">
+    <section className="overflow-hidden bg-section py-16 md:py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <h2 className="max-w-[360px] font-gilda text-[34px] leading-[1.05] text-black md:text-[40px]">
-            Gear Up For Cholistan Challenge
+            Gear Up For{" "}
+            {eventTitle || "the Rally"}
           </h2>
-          <p className="max-w-[420px] text-[15px] leading-[1.5] text-[#606060]">
-            Cholistan Desert Rally started back in 2005 and has since grown in
-            leaps and bounds. The upcoming rally will mark this event&apos;s
-            21st edition which reflects its ever-increasing popularity.
-          </p>
+          <GearUpEventDescription description={eventDescription} />
         </div>
+
+        {showLoading ? (
+          <p className="mx-auto mt-10 max-w-6xl text-center text-sm text-gray-500">
+            Loading vehicle information…
+          </p>
+        ) : null}
 
         <div className="mx-auto mt-10 max-w-6xl">
           <div className="relative mx-auto hidden h-[430px] w-[1100px] lg:block">

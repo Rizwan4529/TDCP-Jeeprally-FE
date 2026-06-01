@@ -1,6 +1,4 @@
 import api from "../../axios";
-import rallyAxios from "../../rallyAxios.jsx";
-import ticketingApi from "../../ticketingAxios";
 import endpoints from "../../endpoints";
 import { getBackendOrigin, resolveImageUrl } from "../../../utils/constants.js";
 
@@ -72,12 +70,12 @@ export const fetchContentByCategory = async (category, type) => {
 
 export const fetchServiceContent = async (id) => {
   const url = `${endpoints.content.getServiceContent(id)}`;
-  const response = await ticketingApi.get(url);
+  const response = await api.get(url);
   return response?.data?.data?.[0]?.content || null;
 };
 
 export const fetchCategories = async () => {
-  const response = await rallyAxios.get(endpoints.categories.getAll);
+  const response = await api.get(endpoints.categories.getAll);
   if (!response?.data?.success) {
     throw new Error(response?.data?.message || "Failed to load categories");
   }

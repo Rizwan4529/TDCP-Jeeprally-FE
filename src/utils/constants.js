@@ -3,12 +3,12 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the origin of the backend server derived from VITE_RALLY_API_BASE_URL.
+ * Returns the origin of the backend server derived from VITE_API_BASE_URL.
  * Falls back to http://localhost:3000 if the env variable is absent or invalid.
  */
 export function getBackendOrigin() {
   try {
-    const base = import.meta.env.VITE_RALLY_API_BASE_URL;
+    const base = import.meta.env.VITE_API_BASE_URL;
     if (base) return new URL(base).origin;
   } catch {
     /* ignore */
@@ -23,7 +23,7 @@ export const FALLBACK_IMAGE = "/assets/images/hero-bg.png";
  * Resolves an image URL coming from the API:
  *  - null / empty  → returns `fallback`
  *  - absolute URL  → returned as-is
- *  - relative path → prepends the backend origin (from VITE_RALLY_API_BASE_URL)
+ *  - relative path → prepends the backend origin (from VITE_API_BASE_URL)
  */
 export function resolveImageUrl(url, fallback = FALLBACK_IMAGE) {
   if (url == null || String(url).trim() === "") return fallback;
@@ -33,7 +33,10 @@ export function resolveImageUrl(url, fallback = FALLBACK_IMAGE) {
   if (/^https?:\/\//i.test(trimmed)) return trimmed;
 
   const normalized = trimmed.replace(/\\/g, "/");
-  const path = normalized.startsWith("/") ? normalized : `/${normalized}`;
+  const path = (normalized.startsWith("/") ? normalized : `/${normalized}`).replace(
+    /\/+/g,
+    "/"
+  );
   return `${getBackendOrigin()}${path}`;
 }
 

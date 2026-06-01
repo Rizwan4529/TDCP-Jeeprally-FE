@@ -2,10 +2,65 @@ import { describe, expect, it } from "vitest";
 import {
   getCategoryTabsWithChampions,
   getTopChampionsByPosition,
+  hasChampionNavigator,
   mapChampionsToPodium,
+  resolveChampionDriverImageSource,
+  resolveChampionNavigatorImageSource,
   resolveChampionsCategoryKey,
+  shouldHideChampionsSection,
   shouldShowChampionsEmpty,
 } from "./championsSection.utils.js";
+
+describe("shouldHideChampionsSection", () => {
+  it("hides while loading or when the event is missing", () => {
+    expect(shouldHideChampionsSection({ isLoading: true, hasEvent: true })).toBe(
+      true,
+    );
+    expect(shouldHideChampionsSection({ hasEvent: false })).toBe(true);
+  });
+
+  it("hides when all-champions gate has no champions or tabs", () => {
+    expect(
+      shouldHideChampionsSection({
+        hasEvent: true,
+        usesAllChampionsGate: true,
+        allChampionsReady: true,
+        allChampionsCount: 0,
+        visibleTabCount: 0,
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldHideChampionsSection({
+        hasEvent: true,
+        usesAllChampionsGate: true,
+        allChampionsReady: true,
+        allChampionsCount: 2,
+        visibleTabCount: 1,
+      }),
+    ).toBe(false);
+  });
+
+  it("hides per-category mode when the active category has no champions", () => {
+    expect(
+      shouldHideChampionsSection({
+        hasEvent: true,
+        usesCategoryQuery: true,
+        categoryChampionsReady: true,
+        categoryChampionsCount: 0,
+      }),
+    ).toBe(true);
+
+    expect(
+      shouldHideChampionsSection({
+        hasEvent: true,
+        usesCategoryQuery: true,
+        categoryChampionsReady: true,
+        categoryChampionsCount: 2,
+      }),
+    ).toBe(false);
+  });
+});
 
 describe("shouldShowChampionsEmpty", () => {
   it("returns true when the champions query succeeds with no champions", () => {
@@ -55,6 +110,36 @@ describe("getTopChampionsByPosition", () => {
   });
 });
 
+describe("champion image helpers", () => {
+  it("detects navigator presence and resolves image sources", () => {
+    const withNavigator = {
+      driver_image: "uploads/driver.png",
+      navigator_image: null,
+      team_id: {
+        navigator_id: {
+          _id: "nav-1",
+          name: "Zubair Khan",
+          profile_image: "uploads/navigator.png",
+        },
+      },
+    };
+    const withoutNavigator = {
+      driver_image: "uploads/driver-only.png",
+      team_id: { navigator_id: null },
+    };
+
+    expect(hasChampionNavigator(withNavigator)).toBe(true);
+    expect(resolveChampionNavigatorImageSource(withNavigator)).toBe(
+      "uploads/navigator.png",
+    );
+    expect(hasChampionNavigator(withoutNavigator)).toBe(false);
+    expect(resolveChampionNavigatorImageSource(withoutNavigator)).toBeNull();
+    expect(resolveChampionDriverImageSource(withoutNavigator)).toBe(
+      "uploads/driver-only.png",
+    );
+  });
+});
+
 describe("mapChampionsToPodium", () => {
   it("maps podium layout using each champion position", () => {
     const podium = mapChampionsToPodium(
@@ -77,6 +162,11 @@ describe("mapChampionsToPodium", () => {
       "Second",
       "Third",
     ]);
+
+    const [first, second, third] = podium;
+    expect(first.cardHeight).not.toBe(second.cardHeight);
+    expect(second.cardHeight).toBe(third.cardHeight);
+    expect(second.footerHeight).toBe(third.footerHeight);
   });
 });
 

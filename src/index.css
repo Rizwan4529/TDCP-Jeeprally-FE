@@ -196,6 +196,94 @@
   }
 }
 
+/* Champions podium category transition */
+@keyframes champions-podium-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+}
+
+@keyframes champions-podium-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes champions-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@layer utilities {
+  .animate-champions-podium-out {
+    animation: champions-podium-out 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .animate-champions-podium-in {
+    animation: champions-podium-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-champions-card-in {
+    animation: champions-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+@keyframes rally-rules-card-in-next {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes rally-rules-card-in-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@layer utilities {
+  .animate-rally-rules-card-in-next {
+    animation: rally-rules-card-in-next 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  .animate-rally-rules-card-in-prev {
+    animation: rally-rules-card-in-prev 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-champions-podium-out,
+  .animate-champions-podium-in,
+  .animate-champions-card-in,
+  .animate-rally-rules-card-in-next,
+  .animate-rally-rules-card-in-prev {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Partners Marquee Animation */
 @keyframes marquee {
   0% {
@@ -214,4 +302,21 @@
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+@keyframes players-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.players-skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #e7eaef 0%, #f3f5f8 50%, #e7eaef 100%);
+  background-size: 200% 100%;
+  animation: players-skeleton-shimmer 1.35s ease-in-out infinite;
 }

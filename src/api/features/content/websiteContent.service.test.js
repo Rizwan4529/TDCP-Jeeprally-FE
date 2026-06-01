@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import rallyAxios from "../../rallyAxios.jsx";
+import api from "../../axios.jsx";
 import { fetchWebsiteContent } from "./websiteContent.service.jsx";
 
-vi.mock("../../rallyAxios.jsx", () => ({
+vi.mock("../../axios.jsx", () => ({
   default: {
     get: vi.fn(),
   },
@@ -14,7 +14,7 @@ describe("fetchWebsiteContent", () => {
   });
 
   it("unwraps the first content document payload", async () => {
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: true,
         message: "Contents fetched successfully",
@@ -34,11 +34,11 @@ describe("fetchWebsiteContent", () => {
       theme: { primaryColor: "#48AA71" },
       pages: [{ id: "home", sections: [] }],
     });
-    expect(rallyAxios.get).toHaveBeenCalledWith("/content/all");
+    expect(api.get).toHaveBeenCalledWith("/content/all");
   });
 
   it("throws when the website content request is unsuccessful", async () => {
-    rallyAxios.get.mockResolvedValue({
+    api.get.mockResolvedValue({
       data: {
         success: false,
         message: "Unable to fetch content",

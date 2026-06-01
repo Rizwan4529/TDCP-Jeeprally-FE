@@ -1,7 +1,7 @@
-import rallyAxios from "../../rallyAxios.jsx";
+import api from "../../axios.jsx";
 
 export async function fetchWebsiteContent() {
-  const { data } = await rallyAxios.get("/content/all");
+  const { data } = await api.get("/content/all");
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load website content");
   }

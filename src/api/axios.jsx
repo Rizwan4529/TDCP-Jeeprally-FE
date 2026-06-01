@@ -13,6 +13,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     config.headers["x-api-key"] = `3b5a1366035fc143d10b7fbbbf7b096003466e88b33578ffb4075450d20a187d`
+    const token = localStorage.getItem("tdcp_auth_token")
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => Promise.reject(error)
@@ -22,10 +26,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle global errors
     if (error.response?.status === 401) {
+      localStorage.removeItem("tdcp_auth_token")
+      localStorage.removeItem("tdcp_user")
       console.warn("Unauthorized! Redirecting to login...")
-      // You can redirect or clear auth here
     }
     return Promise.reject(error)
   }

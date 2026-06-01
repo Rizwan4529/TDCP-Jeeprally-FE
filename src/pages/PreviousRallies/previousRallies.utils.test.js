@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_HERO_TITLE,
   STATIC_EVENT_SUBTITLE,
+  arrangeRalliesForListingGrid,
   findPastRallyById,
   formatRallyListingDate,
+  getVisibleRalliesForListing,
   mapPastRallyToDetail,
   mapPastRallyToListingCard,
+  shouldShowMoreRalliesButton,
 } from "./previousRallies.utils.js";
 
 const sampleRally = {
@@ -60,6 +63,48 @@ describe("previousRallies utils", () => {
     expect(detail.mainContent.checklist).toEqual(sampleRally.highlights);
     expect(detail.summaryCardContent.items).toHaveLength(4);
     expect(detail.eventId).toBe(sampleRally._id);
+  });
+
+  it("arranges listing grid with featured in second slot", () => {
+    const cards = [
+      { id: "a", variant: "compact", title: "A" },
+      { id: "b", variant: "compact", title: "B" },
+      { id: "c", variant: "featured", title: "C" },
+      { id: "d", variant: "compact", title: "D" },
+    ];
+
+    const arranged = arrangeRalliesForListingGrid(cards);
+
+    expect(arranged.map((card) => card.id)).toEqual(["a", "c", "b", "d"]);
+    expect(arranged[1].variant).toBe("featured");
+    expect(arranged.filter((card) => card.variant === "featured")).toHaveLength(
+      1,
+    );
+  });
+
+  it("promotes second rally when none is featured", () => {
+    const cards = [
+      { id: "a", variant: "compact" },
+      { id: "b", variant: "compact" },
+      { id: "c", variant: "compact" },
+    ];
+
+    const arranged = arrangeRalliesForListingGrid(cards);
+
+    expect(arranged.map((card) => card.id)).toEqual(["a", "b", "c"]);
+    expect(arranged[1].variant).toBe("featured");
+  });
+
+  it("limits visible rallies until show all", () => {
+    const rallies = Array.from({ length: 7 }, (_, index) => ({
+      id: String(index),
+    }));
+
+    expect(getVisibleRalliesForListing(rallies, false)).toHaveLength(5);
+    expect(getVisibleRalliesForListing(rallies, true)).toHaveLength(7);
+    expect(shouldShowMoreRalliesButton(rallies, false)).toBe(true);
+    expect(shouldShowMoreRalliesButton(rallies, true)).toBe(false);
+    expect(shouldShowMoreRalliesButton(rallies.slice(0, 5), false)).toBe(false);
   });
 
   it("finds rally by id", () => {
