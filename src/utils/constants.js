@@ -1,4 +1,23 @@
 // ---------------------------------------------------------------------------
+// Dashboard login (driver portal)
+// ---------------------------------------------------------------------------
+
+export const DEFAULT_DASHBOARD_LOGIN_URL =
+  "https://tdcp-jeeprally-dashboard.vercel.app/login";
+
+/** Login/signup CTA target — from VITE_DASHBOARD_LOGIN_URL. */
+export function getDashboardLoginUrl() {
+  const url = import.meta.env.VITE_DASHBOARD_LOGIN_URL;
+  const trimmed = url != null ? String(url).trim() : "";
+  return trimmed || DEFAULT_DASHBOARD_LOGIN_URL;
+}
+
+/** Navigates to the external dashboard login page (same URL for login and signup). */
+export function redirectToDashboardLogin() {
+  window.location.assign(getDashboardLoginUrl());
+}
+
+// ---------------------------------------------------------------------------
 // Image URL resolver
 // ---------------------------------------------------------------------------
 

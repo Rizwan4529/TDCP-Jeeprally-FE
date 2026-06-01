@@ -8,8 +8,8 @@ import {
 } from "../assets";
 import { FiAlignRight, FiX } from "react-icons/fi";
 import { Link, useLocation } from "react-router";
-import AuthModal from "../components/auth/AuthModal";
 import RoutesNavDropdown from "../components/rally/RoutesNavDropdown";
+import { redirectToDashboardLogin } from "../utils/constants";
 import {
   isRoutesNavActive,
   isRoutesNavLink,
@@ -41,7 +41,6 @@ const SOCIAL_ICON_COMPONENTS = {
 const Header = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: websiteContent } = useWebsiteContentQuery();
 
   const path = location.pathname;
@@ -277,7 +276,7 @@ const Header = () => {
 
             <button
               type="button"
-              onClick={() => setIsAuthModalOpen(true)}
+              onClick={redirectToDashboardLogin}
               className="inline-flex h-9 items-center rounded-full bg-primary px-8 text-[14px] font-medium text-white shadow-[0_6px_14px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
             >
               {ctaText}
@@ -313,7 +312,7 @@ const Header = () => {
 
           <button
             type="button"
-            onClick={() => setIsAuthModalOpen(true)}
+            onClick={redirectToDashboardLogin}
             className="inline-flex h-9 items-center rounded-full bg-primary px-5 text-[13px] font-medium text-white shadow-[0_6px_14px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
           >
             {ctaText}
@@ -411,8 +410,8 @@ const Header = () => {
           <button
             type="button"
             onClick={() => {
-              setIsAuthModalOpen(true);
               setMobileOpen(false);
+              redirectToDashboardLogin();
             }}
             className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary text-sm font-medium text-white shadow-[0_8px_18px_rgba(91,52,17,0.22)] transition-colors duration-200 hover:bg-primary-dark"
           >
@@ -421,10 +420,6 @@ const Header = () => {
         </div>
       </div>
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </header>
   );
 };

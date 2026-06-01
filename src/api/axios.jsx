@@ -1,5 +1,6 @@
 // src/api/axios.js
 import axios from "axios"
+import { redirectToDashboardLogin } from "../utils/constants"
 
 // Create instance
 const api = axios.create({
@@ -29,7 +30,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("tdcp_auth_token")
       localStorage.removeItem("tdcp_user")
-      console.warn("Unauthorized! Redirecting to login...")
+      redirectToDashboardLogin()
     }
     return Promise.reject(error)
   }
