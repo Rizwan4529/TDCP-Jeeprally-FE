@@ -9,7 +9,6 @@ import {
 } from "../../../api/features/content/websiteContent.utils.js";
 import ImageLightbox from "../../../components/common/ImageLightbox.jsx";
 import SlidingWindowPrimarySlot from "../../../components/common/SlidingWindowPrimarySlot";
-import SlidingWindowSideSlot from "../../../components/common/SlidingWindowSideSlot";
 import { useImageLightbox } from "../../../hooks/useImageLightbox.js";
 import { useSlidingWindowCarousel } from "../../../hooks/useSlidingWindowCarousel.js";
 import {
@@ -38,10 +37,7 @@ function GallerySideImage({ image, className, showSkeleton, onImageClick }) {
   const clickable = isGalleryImageClickable(image);
 
   return (
-    <SlidingWindowSideSlot
-      itemKey={image?.id ?? "gallery-side-empty"}
-      className={`rounded-[6px] ${className}`}
-    >
+    <div className={`h-full rounded-[6px] ${className}`}>
       <button
         type="button"
         onClick={() => onImageClick?.(image)}
@@ -59,7 +55,7 @@ function GallerySideImage({ image, className, showSkeleton, onImageClick }) {
           className="h-full w-full object-cover shadow-sm transition-shadow duration-300 hover:shadow-md"
         />
       </button>
-    </SlidingWindowSideSlot>
+    </div>
   );
 }
 
@@ -137,14 +133,14 @@ const RecentGallery = ({ content }) => {
       </div>
 
       <div className="container relative z-10 mx-auto">
-        <div className="px-4 lg:px-20">
+        <div className="px-4 lg:px-8">
           <div className="mb-10 text-center md:mb-10">
             <h2 className="font-gilda text-[29px] md:text-[42px]">
               {resolvedContent?.title || GALLERY_TITLE}
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 items-center gap-3 md:gap-4 lg:h-[500px] lg:grid-cols-5 lg:gap-6">
+          <div className="grid grid-cols-2 items-center gap-2 md:gap-2.5 lg:h-[500px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.45fr)_minmax(0,1fr)_minmax(0,1fr)] lg:gap-3">
             <div className="col-span-1 h-[180px] md:h-[240px] lg:h-[220px]">
               <GallerySideImage
                 image={slots.leftOuter}
@@ -154,7 +150,7 @@ const RecentGallery = ({ content }) => {
               />
             </div>
 
-            <div className="col-span-1 flex h-full flex-col justify-center gap-3 md:gap-4 lg:gap-6">
+            <div className="col-span-1 flex h-full flex-col justify-center gap-2 lg:gap-2.5">
               <div className="h-[120px] md:h-[180px] lg:h-[238px]">
                 <GallerySideImage
                   image={slots.leftStackTop}
@@ -176,7 +172,7 @@ const RecentGallery = ({ content }) => {
             <SlidingWindowPrimarySlot
               itemKey={slots.main?.id}
               direction={direction}
-              className="order-first col-span-2 h-[280px] md:h-[400px] lg:order-none lg:col-span-1 lg:h-full"
+              className="order-first col-span-2 h-[280px] md:h-[400px] lg:order-none lg:col-span-1 lg:h-full rounded-[6px]"
             >
               {showSkeleton ? (
                 <div className="h-full w-full animate-pulse rounded-[6px] border-4 border-white bg-gray-200 shadow-md" />
@@ -199,13 +195,13 @@ const RecentGallery = ({ content }) => {
                   <img
                     src={slots.main?.src ?? GALLERY_FALLBACK_IMG_SRC}
                     alt={slots.main?.alt ?? ""}
-                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+                    className="h-full w-full object-cover rounded-[6px] transition-transform duration-500 hover:scale-[1.02]"
                   />
                 </button>
               )}
             </SlidingWindowPrimarySlot>
 
-            <div className="col-span-1 flex h-full flex-col justify-center gap-3 md:gap-4 lg:gap-6">
+            <div className="col-span-1 flex h-full flex-col justify-center gap-2 lg:gap-2.5">
               <div className="h-[120px] md:h-[180px] lg:h-[238px]">
                 <GallerySideImage
                   image={slots.rightStackTop}

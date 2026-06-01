@@ -136,7 +136,8 @@ const AdventureSection = ({ content }) => {
   const carousel = useSlidingWindowCarousel(videos, {
     windowSize: ADVENTURE_VIDEO_SLOT_COUNT,
   });
-  const { windowOffset, direction, visibleItems, goToIndex } = carousel;
+  const { direction, visibleItems, pageCount, activePageIndex, goToPage } =
+    carousel;
   const showDots = shouldShowAdventureDotPagination(videos);
   const columns = useMemo(
     () => getAdventureVideoColumns(visibleItems),
@@ -153,14 +154,14 @@ const AdventureSection = ({ content }) => {
     [videoLightbox],
   );
 
-  const goToWindow = useCallback(
-    (index) => {
+  const goToWindowPage = useCallback(
+    (pageIndex) => {
       if (videoLightbox.isOpen) {
         videoLightbox.close();
       }
-      goToIndex(index);
+      goToPage(pageIndex);
     },
-    [goToIndex, videoLightbox],
+    [goToPage, videoLightbox],
   );
 
   if (isPending || !showSection) {
@@ -236,11 +237,11 @@ const AdventureSection = ({ content }) => {
 
           {showDots ? (
             <SlidingWindowDotPagination
-              count={videos.length}
-              activeIndex={windowOffset}
-              onSelect={goToWindow}
+              count={pageCount}
+              activeIndex={activePageIndex}
+              onSelect={goToWindowPage}
               className="mt-6"
-              ariaLabel="Featured video position"
+              ariaLabel="Featured video page"
             />
           ) : null}
         </div>

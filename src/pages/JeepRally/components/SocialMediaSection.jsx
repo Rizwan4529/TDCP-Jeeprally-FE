@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   FACEBOOK_ICON,
@@ -96,37 +96,81 @@ const InstagramBadge = () => (
   </div>
 );
 
-const SocialPostCard = ({ post, featured = false }) => {
+function SocialPostCaption({ caption }) {
+  const [expanded, setExpanded] = useState(false);
+  const [canExpand, setCanExpand] = useState(false);
+  const captionRef = useRef(null);
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [caption]);
+
+  useEffect(() => {
+    const element = captionRef.current;
+    if (!element || expanded) return;
+
+    const updateOverflow = () => {
+      setCanExpand(element.scrollHeight > element.clientHeight + 1);
+    };
+
+    updateOverflow();
+    window.addEventListener("resize", updateOverflow);
+    return () => window.removeEventListener("resize", updateOverflow);
+  }, [caption, expanded]);
+
+  if (!caption) return null;
+
+  const showToggle = canExpand || expanded;
+
+  return (
+    <div className="mt-3">
+      <p
+        ref={captionRef}
+        className={`text-[14px] leading-[1.45] text-[#7A7A7A] ${
+          expanded ? "" : "line-clamp-2"
+        }`}
+      >
+        {caption}
+      </p>
+      {showToggle ? (
+        <button
+          type="button"
+          className="mt-1 text-[13px] font-semibold text-primary underline-offset-2 hover:underline"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setExpanded((value) => !value);
+          }}
+        >
+          {expanded ? "Read less" : "Read more"}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+const SocialPostCard = ({ post, featured = false, className = "" }) => {
   const caption = getPostCaption(post);
-  const cardClassName =
-    "block rounded-[16px] border border-black/6 bg-white p-2 text-inherit no-underline shadow-[0_10px_26px_rgba(15,23,42,0.08)] transition-transform duration-300 hover:-translate-y-0.5";
+  const cardClassName = [
+    "block h-full rounded-[16px] border border-black/6 bg-white p-2 text-inherit no-underline shadow-[0_10px_26px_rgba(15,23,42,0.08)] transition-transform duration-300 hover:-translate-y-0.5",
+    featured ? "flex h-full min-h-0 flex-col" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const inner = (
     <>
-      <div className="relative overflow-hidden rounded-[12px]">
-        {/* Full image (no crop) — kept for reference
-        <div
-          className={`relative flex items-center justify-center overflow-hidden rounded-[12px] bg-[#f3f4f6] ${
-            featured
-              ? "h-[240px] md:h-[320px] xl:h-[380px]"
-              : "h-[170px] md:h-[180px]"
-          }`}
-        >
-          <img
-            src={post.image}
-            alt={post.alt}
-            className="max-h-full max-w-full object-contain"
-            onError={handleImageError}
-          />
-        </div>
-        */}
+      <div
+        className={`relative overflow-hidden rounded-[12px] ${
+          featured ? "min-h-[200px] flex-1" : ""
+        }`}
+      >
         <img
           src={post.image}
           alt={post.alt}
           className={`w-full object-cover ${
-            featured
-              ? "h-[240px] md:h-[320px] xl:h-[380px]"
-              : "h-[170px] md:h-[180px]"
+            featured ? "h-full min-h-[200px]" : "h-[170px] md:h-[200px]"
           }`}
           onError={handleImageError}
         />
@@ -150,11 +194,7 @@ const SocialPostCard = ({ post, featured = false }) => {
           </div>
         </div>
 
-        {caption ? (
-          <p className="mt-3 line-clamp-4 text-[14px] leading-[1.45] text-[#7A7A7A]">
-            {caption}
-          </p>
-        ) : null}
+        <SocialPostCaption caption={caption} />
       </div>
     </>
   );
@@ -176,17 +216,51 @@ const SocialPostCard = ({ post, featured = false }) => {
   return <article className={cardClassName}>{inner}</article>;
 };
 
-function SocialPostCardSkeleton({ featured = false }) {
+function SocialFollowBlock({ socialLinks }) {
+  return (
+    <div className="flex h-full flex-col justify-center px-1 pt-4 lg:px-2 lg:pt-0">
+      <h3 className="font-gilda text-[30px] leading-none text-black md:text-[48px]">
+        Follow Us
+      </h3>
+      <p className="mt-2 text-[16px] text-[#7A7A7A] md:text-[17px]">
+        Get exclusive information
+      </p>
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        {socialLinks.map((social, index) => {
+          const Icon =
+            SOCIAL_ICON_COMPONENTS[social?.name?.toLowerCase?.()] ||
+            INSTAGRAM_ICON;
+
+          return (
+            <a
+              key={`${social.link}-${index}`}
+              href={ensureExternalUrl(social.link)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-[22px] text-black shadow-[0_8px_14px_rgba(249,218,74,0.28)] transition-transform duration-200 hover:scale-105"
+              aria-label={social?.name || `Open social link ${index + 1}`}
+            >
+              <Icon />
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SocialPostCardSkeleton({ featured = false, className = "" }) {
   return (
     <div
-      className="rounded-[16px] border border-black/6 bg-white p-2 shadow-[0_10px_26px_rgba(15,23,42,0.08)]"
+      className={`rounded-[16px] border border-black/6 bg-white p-2 shadow-[0_10px_26px_rgba(15,23,42,0.08)] ${
+        featured ? "flex h-full min-h-0 flex-col" : ""
+      } ${className}`.trim()}
       aria-hidden="true"
     >
       <div
         className={`animate-pulse rounded-[12px] bg-gray-200 ${
-          featured
-            ? "h-[240px] md:h-[320px] xl:h-[380px]"
-            : "h-[170px] md:h-[180px]"
+          featured ? "min-h-[200px] flex-1" : "h-[170px] md:h-[180px]"
         }`}
       />
       <div className="space-y-3 px-2 pb-2 pt-4">
@@ -251,67 +325,57 @@ const SocialMediaSection = ({ content }) => {
           </p>
         ) : null}
 
-        <div className="grid gap-6 lg:grid-cols-[0.86fr_1.22fr_0.94fr] xl:gap-8">
-          <div className="space-y-6">
-            {showSkeleton ? (
-              <>
-                <SocialPostCardSkeleton />
-                <SocialPostCardSkeleton />
-              </>
-            ) : (
-              leftPosts.map((post) => (
-                <SocialPostCard key={post.id} post={post} />
-              ))
-            )}
-          </div>
-
-          <div>
-            {showSkeleton ? (
-              <SocialPostCardSkeleton featured />
-            ) : featuredPost ? (
-              <SocialPostCard post={featuredPost} featured />
-            ) : null}
-          </div>
-
-          <div className="space-y-6">
-            {showSkeleton ? (
-              <SocialPostCardSkeleton />
-            ) : rightPost ? (
-              <SocialPostCard post={rightPost} />
-            ) : null}
-
-            <div className="px-2 pt-2 md:px-3 md:pt-5">
-              <h3 className="font-gilda text-[34px] leading-none text-black md:text-[56px]">
-                Follow Us
-              </h3>
-              <p className="mt-3 text-[18px] text-[#7A7A7A]">
-                Get exclusive information
-              </p>
-
-              <div className="mt-7 flex flex-wrap items-center gap-4">
-                {socialLinks.map((social, index) => {
-                  const Icon =
-                    SOCIAL_ICON_COMPONENTS[social?.name?.toLowerCase?.()] ||
-                    INSTAGRAM_ICON;
-
-                  return (
-                    <a
-                      key={`${social.link}-${index}`}
-                      href={ensureExternalUrl(social.link)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-[28px] text-black shadow-[0_10px_18px_rgba(249,218,74,0.28)] transition-transform duration-200 hover:scale-105"
-                      aria-label={
-                        social?.name || `Open social link ${index + 1}`
-                      }
-                    >
-                      <Icon />
-                    </a>
-                  );
-                })}
+        {/*
+          Grid hierarchy (lg+):
+          Col 1 — two cards (row 1 & 2)
+          Col 2 — featured card spans both rows
+          Col 3 — card (row 1), Follow Us + icons (row 2)
+        */}
+        <div className="grid gap-4 sm:gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.18fr)_minmax(0,1fr)] lg:grid-rows-2 lg:items-stretch lg:gap-6">
+          {showSkeleton ? (
+            <>
+              <SocialPostCardSkeleton className="lg:col-start-1 lg:row-start-1" />
+              <SocialPostCardSkeleton className="lg:col-start-1 lg:row-start-2" />
+              <SocialPostCardSkeleton
+                featured
+                className="lg:col-start-2 lg:row-span-2 lg:row-start-1"
+              />
+              <SocialPostCardSkeleton className="lg:col-start-3 lg:row-start-1" />
+              <div className="lg:col-start-3 lg:row-start-2">
+                <div className="h-24 animate-pulse rounded-lg bg-gray-100" />
               </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <>
+              {leftPosts[0] ? (
+                <div className="min-h-0 lg:col-start-1 lg:row-start-1">
+                  <SocialPostCard post={leftPosts[0]} />
+                </div>
+              ) : null}
+
+              {leftPosts[1] ? (
+                <div className="min-h-0 lg:col-start-1 lg:row-start-2">
+                  <SocialPostCard post={leftPosts[1]} />
+                </div>
+              ) : null}
+
+              {featuredPost ? (
+                <div className="min-h-0 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+                  <SocialPostCard post={featuredPost} featured />
+                </div>
+              ) : null}
+
+              {rightPost ? (
+                <div className="min-h-0 lg:col-start-3 lg:row-start-1">
+                  <SocialPostCard post={rightPost} />
+                </div>
+              ) : null}
+
+              <div className="min-h-0 lg:col-start-3 lg:row-start-2">
+                <SocialFollowBlock socialLinks={socialLinks} />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

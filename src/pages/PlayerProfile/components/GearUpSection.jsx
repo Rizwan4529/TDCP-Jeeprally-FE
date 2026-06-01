@@ -1,28 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useParams, useSearchParams } from "react-router";
 import jeepPersonalProfile from "../../../assets/images/jeep-perosnal-profile.png";
 import jeepPersonalProfileBg from "../../../assets/images/jeep-personal-profile-bg.png";
-import { fetchTeamVehicle } from "../../../api/features/fleet/fleet.service.jsx";
-import {
-  fetchPastRallies,
-  fetchRallyChampions,
-  fetchRallyCompetitors,
-} from "../../../api/features/rally/rally.service.jsx";
+import { fetchPastRallies } from "../../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
+import { usePlayerProfileContext } from "../PlayerProfileContext.jsx";
 import {
-  getDefaultCategoryKey,
-  hasCategoryKey,
-} from "../../../utils/constants.js";
-import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
-import {
-  DEFAULT_GEAR_UP_SPECS,
   getRallyEventDescription,
   getRallyEventTitle,
-  getRallyTeamId,
   mapVehicleToGearUpSpecs,
   resolveGearUpEvent,
-  resolveGearUpEventId,
 } from "../gearUpSection.utils.js";
 
 const GearUpEventDescription = ({ description }) => {
@@ -98,92 +85,18 @@ const Callout = ({ label, value, angle = 0, reverse = false }) => (
 );
 
 const GearUpSection = () => {
-  const { id } = useParams();
-  const [searchParams] = useSearchParams();
-  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
-  const { data: categoriesRaw = [] } = useCategoriesQuery();
-
-  const eventIdFromQuery = searchParams.get("eventId") || "";
-  const requestedCategory = searchParams.get("category") || "";
-  const isCompetitorProfile = searchParams.get("source") === "competitor";
-  const isPastEventProfile = Boolean(eventIdFromQuery);
-
-  const activeCategoryKey = useMemo(() => {
-    if (isPastEventProfile && requestedCategory) return requestedCategory;
-    if (hasCategoryKey(categoriesRaw, requestedCategory)) {
-      return requestedCategory;
-    }
-    return getDefaultCategoryKey(categoriesRaw);
-  }, [categoriesRaw, isPastEventProfile, requestedCategory]);
-
-  const resolvedListEventId = eventIdFromQuery || activeEvent?._id || "";
-
-  const canLoadCompetitor = Boolean(
-    isCompetitorProfile && id && resolvedListEventId && activeCategoryKey,
-  );
-
-  const canLoadChampion = Boolean(
-    !isCompetitorProfile &&
-      id &&
-      resolvedListEventId &&
-      (isPastEventProfile || activeCategoryKey),
-  );
-
-  const { data: competitor = null, isPending: isCompetitorPending } = useQuery({
-    queryKey: [
-      "rally",
-      "competitors",
-      "gear-up",
-      resolvedListEventId,
-      activeCategoryKey,
-      id,
-    ],
-    queryFn: async () => {
-      const competitors = await fetchRallyCompetitors(
-        resolvedListEventId,
-        activeCategoryKey,
-      );
-      return competitors.find((item) => item._id === id) ?? null;
-    },
-    enabled: canLoadCompetitor,
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: champion = null, isPending: isChampionPending } = useQuery({
-    queryKey: [
-      "rally",
-      "champions",
-      "gear-up",
-      resolvedListEventId,
-      activeCategoryKey || "all",
-      id,
-    ],
-    queryFn: async () => {
-      const champions = await fetchRallyChampions(
-        resolvedListEventId,
-        isPastEventProfile && !activeCategoryKey
-          ? undefined
-          : activeCategoryKey || undefined,
-      );
-      return champions.find((item) => item._id === id) ?? null;
-    },
-    enabled: canLoadChampion,
-    refetchOnWindowFocus: false,
-  });
-
-  const profileRecord = isCompetitorProfile ? competitor : champion;
-  const isProfilePending = isCompetitorProfile
-    ? isCompetitorPending
-    : isChampionPending;
-
-  const eventId = resolveGearUpEventId({
-    eventIdFromQuery,
-    activeEventId: activeEvent?._id,
+  const {
     profileRecord,
-  });
+    gearUpEventId,
+    eventIdFromQuery,
+    vehicleQuery,
+    showVehicleSection,
+  } = usePlayerProfileContext();
+
+  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
 
   const needsPastEventLookup = Boolean(
-    eventId && activeEvent?._id && eventId !== activeEvent._id,
+    gearUpEventId && activeEvent?._id && gearUpEventId !== activeEvent._id,
   );
 
   const { data: pastRallies = [] } = useQuery({
@@ -196,54 +109,35 @@ const GearUpSection = () => {
   const gearUpEvent = useMemo(
     () =>
       resolveGearUpEvent({
-        eventId,
+        eventId: gearUpEventId,
         activeEvent,
         pastRallies,
         profileRecord,
       }),
-    [eventId, activeEvent, pastRallies, profileRecord],
+    [gearUpEventId, activeEvent, pastRallies, profileRecord],
   );
 
   const eventTitle = getRallyEventTitle(gearUpEvent);
   const eventDescription = getRallyEventDescription(gearUpEvent);
 
-  const teamId = getRallyTeamId(profileRecord);
+  const specs = useMemo(
+    () => mapVehicleToGearUpSpecs(vehicleQuery.data),
+    [vehicleQuery.data],
+  );
 
-  const {
-    data: vehicle = null,
-    isPending: isVehiclePending,
-  } = useQuery({
-    queryKey: ["vehicles", "team", eventId, teamId],
-    queryFn: () => fetchTeamVehicle(eventId, teamId),
-    enabled: Boolean(eventId && teamId),
-    refetchOnWindowFocus: false,
-  });
-
-  const specs = useMemo(() => {
-    if (!vehicle) return DEFAULT_GEAR_UP_SPECS;
-    return mapVehicleToGearUpSpecs(vehicle);
-  }, [vehicle]);
-
-  const showLoading =
-    (isProfilePending || (Boolean(eventId && teamId) && isVehiclePending)) &&
-    !vehicle;
+  if (!showVehicleSection) {
+    return null;
+  }
 
   return (
     <section className="overflow-hidden bg-section py-16 md:py-20">
       <div className="container mx-auto px-4">
         <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <h2 className="max-w-[360px] font-gilda text-[34px] leading-[1.05] text-black md:text-[40px]">
-            Gear Up For{" "}
-            {eventTitle || "the Rally"}
+            Gear Up For {eventTitle || "the Rally"}
           </h2>
           <GearUpEventDescription description={eventDescription} />
         </div>
-
-        {showLoading ? (
-          <p className="mx-auto mt-10 max-w-6xl text-center text-sm text-gray-500">
-            Loading vehicle information…
-          </p>
-        ) : null}
 
         <div className="mx-auto mt-10 max-w-6xl">
           <div className="relative mx-auto hidden h-[430px] w-[1100px] lg:block">

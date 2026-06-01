@@ -30,6 +30,26 @@ function formatSpecValue(value) {
   return String(value).trim();
 }
 
+/** True when the fleet API returned a real vehicle (not empty / placeholder-only). */
+export function hasVehicleFromApi(vehicle) {
+  if (!vehicle || typeof vehicle !== "object") return false;
+
+  const fields = [
+    vehicle._id,
+    vehicle.id,
+    vehicle.model,
+    vehicle.engine,
+    vehicle.frame,
+    vehicle.power,
+    vehicle.weight,
+    vehicle.length,
+    vehicle.tank_capacity,
+    vehicle.class,
+  ];
+
+  return fields.some((value) => formatSpecValue(value));
+}
+
 export function mapVehicleToGearUpSpecs(vehicle) {
   if (!vehicle) return DEFAULT_GEAR_UP_SPECS;
 

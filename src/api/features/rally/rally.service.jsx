@@ -139,9 +139,9 @@ export async function fetchRallyRankings(eventId, category) {
   return data.data ?? [];
 }
 
-export async function fetchRallyChampions(eventId, category) {
+export async function fetchRallyChampions(eventId, categoryId) {
   const { data } = await api.get(`/rally/${eventId}/champions`, {
-    params: category ? { category } : undefined,
+    params: categoryId ? { category_id: categoryId } : undefined,
   });
   if (!data?.success) {
     throw new Error(data?.message || "Failed to load champions");
@@ -180,4 +180,22 @@ export async function fetchRallyCompetitors(eventId, category) {
     throw new Error(data?.message || "Failed to load competitors");
   }
   return data.data ?? [];
+}
+
+/** Public participation counts by year (TDCP vs other races) for rankings chart. */
+export async function fetchDriverRankingsParticipation(driverId) {
+  const { data } = await api.get(`/rankings/driver/${driverId}`);
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load rankings participation data");
+  }
+  return data.data ?? null;
+}
+
+/** TDCP and other race history for profile standing panels. */
+export async function fetchDriverRaceHistory(driverId) {
+  const { data } = await api.get(`/rankings/driver/${driverId}/races`);
+  if (!data?.success) {
+    throw new Error(data?.message || "Failed to load driver race history");
+  }
+  return data.data ?? null;
 }

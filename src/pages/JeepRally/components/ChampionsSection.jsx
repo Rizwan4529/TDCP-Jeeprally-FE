@@ -5,6 +5,7 @@ import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
 import { useWebsiteContentQuery } from "../../../api/features/content/hooks.jsx";
 import {
   getCategoryFilterTabs,
+  getCategoryIdByKey,
   handleImageError,
 } from "../../../utils/constants.js";
 import {
@@ -19,6 +20,7 @@ import {
 import {
   getCategoryTabsWithChampions,
   mapChampionsToPodium,
+  resolveChampionCategory,
   resolveChampionsCategoryKey,
   shouldHideChampionsSection,
   sortChampionsList,
@@ -65,10 +67,7 @@ const ChampionPodiumRow = ({ champions, getChampionLink, animateCards = false })
             className={`flex shrink-0 items-center justify-center bg-primary px-4 py-3 text-center font-gilda text-base leading-snug tracking-wide text-white md:text-lg ${player.footerHeight}`}
           >
             <p className="line-clamp-3">
-              {player.navigatorName
-                ? `${player.name} & ${player.navigatorName}`
-                : player.name}{" "}
-              ( {player.team} )
+              {player.name} ({player.team})
             </p>
           </div>
         </div>
@@ -198,18 +197,23 @@ const ChampionsSection = ({
     visibleTabs.length,
   ]);
 
+  const activeCategoryId = useMemo(
+    () => getCategoryIdByKey(categoriesRaw, activeCategoryKey),
+    [activeCategoryKey, categoriesRaw],
+  );
+
   const {
     data: websiteChampionsRaw = [],
     isSuccess: websiteChampionsSuccess,
     isPending: websiteChampionsPending,
   } = useQuery({
-    queryKey: ["rally", "champions", eventId, activeCategoryKey],
-    queryFn: () => fetchRallyChampions(eventId, activeCategoryKey),
+    queryKey: ["rally", "champions", eventId, activeCategoryId],
+    queryFn: () => fetchRallyChampions(eventId, activeCategoryId),
     enabled: Boolean(
       !isPastEventMode &&
       !shouldFilterCategoriesWithChampions &&
       eventId &&
-      activeCategoryKey,
+      activeCategoryId,
     ),
     refetchOnWindowFocus: false,
   });
@@ -220,7 +224,7 @@ const ChampionsSection = ({
     }
 
     return allHomeChampionsRaw.filter(
-      (champion) => String(champion?.category ?? "") === activeCategoryKey,
+      (champion) => resolveChampionCategory(champion) === activeCategoryKey,
     );
   }, [
     activeCategoryKey,
@@ -234,7 +238,7 @@ const ChampionsSection = ({
     }
 
     return pastChampionsRaw.filter(
-      (champion) => String(champion?.category ?? "") === activeCategoryKey,
+      (champion) => resolveChampionCategory(champion) === activeCategoryKey,
     );
   }, [activeCategoryKey, isPastEventMode, pastChampionsRaw]);
 

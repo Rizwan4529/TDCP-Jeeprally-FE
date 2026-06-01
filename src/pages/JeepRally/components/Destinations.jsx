@@ -8,6 +8,7 @@ import {
 } from "../../../api/features/rally/rally.service.jsx";
 
 import "swiper/css";
+import "./Destinations.css";
 
 const STATIC_FALLBACK_DESTINATIONS = [
   { id: "static-1", title: "Choilistan", image: "/assets/images/heroimg.png" },
@@ -30,8 +31,8 @@ const STATIC_FALLBACK_DESTINATIONS = [
 ];
 
 const DestinationCard = ({ title, image }) => (
-  <article className="group relative z-0 flex h-full cursor-pointer flex-col hover:z-10">
-    <div className="relative h-[380px] w-full overflow-hidden rounded-md shadow-sm transition-all duration-500 ease-in-out group-hover:h-[480px] group-hover:shadow-2xl md:h-[450px] md:group-hover:h-[550px]">
+  <article className="group relative z-0 flex h-full w-full cursor-pointer flex-col hover:z-10">
+    <div className="relative h-[380px] w-full overflow-hidden rounded-md shadow-sm transition-all duration-500 ease-in-out group-hover:h-[450px] group-hover:shadow-2xl md:h-[450px] md:group-hover:h-[520px]">
       <img
         src={image}
         alt={title}
@@ -115,7 +116,7 @@ const Destinations = ({ content }) => {
             onSwiper={(swiper) => {
               swiperRef.current = swiper;
             }}
-            slidesPerView={1}
+            slidesPerView="auto"
             slidesPerGroup={1}
             spaceBetween={24}
             speed={650}
@@ -124,16 +125,16 @@ const Destinations = ({ content }) => {
             resistanceRatio={0.85}
             longSwipesMs={300}
             breakpoints={{
-              640: { slidesPerView: 2, spaceBetween: 20 },
-              1024: { slidesPerView: 3, spaceBetween: 24 },
-              1280: { slidesPerView: 4, spaceBetween: 24 },
+              640: { spaceBetween: 20 },
+              1024: { spaceBetween: 24 },
+              1280: { spaceBetween: 24 },
             }}
             className="destinations-carousel !overflow-visible"
           >
             {destinations.map((destination) => (
               <SwiperSlide
                 key={destination.id}
-                className="!h-auto !overflow-visible"
+                className="destination-slide !h-auto !overflow-visible"
               >
                 <DestinationCard
                   title={destination.title}

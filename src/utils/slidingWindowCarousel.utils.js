@@ -40,3 +40,31 @@ export function canNavigateSlidingWindow(
 ) {
   return Array.isArray(items) && items.length > windowSize;
 }
+
+/** Number of dot-pagination pages (one full layout per page). */
+export function getSlidingWindowPageCount(
+  itemCount = 0,
+  windowSize = DEFAULT_SLIDING_WINDOW_SIZE,
+) {
+  if (!itemCount || itemCount <= windowSize) return 0;
+  return Math.ceil(itemCount / windowSize);
+}
+
+export function getSlidingWindowPageIndex(
+  windowOffset = 0,
+  windowSize = DEFAULT_SLIDING_WINDOW_SIZE,
+  itemCount = 0,
+) {
+  if (!itemCount) return 0;
+  const normalized = normalizeWindowOffset(windowOffset, itemCount);
+  return Math.floor(normalized / windowSize);
+}
+
+export function getSlidingWindowOffsetForPage(
+  pageIndex = 0,
+  windowSize = DEFAULT_SLIDING_WINDOW_SIZE,
+  itemCount = 0,
+) {
+  if (!itemCount) return 0;
+  return normalizeWindowOffset(pageIndex * windowSize, itemCount);
+}

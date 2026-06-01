@@ -1,11 +1,16 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   fetchRallyDocuments,
   resolveCheckpointImageUrl,
 } from "../../../api/features/rally/rally.service.jsx";
 import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
 import SlidingWindowDotPagination from "../../../components/common/SlidingWindowDotPagination.jsx";
+import {
+  getSlidingWindowPrimarySpotTransition,
+  slidingWindowPrimarySpotVariants,
+} from "../../../constants/slidingWindowCarousel.animation.js";
 import { useSlidingWindowCarousel } from "../../../hooks/useSlidingWindowCarousel.js";
 import {
   getRulesCardSlotStyle,
@@ -61,33 +66,15 @@ async function downloadRallyFile(url, title) {
   document.body.removeChild(a);
 }
 
-const RULES_CARD_STAGGER = {
-  0: "[animation-delay:0ms]",
-  1: "[animation-delay:100ms]",
-};
-
-const RulesCard = ({
-  title,
-  slotIndex = 0,
-  fileUrl,
-  bgImage,
-  animateCard = false,
-  slideDirection = 1,
-}) => {
+const RulesCard = ({ title, slotIndex = 0, fileUrl, bgImage }) => {
   const rawPath = normalizeFileUrlString(fileUrl);
   const canDownload = Boolean(rawPath);
   const slotStyle = getRulesCardSlotStyle(slotIndex);
   const hasBgImage = Boolean(bgImage);
 
-  const slideAnimationClass = animateCard
-    ? slideDirection >= 0
-      ? `animate-rally-rules-card-in-next opacity-0 ${RULES_CARD_STAGGER[slotIndex] ?? ""}`
-      : `animate-rally-rules-card-in-prev opacity-0 ${RULES_CARD_STAGGER[slotIndex] ?? ""}`
-    : "";
-
   return (
     <div
-      className={`relative flex min-h-[400px] flex-1 flex-col items-center justify-center overflow-hidden rounded-md p-8 text-center transition-transform duration-500 ease-out hover:-translate-y-2 md:min-h-[450px] md:p-12 ${slideAnimationClass} ${
+      className={`relative flex min-h-[400px] flex-1 flex-col items-center justify-center overflow-hidden rounded-md p-8 text-center transition-transform duration-500 ease-out hover:-translate-y-2 md:min-h-[450px] md:p-12 ${
         hasBgImage ? "bg-cover bg-center bg-no-repeat" : slotStyle.bgClass
       }`}
       style={hasBgImage ? { backgroundImage: `url('${bgImage}')` } : undefined}
@@ -119,6 +106,30 @@ const RulesCard = ({
     </div>
   );
 };
+
+function RulesCarouselLayout({ layoutKey, direction, children }) {
+  const prefersReducedMotion = useReducedMotion();
+  const transition = getSlidingWindowPrimarySpotTransition(prefersReducedMotion);
+
+  return (
+    <div className="relative overflow-hidden">
+      <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <motion.div
+          key={layoutKey}
+          custom={direction}
+          variants={slidingWindowPrimarySpotVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={transition}
+          className="flex w-full flex-col gap-6 will-change-[opacity,transform] md:flex-row md:gap-8"
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
 
 const STATIC_FALLBACK_DOCUMENTS = [
   {
@@ -154,12 +165,8 @@ const RallyRules = ({ content }) => {
   const carousel = useSlidingWindowCarousel(documents, {
     windowSize: RALLY_RULES_WINDOW_SIZE,
   });
-  const { windowOffset, direction, visibleItems, goToIndex } = carousel;
-
-  const [carouselPhase, setCarouselPhase] = useState("visible");
-  const [displayedCards, setDisplayedCards] = useState([]);
-  const skipInitialCarouselTransition = useRef(true);
-  const visibleCardsRef = useRef([]);
+  const { direction, visibleItems, pageCount, activePageIndex, goToPage } =
+    carousel;
 
   const showDots = shouldShowRulesDotPagination(documents.length);
 
@@ -173,46 +180,9 @@ const RallyRules = ({ content }) => {
     [visibleItems],
   );
 
-  visibleCardsRef.current = visibleCards;
-
-  useEffect(() => {
-    if (visibleCards.length === 0) return;
-    if (carouselPhase === "out") return;
-    setDisplayedCards(visibleCards);
-  }, [visibleCards, carouselPhase]);
-
-  useEffect(() => {
-    if (skipInitialCarouselTransition.current) {
-      skipInitialCarouselTransition.current = false;
-      return;
-    }
-
-    setCarouselPhase("out");
-
-    const exitTimer = window.setTimeout(() => {
-      setDisplayedCards(visibleCardsRef.current);
-      setCarouselPhase("in");
-    }, 280);
-
-    return () => window.clearTimeout(exitTimer);
-  }, [windowOffset]);
-
-  useEffect(() => {
-    if (carouselPhase !== "in") return;
-
-    const enterTimer = window.setTimeout(() => {
-      setCarouselPhase("visible");
-    }, 550);
-
-    return () => window.clearTimeout(enterTimer);
-  }, [carouselPhase]);
-
-  const carouselAnimationClass =
-    carouselPhase === "out"
-      ? "animate-champions-podium-out pointer-events-none"
-      : carouselPhase === "in"
-        ? "animate-champions-podium-in"
-        : "";
+  const layoutKey = visibleCards
+    .map(({ document }) => document._id)
+    .join("-");
 
   return (
     <section className="bg-white py-section-break">
@@ -233,35 +203,31 @@ const RallyRules = ({ content }) => {
           </div>
 
           <div className="w-full lg:w-[65%]">
-            <div
-              className={`flex w-full flex-col gap-6 will-change-[opacity,transform] md:flex-row md:gap-8 ${carouselAnimationClass}`}
-            >
-              {displayedCards.map(({ document, slotIndex, bgImage }) => (
+            <RulesCarouselLayout layoutKey={layoutKey} direction={direction}>
+              {visibleCards.map(({ document, slotIndex, bgImage }) => (
                 <RulesCard
-                  key={`${document._id}-${windowOffset}-${slotIndex}`}
+                  key={`${document._id}-${slotIndex}`}
                   title={document.title ?? ""}
                   slotIndex={slotIndex}
                   fileUrl={document.file_url}
                   bgImage={bgImage}
-                  animateCard={carouselPhase === "in"}
-                  slideDirection={direction}
                 />
               ))}
-              {displayedCards.length === 1 ? (
+              {visibleCards.length === 1 ? (
                 <div
                   className="pointer-events-none hidden min-h-[400px] flex-1 rounded-md opacity-0 md:block md:min-h-[450px]"
                   aria-hidden
                 />
               ) : null}
-            </div>
+            </RulesCarouselLayout>
 
-            {showDots ? (
+            {showDots && pageCount > 0 ? (
               <SlidingWindowDotPagination
-                count={documents.length}
-                activeIndex={windowOffset}
-                onSelect={goToIndex}
+                count={pageCount}
+                activeIndex={activePageIndex}
+                onSelect={goToPage}
                 className="mt-6"
-                ariaLabel="Rally documents position"
+                ariaLabel="Rally documents page"
               />
             ) : null}
           </div>

@@ -24,29 +24,44 @@ describe("fetchRallyChampions", () => {
           {
             _id: "1",
             position: 1,
-            category: "stock_prepaid",
-            image: "uploads\\images\\champion.png",
+            category_id: {
+              _id: "cat-1",
+              key: "stock_prepaid",
+              title: "Stock Prepaid",
+            },
+            image: null,
             team_id: {
               team_name: "Sahiwal Sand Runners",
-              driver_id: { name: "Muhammad Rizwan" },
+              team_number: "#22",
+              category: "stock_prepaid",
             },
+            driver: {
+              name: "Muhammad Rizwan",
+              profile_image: "uploads\\images\\champion.png",
+            },
+            navigator: null,
           },
         ],
       },
     });
 
     await expect(
-      rallyService.fetchRallyChampions("event-1", "stock_prepaid")
+      rallyService.fetchRallyChampions("event-1", "cat-1")
     ).resolves.toEqual([
       expect.objectContaining({
         _id: "1",
         position: 1,
-        category: "stock_prepaid",
+        team_id: expect.objectContaining({
+          category: "stock_prepaid",
+        }),
+        driver: expect.objectContaining({
+          name: "Muhammad Rizwan",
+        }),
       }),
     ]);
 
     expect(api.get).toHaveBeenCalledWith("/rally/event-1/champions", {
-      params: { category: "stock_prepaid" },
+      params: { category_id: "cat-1" },
     });
   });
 
@@ -61,8 +76,91 @@ describe("fetchRallyChampions", () => {
     });
 
     await expect(
-      rallyService.fetchRallyChampions("event-1", "stock_prepaid")
+      rallyService.fetchRallyChampions("event-1", "cat-1")
     ).rejects.toThrow("Unable to fetch champions");
+  });
+});
+
+describe("fetchDriverRankingsParticipation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("unwraps participation chart data for a driver user id", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        success: true,
+        message: "Rankings participation data fetched successfully",
+        data: {
+          by_year: [
+            { year: 2023, tdcp: 2, other: 0 },
+            { year: 2024, tdcp: 1, other: 3 },
+          ],
+        },
+      },
+    });
+
+    await expect(
+      rallyService.fetchDriverRankingsParticipation(
+        "69f988d447844ddd29331289",
+      ),
+    ).resolves.toEqual({
+      by_year: [
+        { year: 2023, tdcp: 2, other: 0 },
+        { year: 2024, tdcp: 1, other: 3 },
+      ],
+    });
+
+    expect(api.get).toHaveBeenCalledWith(
+      "/rankings/driver/69f988d447844ddd29331289",
+    );
+  });
+});
+
+describe("fetchDriverRaceHistory", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("unwraps driver race history for standing panels", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        success: true,
+        message: "Driver race history fetched successfully",
+        data: {
+          driver_id: "69f988d447844ddd29331289",
+          tdcp_races: [{ _id: "reg-1", year: 2026 }],
+          other_races: [],
+          totals: { tdcp: 1, other: 0, all: 1 },
+        },
+      },
+    });
+
+    await expect(
+      rallyService.fetchDriverRaceHistory("69f988d447844ddd29331289"),
+    ).resolves.toEqual({
+      driver_id: "69f988d447844ddd29331289",
+      tdcp_races: [{ _id: "reg-1", year: 2026 }],
+      other_races: [],
+      totals: { tdcp: 1, other: 0, all: 1 },
+    });
+
+    expect(api.get).toHaveBeenCalledWith(
+      "/rankings/driver/69f988d447844ddd29331289/races",
+    );
+  });
+
+  it("throws when race history request is unsuccessful", async () => {
+    api.get.mockResolvedValue({
+      data: {
+        success: false,
+        message: "Unable to fetch race history",
+      },
+    });
+
+    await expect(
+      rallyService.fetchDriverRaceHistory("69f988d447844ddd29331289"),
+    ).rejects.toThrow("Unable to fetch race history");
   });
 });
 

@@ -1,14 +1,33 @@
 import {
+  getChampionDriverRecord,
   getChampionNavigatorRecord,
+  getChampionTeamRecord,
   hasChampionNavigator,
-  resolveChampionDriverImageSource,
-  resolveChampionNavigatorImageSource,
+  resolveChampionDriverProfileImageSource,
+  resolveChampionNavigatorProfileImageSource,
 } from "../JeepRally/components/championsSection.utils.js";
 
 export function formatChampionNumber(number) {
   const value = String(number ?? "").trim();
   if (!value) return "—";
   return value.startsWith("#") ? value : `#${value}`;
+}
+
+/**
+ * Driver user _id for GET /rankings/driver/:driverId — never the champion/competitor registration id.
+ */
+export function resolveDriverUserIdFromProfileRecord(record) {
+  if (!record) return null;
+
+  const driver = getChampionDriverRecord(record);
+  if (driver?._id) return String(driver._id);
+
+  const teamDriverId = record?.team_id?.driver_id;
+  if (typeof teamDriverId === "string" && teamDriverId.trim()) {
+    return teamDriverId.trim();
+  }
+
+  return null;
 }
 
 function formatDateOfBirth(value) {
@@ -28,7 +47,8 @@ function buildDetailRows(rows = []) {
 }
 
 function buildDriverDetails(champion) {
-  const driver = champion.team_id?.driver_id;
+  const driver = getChampionDriverRecord(champion);
+  const team = getChampionTeamRecord(champion);
 
   return buildDetailRows([
     {
@@ -50,13 +70,14 @@ function buildDriverDetails(champion) {
     },
     {
       label: "TEAM",
-      value: champion.team_id?.team_name || "",
+      value: team?.team_name || "",
     },
   ]);
 }
 
 function buildNavigatorDetails(champion) {
   const navigator = getChampionNavigatorRecord(champion);
+  const team = getChampionTeamRecord(champion);
   if (!navigator) return [];
 
   return buildDetailRows([
@@ -74,7 +95,7 @@ function buildNavigatorDetails(champion) {
     },
     {
       label: "TEAM",
-      value: champion.team_id?.team_name || "",
+      value: team?.team_name || "",
     },
   ]);
 }
@@ -83,9 +104,15 @@ function normalizeFallbackProfile(fallbackProfile) {
   const details = Array.isArray(fallbackProfile?.details)
     ? fallbackProfile.details
     : [];
+  const driverImage = String(fallbackProfile?.driverImage ?? "").trim();
+  const navigatorImage = String(fallbackProfile?.navigatorImage ?? "").trim();
 
   return {
     ...fallbackProfile,
+    driverImage,
+    navigatorImage,
+    hasDriverImage: Boolean(driverImage),
+    hasNavigatorImage: Boolean(navigatorImage),
     hasNavigator: Boolean(fallbackProfile?.hasNavigator),
     navigatorName: fallbackProfile?.navigatorName || "",
     driverDetails: fallbackProfile?.driverDetails ?? details,
@@ -98,26 +125,26 @@ export function buildPlayerProfile(champion, fallbackProfile) {
 
   if (!champion) return normalizedFallback;
 
-  const teamName = champion.team_id?.team_name || normalizedFallback.teamName;
-  const teamNumber =
-    champion.team_id?.team_number || normalizedFallback.teamNumber;
+  const team = getChampionTeamRecord(champion);
+  const driver = getChampionDriverRecord(champion);
+  const teamName = team?.team_name || normalizedFallback.teamName;
+  const teamNumber = team?.team_number || normalizedFallback.teamNumber;
   const driverName =
-    champion.team_id?.driver_id?.name ||
-    champion.driver_name ||
-    normalizedFallback.driverName;
+    driver?.name || champion.driver_name || normalizedFallback.driverName;
   const navigator = getChampionNavigatorRecord(champion);
   const navigatorPresent = hasChampionNavigator(champion);
-  const navigatorName = navigatorPresent
-    ? navigator?.name || champion.navigator_name || ""
-    : "";
-  const driverImage =
-    resolveChampionDriverImageSource(champion) ||
-    normalizedFallback.driverImage;
-  const navigatorImage = navigatorPresent
-    ? resolveChampionNavigatorImageSource(champion) ||
-      normalizedFallback.navigatorImage
-    : "";
-  const heroImage = driverImage || normalizedFallback.heroImage;
+  const navigatorName = navigatorPresent ? navigator?.name || "" : "";
+  const driverImageSource = resolveChampionDriverProfileImageSource(champion);
+  const navigatorImageSource = navigatorPresent
+    ? resolveChampionNavigatorProfileImageSource(champion)
+    : null;
+  const hasDriverImage = Boolean(driverImageSource);
+  const hasNavigatorImage = Boolean(navigatorImageSource);
+  const driverImage = driverImageSource || "";
+  const navigatorImage = navigatorImageSource || "";
+  const heroImage = hasDriverImage
+    ? driverImage
+    : normalizedFallback.heroImage || "";
   const driverDetails = buildDriverDetails(champion);
   const navigatorDetails = buildNavigatorDetails(champion);
 
@@ -132,9 +159,12 @@ export function buildPlayerProfile(champion, fallbackProfile) {
     heroImage,
     driverImage,
     navigatorImage,
+    hasDriverImage,
+    hasNavigatorImage,
     hasNavigator: navigatorPresent,
     driverDetails,
     navigatorDetails,
     details: driverDetails,
+    driverUserId: resolveDriverUserIdFromProfileRecord(champion),
   };
 }

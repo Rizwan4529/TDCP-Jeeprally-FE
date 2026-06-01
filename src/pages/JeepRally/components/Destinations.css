@@ -1,0 +1,49 @@
+/* Rally destinations: shared row width on hover (expansion reduced 30% → 70% of original delta) */
+
+.destinations-carousel .destination-slide {
+  width: 100%;
+  height: auto;
+  transition: width 0.5s ease-in-out;
+}
+
+@media (min-width: 640px) {
+  .destinations-carousel .destination-slide {
+    width: calc(50% - 10px) !important;
+  }
+
+  .destinations-carousel:has(.destination-slide:hover) .destination-slide:not(:hover) {
+    width: calc(46.5% - 10px) !important;
+  }
+
+  .destinations-carousel .destination-slide:hover {
+    width: calc(53.5% - 10px) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .destinations-carousel .destination-slide {
+    width: calc(33.333% - 16px) !important;
+  }
+
+  .destinations-carousel:has(.destination-slide:hover) .destination-slide:not(:hover) {
+    width: calc(31.58% - 16px) !important;
+  }
+
+  .destinations-carousel .destination-slide:hover {
+    width: calc(36.83% - 16px) !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .destinations-carousel .destination-slide {
+    width: calc(25% - 18px) !important;
+  }
+
+  .destinations-carousel:has(.destination-slide:hover) .destination-slide:not(:hover) {
+    width: calc(23.83% - 18px) !important;
+  }
+
+  .destinations-carousel .destination-slide:hover {
+    width: calc(28.5% - 18px) !important;
+  }
+}

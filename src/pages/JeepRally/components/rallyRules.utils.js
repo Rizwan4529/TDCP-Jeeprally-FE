@@ -1,4 +1,5 @@
 import { resolveCheckpointImageUrl } from "../../../api/features/rally/rally.service.jsx";
+import { getSlidingWindowPageCount } from "../../../utils/slidingWindowCarousel.utils.js";
 
 export const RALLY_RULES_WINDOW_SIZE = 2;
 
@@ -43,5 +44,5 @@ export function getRulesCardSlotStyle(slotIndex) {
 }
 
 export function shouldShowRulesDotPagination(itemCount) {
-  return itemCount > RALLY_RULES_WINDOW_SIZE;
+  return getSlidingWindowPageCount(itemCount, RALLY_RULES_WINDOW_SIZE) > 0;
 }

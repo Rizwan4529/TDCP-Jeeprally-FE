@@ -3,6 +3,7 @@ import {
   getRallyEventDescription,
   getRallyEventTitle,
   getRallyTeamId,
+  hasVehicleFromApi,
   mapVehicleToGearUpSpecs,
   resolveGearUpEvent,
   resolveGearUpEventId,
@@ -68,6 +69,12 @@ describe("gearUpSection utils", () => {
         pastRallies,
       }),
     ).toEqual(activeEvent);
+  });
+
+  it("detects when fleet api returned a vehicle", () => {
+    expect(hasVehicleFromApi(null)).toBe(false);
+    expect(hasVehicleFromApi({})).toBe(false);
+    expect(hasVehicleFromApi({ _id: "v1", model: "450 Rally" })).toBe(true);
   });
 
   it("maps vehicle api fields to gear up callouts", () => {

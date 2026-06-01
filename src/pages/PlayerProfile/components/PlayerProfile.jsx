@@ -1,26 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { useParams, useSearchParams } from "react-router";
 import raceBg from "../../../assets/images/race-bg.jpg";
-import {
-  fetchRallyChampions,
-  fetchRallyCompetitors,
-  resolveCheckpointImageUrl,
-} from "../../../api/features/rally/rally.service.jsx";
-import { activeRallyQueryOptions } from "../../../api/features/rally/rally.queryOptions.jsx";
-import { useCategoriesQuery } from "../../../api/features/content/hooks.jsx";
-import {
-  getDefaultCategoryKey,
-  handleImageError,
-  hasCategoryKey,
-} from "../../../utils/constants.js";
-import {
-  STATIC_CHAMPION_PROFILES,
-  STATIC_OTHER_RACES,
-  STATIC_TEAM_STANDING,
-} from "../playerProfile.data.js";
-import { buildPlayerProfile } from "../playerProfile.utils.js";
+import { resolveCheckpointImageUrl } from "../../../api/features/rally/rally.service.jsx";
+import { handleImageError } from "../../../utils/constants.js";
+import { usePlayerProfileContext } from "../PlayerProfileContext.jsx";
 import ScrollReveal, { HeroReveal } from "../../../components/common/ScrollReveal.jsx";
 
 const BADGE_ICON = (
@@ -59,7 +42,7 @@ const StandingPanel = ({
   renderExpanded,
   striped = false,
 }) => (
-  <div className="overflow-hidden rounded-[4px] border border-[#ECECEC] bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)]">
+  <div className="w-full overflow-hidden rounded-[4px] border border-[#ECECEC] bg-white shadow-[0_8px_20px_rgba(0,0,0,0.04)]">
     <div className={`px-6 py-4 ${headerClassName}`}>
       <h3 className="font-gilda text-[17px] text-white">{title}</h3>
     </div>
@@ -68,7 +51,7 @@ const StandingPanel = ({
         const isOpen = expandedIndex === idx;
         return (
           <div
-            key={`${item.year}-${idx}`}
+            key={item.id ?? `${item.year}-${idx}`}
             className="border-t border-[#ECECEC] first:border-t-0"
           >
             <button
@@ -103,7 +86,56 @@ const StandingPanel = ({
 
 const PROFILE_IMAGE_FALLBACK = "/assets/images/person-champion.png";
 
-const ProfileRoleCard = ({ label, image, isActive, onClick }) => (
+const ProfilePhotoPlaceholder = ({ roleLabel, variant = "card" }) => {
+  const isHero = variant === "hero";
+
+  return (
+    <div
+      className={`flex flex-col items-center justify-center bg-gradient-to-b from-[#4A5663] to-[#36404A] text-center ${
+        isHero
+          ? "h-[280px] w-[min(280px,80vw)] rounded-[8px] border border-dashed border-white/25 px-6"
+          : "h-[176px] w-[160px] md:w-[180px]"
+      }`}
+      role="img"
+      aria-label={`${roleLabel} photo not uploaded`}
+    >
+      <span
+        className={`mb-3 flex items-center justify-center rounded-full bg-white/10 text-white/70 ${
+          isHero ? "h-16 w-16" : "h-12 w-12"
+        }`}
+      >
+        <svg
+          className={isHero ? "h-8 w-8" : "h-6 w-6"}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          aria-hidden
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
+        </svg>
+      </span>
+      <p
+        className={`font-medium uppercase tracking-[0.08em] text-white/85 ${
+          isHero ? "text-[12px]" : "text-[10px]"
+        }`}
+      >
+        Photo not uploaded
+      </p>
+      <p
+        className={`mt-1 text-white/55 ${isHero ? "text-[11px]" : "text-[9px]"}`}
+      >
+        {roleLabel} profile pending
+      </p>
+    </div>
+  );
+};
+
+const ProfileRoleCard = ({ label, imageUrl, hasImage, isActive, onClick }) => (
   <button
     type="button"
     className="group relative text-center"
@@ -116,12 +148,16 @@ const ProfileRoleCard = ({ label, image, isActive, onClick }) => (
           : "border-[4px] border-transparent opacity-95"
       }`}
     >
-      <img
-        src={image}
-        alt={label}
-        className="h-[176px] w-[160px] object-cover object-top md:h-[176px] md:w-[180px]"
-        onError={(event) => handleImageError(event, PROFILE_IMAGE_FALLBACK)}
-      />
+      {hasImage ? (
+        <img
+          src={imageUrl}
+          alt={label}
+          className="h-[176px] w-[160px] object-cover object-top md:h-[176px] md:w-[180px]"
+          onError={(event) => handleImageError(event, PROFILE_IMAGE_FALLBACK)}
+        />
+      ) : (
+        <ProfilePhotoPlaceholder roleLabel={label} />
+      )}
     </div>
     <div
       className={`relative mx-auto -mt-5 w-fit min-w-[128px] rounded-[4px] px-6 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.14)] ${
@@ -137,85 +173,27 @@ const ProfileRoleCard = ({ label, image, isActive, onClick }) => (
 );
 
 const PlayerProfile = () => {
-  const { id } = useParams();
-  const [searchParams] = useSearchParams();
+  const {
+    profile,
+    teamStandingItems,
+    otherRaceItems,
+    showTeamStandingPanel,
+    showOtherRacesPanel,
+  } = usePlayerProfileContext();
+  const hasNavigator = Boolean(profile.hasNavigator);
+
   const [activeTab, setActiveTab] = useState("driver");
   const [expandedTeamStanding, setExpandedTeamStanding] = useState(0);
   const [expandedOtherRaces, setExpandedOtherRaces] = useState(0);
-  const { data: activeEvent } = useQuery(activeRallyQueryOptions);
-  const { data: categoriesRaw = [] } = useCategoriesQuery();
-  const eventIdFromQuery = searchParams.get("eventId") || "";
-  const eventId = eventIdFromQuery || activeEvent?._id;
-  const requestedCategory = searchParams.get("category") || "";
-  const profileSource = searchParams.get("source") || "champion";
-  const isCompetitorProfile = profileSource === "competitor";
-  const isPastEventProfile = Boolean(eventIdFromQuery);
 
-  const activeCategoryKey = useMemo(() => {
-    if (isPastEventProfile) {
-      return requestedCategory;
-    }
-    if (hasCategoryKey(categoriesRaw, requestedCategory)) {
-      return requestedCategory;
-    }
-    return getDefaultCategoryKey(categoriesRaw);
-  }, [categoriesRaw, isPastEventProfile, requestedCategory]);
-
-  const fallbackProfile = useMemo(
-    () =>
-      STATIC_CHAMPION_PROFILES.find((item) => item.id === id) ||
-      STATIC_CHAMPION_PROFILES[0],
-    [id],
-  );
-  const { data: championsRaw = [] } = useQuery({
-    queryKey: [
-      "rally",
-      "champions",
-      "player-profile",
-      eventId,
-      activeCategoryKey || "all",
-    ],
-    queryFn: () =>
-      fetchRallyChampions(eventId, activeCategoryKey || undefined),
-    enabled: Boolean(
-      !isCompetitorProfile &&
-        eventId &&
-        (isPastEventProfile || activeCategoryKey),
-    ),
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: competitorsRaw = [] } = useQuery({
-    queryKey: [
-      "rally",
-      "competitors",
-      "player-profile",
-      eventId,
-      activeCategoryKey,
-    ],
-    queryFn: () => fetchRallyCompetitors(eventId, activeCategoryKey),
-    enabled: Boolean(isCompetitorProfile && eventId && activeCategoryKey),
-    refetchOnWindowFocus: false,
-  });
-
-  const champion = useMemo(
-    () => championsRaw.find((item) => item._id === id) || null,
-    [championsRaw, id],
-  );
-
-  const competitor = useMemo(
-    () => competitorsRaw.find((item) => item._id === id) || null,
-    [competitorsRaw, id],
-  );
-
-  const profile = useMemo(() => {
-    const record = isCompetitorProfile ? competitor : champion;
-    return buildPlayerProfile(record, fallbackProfile);
-  }, [champion, competitor, fallbackProfile, isCompetitorProfile]);
-
-  const driverImage = resolveCheckpointImageUrl(profile.driverImage);
-  const navigatorImage = resolveCheckpointImageUrl(profile.navigatorImage);
-  const hasNavigator = Boolean(profile.hasNavigator);
+  const driverHasImage = Boolean(profile.hasDriverImage);
+  const navigatorHasImage = Boolean(profile.hasNavigatorImage);
+  const driverImageUrl = driverHasImage
+    ? resolveCheckpointImageUrl(profile.driverImage)
+    : "";
+  const navigatorImageUrl = navigatorHasImage
+    ? resolveCheckpointImageUrl(profile.navigatorImage)
+    : "";
   const activeDetails =
     (activeTab === "navigator" && hasNavigator
       ? profile.navigatorDetails
@@ -226,17 +204,33 @@ const PlayerProfile = () => {
     activeTab === "navigator" && hasNavigator
       ? profile.navigatorName
       : profile.driverName;
-  const heroImage = resolveCheckpointImageUrl(
+  const activeRoleLabel =
+    activeTab === "navigator" && hasNavigator ? "Navigator" : "Driver";
+  const activeHasImage =
     activeTab === "navigator" && hasNavigator
-      ? profile.navigatorImage || profile.driverImage
-      : profile.driverImage || profile.heroImage,
-  );
+      ? navigatorHasImage
+      : driverHasImage;
+  const activeImageUrl =
+    activeTab === "navigator" && hasNavigator
+      ? navigatorImageUrl
+      : driverImageUrl;
 
   useEffect(() => {
     if (!hasNavigator && activeTab === "navigator") {
       setActiveTab("driver");
     }
   }, [activeTab, hasNavigator]);
+
+  useEffect(() => {
+    setExpandedTeamStanding(0);
+  }, [teamStandingItems]);
+
+  useEffect(() => {
+    setExpandedOtherRaces(0);
+  }, [otherRaceItems]);
+
+  const showRaceHistoryPanels =
+    showTeamStandingPanel || showOtherRacesPanel;
 
   return (
     <div className="mt-[50px] min-h-screen bg-white">
@@ -249,11 +243,21 @@ const PlayerProfile = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/10" />
 
         <div className="absolute inset-x-0 bottom-0 z-10 flex justify-center">
-          <img
-            src={heroImage}
-            alt={profile.driverName}
-            className="h-[300px] object-contain object-bottom"
-          />
+          {activeHasImage ? (
+            <img
+              src={activeImageUrl}
+              alt={activePersonName}
+              className="h-[300px] object-contain object-bottom"
+              onError={(event) =>
+                handleImageError(event, PROFILE_IMAGE_FALLBACK)
+              }
+            />
+          ) : (
+            <ProfilePhotoPlaceholder
+              roleLabel={activeRoleLabel}
+              variant="hero"
+            />
+          )}
         </div>
 
         <div className="absolute bottom-0 left-1/2 z-40 w-[min(90vw,360px)] -translate-x-1/2 translate-y-1/2 rounded-[4px] border border-[#ECECEC] bg-white px-6 py-5 text-center shadow-[0_12px_28px_rgba(0,0,0,0.10)]">
@@ -269,21 +273,19 @@ const PlayerProfile = () => {
 
       <section className="container relative z-0 mx-auto px-4 pb-20 pt-28 md:pt-32">
         <ScrollReveal variant="blurUp" duration={0.8}>
-        <div
-          className={`mx-auto flex max-w-[460px] items-end gap-5 md:gap-8 ${
-            hasNavigator ? "justify-center" : "justify-center"
-          }`}
-        >
+        <div className="mx-auto flex max-w-[460px] items-end justify-center gap-5 md:gap-8">
           <ProfileRoleCard
             label="Driver"
-            image={driverImage}
+            imageUrl={driverImageUrl}
+            hasImage={driverHasImage}
             isActive={activeTab === "driver"}
             onClick={() => setActiveTab("driver")}
           />
           {hasNavigator ? (
             <ProfileRoleCard
               label="Navigator"
-              image={navigatorImage}
+              imageUrl={navigatorImageUrl}
+              hasImage={navigatorHasImage}
               isActive={activeTab === "navigator"}
               onClick={() => setActiveTab("navigator")}
             />
@@ -302,41 +304,56 @@ const PlayerProfile = () => {
         </div>
         </ScrollReveal>
 
-        <div className="mx-auto mt-14 grid max-w-[1020px] gap-6 lg:grid-cols-2">
-          <ScrollReveal variant="fadeLeft" duration={0.75}>
-          <StandingPanel
-            title="Team Standing"
-            headerClassName="bg-primary"
-            items={STATIC_TEAM_STANDING}
-            expandedIndex={expandedTeamStanding}
-            onToggle={setExpandedTeamStanding}
-            renderExpanded={(item) => (
-              <div className="flex flex-wrap gap-3 bg-[#FBFBFB] px-6 py-4">
-                <Badge>Role : {item.role}</Badge>
-                <Badge>Cat : {item.category}</Badge>
-                <Badge>Team : {item.team}</Badge>
-              </div>
-            )}
-          />
-          </ScrollReveal>
+        {showRaceHistoryPanels ? (
+          <div className="mx-auto mt-14 grid max-w-[1020px] gap-6 lg:grid-cols-2">
+            {showTeamStandingPanel ? (
+              <ScrollReveal
+                variant="fadeLeft"
+                duration={0.75}
+                className={`w-full ${!showOtherRacesPanel ? "lg:col-span-2" : ""}`}
+              >
+                <StandingPanel
+                  title="Team Standing"
+                  headerClassName="bg-primary"
+                  items={teamStandingItems}
+                  expandedIndex={expandedTeamStanding}
+                  onToggle={setExpandedTeamStanding}
+                  renderExpanded={(item) => (
+                    <div className="flex flex-wrap gap-3 bg-[#FBFBFB] px-6 py-4">
+                      <Badge>Role : {item.role}</Badge>
+                      <Badge>Cat : {item.category}</Badge>
+                      <Badge>Team : {item.team}</Badge>
+                    </div>
+                  )}
+                />
+              </ScrollReveal>
+            ) : null}
 
-          <ScrollReveal variant="fadeRight" duration={0.75} delay={0.05}>
-          <StandingPanel
-            title="Other Races"
-            headerClassName="bg-[#333333]"
-            items={STATIC_OTHER_RACES}
-            expandedIndex={expandedOtherRaces}
-            onToggle={setExpandedOtherRaces}
-            striped={true}
-            renderExpanded={(item) => (
-              <div className="flex flex-wrap gap-3 bg-[#FBFBFB] px-6 py-4">
-                <Badge>Event : {item.event}</Badge>
-                <Badge>Vehicle : {item.vehicle}</Badge>
-              </div>
-            )}
-          />
-          </ScrollReveal>
-        </div>
+            {showOtherRacesPanel ? (
+              <ScrollReveal
+                variant="fadeRight"
+                duration={0.75}
+                delay={0.05}
+                className={`w-full ${!showTeamStandingPanel ? "lg:col-span-2" : ""}`}
+              >
+                <StandingPanel
+                  title="Other Races"
+                  headerClassName="bg-[#333333]"
+                  items={otherRaceItems}
+                  expandedIndex={expandedOtherRaces}
+                  onToggle={setExpandedOtherRaces}
+                  striped={true}
+                  renderExpanded={(item) => (
+                    <div className="flex flex-wrap gap-3 bg-[#FBFBFB] px-6 py-4">
+                      <Badge>Event : {item.event}</Badge>
+                      <Badge>Vehicle : {item.vehicle}</Badge>
+                    </div>
+                  )}
+                />
+              </ScrollReveal>
+            ) : null}
+          </div>
+        ) : null}
       </section>
     </div>
   );

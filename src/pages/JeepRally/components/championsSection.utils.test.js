@@ -4,12 +4,42 @@ import {
   getTopChampionsByPosition,
   hasChampionNavigator,
   mapChampionsToPodium,
-  resolveChampionDriverImageSource,
-  resolveChampionNavigatorImageSource,
+  resolveChampionCategory,
+  resolveChampionCardImageSource,
+  resolveChampionDriverProfileImageSource,
+  resolveChampionNavigatorProfileImageSource,
   resolveChampionsCategoryKey,
   shouldHideChampionsSection,
   shouldShowChampionsEmpty,
 } from "./championsSection.utils.js";
+
+const API_CHAMPION_SAMPLE = {
+  _id: "6a0339507bdb4b17c30579f2",
+  event_id: {
+    _id: "69f9948147844ddd2933128a",
+    name: "Cholistan Desert Rally 2026",
+  },
+  team_id: {
+    _id: "69fb05cbcfae8d80f4ad3544",
+    team_name: "Rizwan team",
+    team_number: "#22",
+    category: "stock_prepaid",
+    driver_id: "69faf874cfae8d80f4ad3542",
+    navigator_id: null,
+  },
+  position: 1,
+  category: null,
+  image: null,
+  driver: {
+    _id: "69faf874cfae8d80f4ad3542",
+    name: "Hassan Malik",
+    age: 31,
+    location: "Lahore",
+    occupation: "Driver",
+    profile_image: null,
+  },
+  navigator: null,
+};
 
 describe("shouldHideChampionsSection", () => {
   it("hides while loading or when the event is missing", () => {
@@ -111,32 +141,57 @@ describe("getTopChampionsByPosition", () => {
 });
 
 describe("champion image helpers", () => {
-  it("detects navigator presence and resolves image sources", () => {
+  it("uses top-level image for podium cards only", () => {
+    expect(
+      resolveChampionCardImageSource({
+        image: "uploads/images/champion-1.png",
+        driver: { profile_image: "uploads/images/driver.png" },
+      }),
+    ).toBe("uploads/images/champion-1.png");
+
+    expect(
+      resolveChampionCardImageSource({
+        image: null,
+        driver: { profile_image: "uploads/images/driver.png" },
+      }),
+    ).toBeNull();
+  });
+
+  it("uses profile_image for player profile pages only", () => {
     const withNavigator = {
-      driver_image: "uploads/driver.png",
-      navigator_image: null,
-      team_id: {
-        navigator_id: {
-          _id: "nav-1",
-          name: "Zubair Khan",
-          profile_image: "uploads/navigator.png",
-        },
+      image: "uploads/card.png",
+      driver: { profile_image: "uploads/driver-profile.png" },
+      navigator: {
+        _id: "nav-1",
+        name: "Zubair Khan",
+        profile_image: "uploads/navigator-profile.png",
       },
     };
     const withoutNavigator = {
-      driver_image: "uploads/driver-only.png",
+      image: "uploads/card-only.png",
+      driver: { profile_image: "uploads/driver-profile.png" },
       team_id: { navigator_id: null },
     };
 
     expect(hasChampionNavigator(withNavigator)).toBe(true);
-    expect(resolveChampionNavigatorImageSource(withNavigator)).toBe(
-      "uploads/navigator.png",
+    expect(resolveChampionDriverProfileImageSource(withNavigator)).toBe(
+      "uploads/driver-profile.png",
+    );
+    expect(resolveChampionNavigatorProfileImageSource(withNavigator)).toBe(
+      "uploads/navigator-profile.png",
     );
     expect(hasChampionNavigator(withoutNavigator)).toBe(false);
-    expect(resolveChampionNavigatorImageSource(withoutNavigator)).toBeNull();
-    expect(resolveChampionDriverImageSource(withoutNavigator)).toBe(
-      "uploads/driver-only.png",
+    expect(resolveChampionNavigatorProfileImageSource(withoutNavigator)).toBeNull();
+    expect(resolveChampionDriverProfileImageSource(withoutNavigator)).toBe(
+      "uploads/driver-profile.png",
     );
+    expect(resolveChampionCardImageSource(withNavigator)).toBe("uploads/card.png");
+  });
+});
+
+describe("resolveChampionCategory", () => {
+  it("reads category from team when champion.category is null", () => {
+    expect(resolveChampionCategory(API_CHAMPION_SAMPLE)).toBe("stock_prepaid");
   });
 });
 
@@ -144,9 +199,24 @@ describe("mapChampionsToPodium", () => {
   it("maps podium layout using each champion position", () => {
     const podium = mapChampionsToPodium(
       [
-        { _id: "c2", position: 2, driver_name: "Second", team_id: { team_name: "B" } },
-        { _id: "c1", position: 1, driver_name: "First", team_id: { team_name: "A" } },
-        { _id: "c3", position: 3, driver_name: "Third", team_id: { team_name: "C" } },
+        {
+          _id: "c2",
+          position: 2,
+          driver: { name: "Second" },
+          team_id: { team_name: "B", category: "jeep" },
+        },
+        {
+          _id: "c1",
+          position: 1,
+          driver: { name: "First" },
+          team_id: { team_name: "A", category: "jeep" },
+        },
+        {
+          _id: "c3",
+          position: 3,
+          driver: { name: "Third" },
+          team_id: { team_name: "C", category: "jeep" },
+        },
       ],
       () => "/img.png",
     );
@@ -168,6 +238,19 @@ describe("mapChampionsToPodium", () => {
     expect(second.cardHeight).toBe(third.cardHeight);
     expect(second.footerHeight).toBe(third.footerHeight);
   });
+
+  it("maps the populated champions api shape to podium cards", () => {
+    const podium = mapChampionsToPodium([API_CHAMPION_SAMPLE], () => "/img.png");
+
+    expect(podium).toHaveLength(1);
+    expect(podium[0]).toMatchObject({
+      id: API_CHAMPION_SAMPLE._id,
+      name: "Hassan Malik",
+      team: "Rizwan team",
+      category: "stock_prepaid",
+      rank: "1",
+    });
+  });
 });
 
 describe("getCategoryTabsWithChampions", () => {
@@ -180,7 +263,7 @@ describe("getCategoryTabsWithChampions", () => {
   it("returns only tabs that have at least one champion", () => {
     expect(
       getCategoryTabsWithChampions(tabs, [
-        { category: "stock_prepaid" },
+        API_CHAMPION_SAMPLE,
         { category: "jeep" },
       ]),
     ).toEqual([

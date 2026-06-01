@@ -58,7 +58,7 @@ function RegistrationPanel({ activeEvent, isLoading }) {
       </div>
     );
   }
-
+  if (!activeEvent) return null;
   return (
     <div className="relative w-full overflow-hidden rounded-[8px] border border-white/[0.13] bg-[linear-gradient(180deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.06)_35%,transparent_70%)] p-4 text-white font-manrope backdrop-blur-[25px] shadow-[inset_0_1px_14px_rgb(255_255_255_/_22%),inset_0_4px_12px_var(--tw-shadow-color,_rgb(250_252_255_/22%)),inset_0_60px_60px_-48px_var(--tw-shadow-color,_rgba(125,_127,_128,_0.14)),inset_0_-56px_38px_-50px_var(--tw-shadow-color,_rgb(236_225_225_/9%)),inset_0_7px_11px_-4px_var(--tw-shadow-color,_rgba(255,_255,_255,_1))] md:max-w-[483px] md:p-6">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,rgba(142,90,50,0.26),transparent_34%)]" />
@@ -110,17 +110,17 @@ function RegistrationPanel({ activeEvent, isLoading }) {
             ) : null}
           </div>
         ) : timing?.timeLeft ? (
-              <div className="mt-6 flex items-center justify-between gap-2 md:mt-7 md:gap-4">
-                <TimeTile value={timing.timeLeft.hours} label="Hours" />
-                <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
-                  :
-                </div>
-                <TimeTile value={timing.timeLeft.minutes} label="Minutes" />
-                <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
-                  :
-                </div>
-                <TimeTile value={timing.timeLeft.seconds} label="Seconds" />
-              </div>
+          <div className="mt-6 flex items-center justify-between gap-2 md:mt-7 md:gap-4">
+            <TimeTile value={timing.timeLeft.hours} label="Hours" />
+            <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
+              :
+            </div>
+            <TimeTile value={timing.timeLeft.minutes} label="Minutes" />
+            <div className="pb-5 text-[34px] font-light leading-none text-white md:pb-7 md:text-[62px]">
+              :
+            </div>
+            <TimeTile value={timing.timeLeft.seconds} label="Seconds" />
+          </div>
         ) : null}
       </div>
     </div>
@@ -141,7 +141,11 @@ const DEFAULT_HERO_SUBTITLE =
   "This text presents my research journey on the topic of Music and Tourism Imaginaries and gives the context which led to the publication of this special issue of Via Tourism Review.";
 
 const Hero = ({ content }) => {
-  const { data: activeEvent, isPending, isFetching } = useQuery(activeRallyQueryOptions);
+  const {
+    data: activeEvent,
+    isPending,
+    isFetching,
+  } = useQuery(activeRallyQueryOptions);
   const heroTitle = content?.title || DEFAULT_HERO_TITLE;
   const heroSubtitle = content?.subTitle || DEFAULT_HERO_SUBTITLE;
   const heroBackgroundImage = resolveImageUrl(

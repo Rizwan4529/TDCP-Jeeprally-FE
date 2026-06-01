@@ -26,30 +26,90 @@ const POSITION_STYLES = {
 
 export const PODIUM_DISPLAY_COUNT = 3;
 
+function isPopulatedRecord(value) {
+  return Boolean(value && typeof value === "object");
+}
+
+export function getChampionTeamRecord(champion) {
+  const team = champion?.team_id;
+  return isPopulatedRecord(team) ? team : null;
+}
+
+export function getChampionDriverRecord(champion) {
+  if (isPopulatedRecord(champion?.driver)) {
+    return champion.driver;
+  }
+
+  const nestedDriver = champion?.team_id?.driver_id;
+  if (isPopulatedRecord(nestedDriver)) {
+    return nestedDriver;
+  }
+
+  return null;
+}
+
+export function resolveChampionCategory(champion) {
+  const categoryKey = champion?.category_id?.key;
+  if (categoryKey != null && categoryKey !== "") {
+    return String(categoryKey);
+  }
+
+  const category =
+    champion?.category ?? getChampionTeamRecord(champion)?.category;
+  if (category == null || category === "") return "";
+  return String(category);
+}
+
 export function getChampionNavigatorRecord(champion) {
-  const navigator = champion?.team_id?.navigator_id;
-  if (!navigator || typeof navigator !== "object") return null;
-  if (!navigator.name && !navigator._id) return null;
-  return navigator;
+  if (isPopulatedRecord(champion?.navigator)) {
+    return champion.navigator;
+  }
+
+  const nestedNavigator = champion?.team_id?.navigator_id;
+  if (isPopulatedRecord(nestedNavigator)) {
+    return nestedNavigator;
+  }
+
+  return null;
 }
 
 export function hasChampionNavigator(champion) {
-  return Boolean(getChampionNavigatorRecord(champion));
+  const navigator = getChampionNavigatorRecord(champion);
+  return Boolean(navigator?.name || navigator?._id);
 }
 
-export function resolveChampionDriverImageSource(champion) {
-  return (
-    champion?.driver_image ||
-    champion?.team_id?.driver_id?.profile_image ||
-    champion?.image ||
-    null
-  );
+function normalizeImageSource(value) {
+  if (value == null) return null;
+  const normalized = String(value).trim();
+  return normalized || null;
 }
 
-export function resolveChampionNavigatorImageSource(champion) {
+/** Podium/card image only — top-level champion `image`, not driver profile photos. */
+export function resolveChampionCardImageSource(champion) {
+  return normalizeImageSource(champion?.image);
+}
+
+/** Player profile — driver `profile_image` only. */
+export function resolveChampionDriverProfileImageSource(champion) {
+  const driver = getChampionDriverRecord(champion);
+  return normalizeImageSource(driver?.profile_image);
+}
+
+/** Player profile — navigator `profile_image` only. */
+export function resolveChampionNavigatorProfileImageSource(champion) {
   if (!hasChampionNavigator(champion)) return null;
   const navigator = getChampionNavigatorRecord(champion);
-  return champion?.navigator_image || navigator?.profile_image || null;
+  return normalizeImageSource(navigator?.profile_image);
+}
+
+/** @deprecated Use resolveChampionDriverProfileImageSource or resolveChampionCardImageSource */
+export function resolveChampionDriverImageSource(champion) {
+  return resolveChampionDriverProfileImageSource(champion);
+}
+
+/** @deprecated Use resolveChampionNavigatorProfileImageSource */
+export function resolveChampionNavigatorImageSource(champion) {
+  return resolveChampionNavigatorProfileImageSource(champion);
 }
 
 export function getCategoryTabsWithChampions(tabs = [], champions = []) {
@@ -59,9 +119,8 @@ export function getCategoryTabsWithChampions(tabs = [], champions = []) {
 
   const keysWithChampions = new Set(
     (champions ?? [])
-      .map((champion) => champion?.category)
-      .filter(Boolean)
-      .map(String),
+      .map((champion) => resolveChampionCategory(champion))
+      .filter(Boolean),
   );
 
   return tabs.filter((tab) => keysWithChampions.has(tab.key));
@@ -134,8 +193,8 @@ export function sortChampionsList(champions = []) {
     const positionDiff = Number(a.position ?? 0) - Number(b.position ?? 0);
     if (positionDiff !== 0) return positionDiff;
 
-    const aName = a.driver_name || a.team_id?.driver_id?.name || "";
-    const bName = b.driver_name || b.team_id?.driver_id?.name || "";
+    const aName = a.driver?.name || "";
+    const bName = b.driver?.name || "";
     return aName.localeCompare(bName);
   });
 }
@@ -154,17 +213,18 @@ function mapChampionRecord(champion, visualPosition, resolveImage) {
     order: "",
   };
   const navigator = getChampionNavigatorRecord(champion);
-  const driverName =
-    champion.team_id?.driver_id?.name || champion.driver_name || "—";
+  const driver = getChampionDriverRecord(champion);
+  const team = getChampionTeamRecord(champion);
+  const driverName = driver?.name || champion?.driver_name || "—";
 
   return {
     id: champion._id,
     rank: String(champion.position ?? "—"),
     name: driverName,
-    navigatorName: navigator?.name || champion.navigator_name || "",
-    team: champion.team_id?.team_name || "Team",
-    category: champion.category || "",
-    image: resolveImage(resolveChampionDriverImageSource(champion)),
+    navigatorName: navigator?.name || champion?.navigator_name || "",
+    team: team?.team_name || "Team",
+    category: resolveChampionCategory(champion),
+    image: resolveImage(resolveChampionCardImageSource(champion)),
     cardHeight: style.cardHeight,
     footerHeight: style.footerHeight,
     order: style.order,

@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   canNavigateSlidingWindow,
   DEFAULT_SLIDING_WINDOW_SIZE,
+  getSlidingWindowOffsetForPage,
+  getSlidingWindowPageCount,
+  getSlidingWindowPageIndex,
   getWindowDirection,
   getWindowItems,
   normalizeWindowOffset,
@@ -62,13 +65,38 @@ export function useSlidingWindowCarousel(items, options = {}) {
     goToIndex(windowOffset - 1);
   }, [canNavigate, goToIndex, windowOffset]);
 
+  const pageCount = useMemo(
+    () => getSlidingWindowPageCount(itemCount, windowSize),
+    [itemCount, windowSize],
+  );
+
+  const activePageIndex = useMemo(
+    () => getSlidingWindowPageIndex(windowOffset, windowSize, itemCount),
+    [windowOffset, windowSize, itemCount],
+  );
+
+  const goToPage = useCallback(
+    (pageIndex) => {
+      const nextOffset = getSlidingWindowOffsetForPage(
+        pageIndex,
+        windowSize,
+        itemCount,
+      );
+      goToIndex(nextOffset);
+    },
+    [goToIndex, itemCount, windowSize],
+  );
+
   return {
     windowOffset,
     direction,
     visibleItems,
     canNavigate,
+    pageCount,
+    activePageIndex,
     next,
     previous,
     goToIndex,
+    goToPage,
   };
 }

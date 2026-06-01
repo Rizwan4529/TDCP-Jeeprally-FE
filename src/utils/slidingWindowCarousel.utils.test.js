@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   canNavigateSlidingWindow,
+  getSlidingWindowOffsetForPage,
+  getSlidingWindowPageCount,
+  getSlidingWindowPageIndex,
   getWindowDirection,
   getWindowItems,
   normalizeWindowOffset,
@@ -38,5 +41,22 @@ describe("slidingWindowCarousel utils", () => {
       false,
     );
     expect(canNavigateSlidingWindow(eightItems)).toBe(true);
+  });
+
+  it("groups dot pagination by full layout pages", () => {
+    expect(getSlidingWindowPageCount(8, 5)).toBe(2);
+    expect(getSlidingWindowPageCount(12, 5)).toBe(3);
+    expect(getSlidingWindowPageCount(5, 5)).toBe(0);
+    expect(getSlidingWindowPageCount(4, 2)).toBe(2);
+
+    expect(getSlidingWindowPageIndex(0, 5, 12)).toBe(0);
+    expect(getSlidingWindowPageIndex(5, 5, 12)).toBe(1);
+    expect(getSlidingWindowPageIndex(7, 5, 12)).toBe(1);
+    expect(getSlidingWindowPageIndex(2, 2, 4)).toBe(1);
+
+    expect(getSlidingWindowOffsetForPage(0, 5, 12)).toBe(0);
+    expect(getSlidingWindowOffsetForPage(1, 5, 12)).toBe(5);
+    expect(getSlidingWindowOffsetForPage(2, 5, 12)).toBe(10);
+    expect(getSlidingWindowOffsetForPage(1, 2, 4)).toBe(2);
   });
 });

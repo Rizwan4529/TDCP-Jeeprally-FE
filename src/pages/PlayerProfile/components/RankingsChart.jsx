@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo } from "react";
 import {
   LineChart,
   Line,
@@ -6,105 +6,172 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
-} from 'recharts';
+  ResponsiveContainer,
+} from "recharts";
 
-const data = [
-  { name: '1', green: 28, yellow: 36 },
-  { name: '2', green: 40, yellow: 48 },
-  { name: '3', green: 32, yellow: 39 },
-  { name: '4', green: 36, yellow: 41 },
-  { name: '5', green: 38, yellow: 43 },
-  { name: '6', green: 45, yellow: 52 },
-  { name: '7', green: 39, yellow: 28 },
-  { name: '8', green: 52, yellow: 46 },
-  { name: '9', green: 46, yellow: 40 },
-  { name: '10', green: 62, yellow: 58 },
-  { name: '11', green: 50, yellow: 28 },
-];
+import { usePlayerProfileContext } from "../PlayerProfileContext.jsx";
+import {
+  buildRankingsChartRows,
+  buildRankingsYAxisTicks,
+  computeRankingsYAxisMax,
+  getRankingsChartPresentation,
+} from "../rankingsChart.utils.js";
 
 const RankingChart = () => {
+  const { rankingsQuery, showRankingsSection } = usePlayerProfileContext();
+
+  const chartRows = useMemo(
+    () => buildRankingsChartRows(rankingsQuery.data?.by_year),
+    [rankingsQuery.data?.by_year],
+  );
+
+  const presentation = useMemo(
+    () => getRankingsChartPresentation(rankingsQuery.data),
+    [rankingsQuery.data],
+  );
+
+  const yMax = useMemo(() => computeRankingsYAxisMax(chartRows), [chartRows]);
+  const yTicks = useMemo(() => buildRankingsYAxisTicks(yMax), [yMax]);
+
+  if (!showRankingsSection) {
+    return null;
+  }
+
   return (
     <section className="bg-white py-16 md:py-20">
       <div className="container mx-auto px-4 lg:px-20">
         <h2 className="mb-10 text-center font-gilda text-[34px] text-black md:mb-14 md:text-[40px]">
-          Rankings
+          {presentation.title}
         </h2>
 
-        <div className="mx-auto h-[280px] w-full max-w-5xl md:h-[360px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={data}
-              margin={{
-                top: 8,
-                right: 8,
-                left: -12,
-                bottom: 8,
-              }}
-            >
-              <CartesianGrid
-                vertical={false}
-                strokeDasharray="0"
-                stroke="#ececec"
-              />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#6b7280', fontSize: 12 }}
-                dy={14}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: '#6b7280', fontSize: 12 }}
-                domain={[0, 80]}
-                ticks={[0, 20, 40, 60, 80]}
-                dx={-10}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ stroke: '#efefef', strokeWidth: 1 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="yellow"
-                stroke="#F9DA4A"
-                strokeWidth={4}
-                dot={false}
-                activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
-                animationDuration={1500}
-              />
-              <Line
-                type="monotone"
-                dataKey="green"
-                stroke="#B44423"
-                strokeWidth={4}
-                dot={false}
-                activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
-                animationDuration={1500}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="mx-auto w-full max-w-5xl">
+          <div className="h-[280px] md:h-[360px]">
+            {rankingsQuery.isLoading ? (
+              <div className="flex h-full items-center justify-center text-sm text-[#6B7280]">
+                Loading chart…
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={chartRows}
+                  margin={{
+                    top: 8,
+                    right: 8,
+                    left: -12,
+                    bottom: 8,
+                  }}
+                >
+                  <CartesianGrid
+                    vertical={false}
+                    strokeDasharray="0"
+                    stroke="#ececec"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#6b7280", fontSize: 12 }}
+                    dy={14}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: "#6b7280", fontSize: 12 }}
+                    domain={[0, yMax]}
+                    ticks={yTicks}
+                    allowDecimals={false}
+                    dx={-10}
+                  />
+                  <Tooltip
+                    content={
+                      <RankingsTooltip
+                        tdcpLabel={presentation.tdcpLabel}
+                        otherLabel={presentation.otherLabel}
+                      />
+                    }
+                    cursor={{ stroke: "#efefef", strokeWidth: 1 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="other"
+                    name={presentation.otherLabel}
+                    stroke="#F9DA4A"
+                    strokeWidth={4}
+                    dot={false}
+                    activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+                    animationDuration={1500}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="tdcp"
+                    name={presentation.tdcpLabel}
+                    stroke="#B44423"
+                    strokeWidth={4}
+                    dot={false}
+                    activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2 }}
+                    animationDuration={1500}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {!rankingsQuery.isLoading ? (
+            <RankingsLegend
+              tdcpLabel={presentation.tdcpLabel}
+              otherLabel={presentation.otherLabel}
+            />
+          ) : null}
         </div>
       </div>
     </section>
   );
 };
 
-const CustomTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="relative group">
-        <div className="bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-xl flex flex-col items-center">
-          <span className="text-[12px] font-bold text-gray-800">{payload[0].value}</span>
-          <div className="w-2 h-2 rounded-full bg-primary mt-1"></div>
-        </div>
-        <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-white"></div>
+function RankingsLegend({ tdcpLabel, otherLabel }) {
+  return (
+    <div
+      className="mt-8 flex flex-wrap items-center justify-center gap-6 md:gap-10"
+      role="list"
+      aria-label="Chart legend"
+    >
+      <div className="flex items-center gap-2.5" role="listitem">
+        <span
+          className="h-1 w-10 shrink-0 rounded-full bg-[#B44423]"
+          aria-hidden
+        />
+        <span className="text-sm text-[#4B4B4B]">{tdcpLabel}</span>
       </div>
-    );
-  }
-  return null;
-};
+      <div className="flex items-center gap-2.5" role="listitem">
+        <span
+          className="h-1 w-10 shrink-0 rounded-full bg-[#F9DA4A]"
+          aria-hidden
+        />
+        <span className="text-sm text-[#4B4B4B]">{otherLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+function RankingsTooltip({ active, payload, label, tdcpLabel, otherLabel }) {
+  if (!active || !payload?.length) return null;
+
+  const tdcp = payload.find((p) => p.dataKey === "tdcp")?.value ?? 0;
+  const other = payload.find((p) => p.dataKey === "other")?.value ?? 0;
+
+  return (
+    <div className="relative group">
+      <div className="flex flex-col items-center rounded-lg border border-gray-100 bg-white px-3 py-2 shadow-xl">
+        <span className="text-[11px] font-semibold text-gray-500">{label}</span>
+        <span className="text-[12px] text-[#B44423]">
+          {tdcpLabel}: {tdcp}
+        </span>
+        <span className="text-[12px] text-[#CA8A04]">
+          {otherLabel}: {other}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default RankingChart;

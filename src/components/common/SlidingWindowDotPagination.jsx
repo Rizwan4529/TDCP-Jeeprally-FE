@@ -2,11 +2,11 @@ import { motion, useReducedMotion } from "framer-motion";
 import { SLIDING_WINDOW_CAROUSEL_EASE } from "../../constants/slidingWindowCarousel.animation.js";
 
 /**
- * Dot pagination for sliding-window carousels (one dot per window position).
+ * Dot pagination for sliding-window carousels (one dot per full layout page).
  *
- * @param {number} count - Total items / dot count
- * @param {number} activeIndex - Current window offset
- * @param {(index: number) => void} onSelect
+ * @param {number} count - Total pages / dot count
+ * @param {number} activeIndex - Current page index (0-based)
+ * @param {(pageIndex: number) => void} onSelect
  */
 const SlidingWindowDotPagination = ({
   count,
@@ -36,7 +36,7 @@ const SlidingWindowDotPagination = ({
             type="button"
             role="tab"
             aria-selected={isActive}
-            aria-label={`Go to position ${index + 1}`}
+            aria-label={`Go to page ${index + 1}`}
             onClick={() => onSelect(index)}
             animate={{ scale: isActive ? 1.2 : 1 }}
             transition={

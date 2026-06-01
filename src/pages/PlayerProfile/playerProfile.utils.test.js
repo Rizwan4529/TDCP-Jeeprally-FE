@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildPlayerProfile, formatChampionNumber } from "./playerProfile.utils.js";
+import {
+  buildPlayerProfile,
+  formatChampionNumber,
+  resolveDriverUserIdFromProfileRecord,
+} from "./playerProfile.utils.js";
 
 describe("playerProfile utils", () => {
   it("prefers champion api fields and falls back for missing values", () => {
@@ -24,18 +28,18 @@ describe("playerProfile utils", () => {
     const champion = {
       _id: "champion-1",
       image: "uploads\\images\\hero.png",
-      driver_name: "Muhammad Rizwan",
-      driver_image: null,
       event_id: {
         location: "Cholistan Desert, Bahawalpur",
       },
       team_id: {
         team_name: "Sahiwal Sand Runners mp2relsq",
         team_number: "T-mp2relsq-8",
-        driver_id: {
-          name: "Muhammad Rizwan",
-          profile_image: null,
-        },
+        category: "stock_prepaid",
+        driver_id: "69faf874cfae8d80f4ad3542",
+      },
+      driver: {
+        name: "Muhammad Rizwan",
+        profile_image: null,
       },
     };
 
@@ -48,9 +52,11 @@ describe("playerProfile utils", () => {
         driverName: "Muhammad Rizwan",
         teamName: "Sahiwal Sand Runners mp2relsq",
         teamNumber: "T-mp2relsq-8",
-        heroImage: "uploads\\images\\hero.png",
-        driverImage: "uploads\\images\\hero.png",
+        heroImage: "static-hero.png",
+        driverImage: "",
         navigatorImage: "",
+        hasDriverImage: false,
+        hasNavigatorImage: false,
         hasNavigator: false,
         navigatorName: "",
       }),
@@ -60,18 +66,18 @@ describe("playerProfile utils", () => {
     ]);
   });
 
-  it("omits the location row when driver_id has no address", () => {
+  it("omits the location row when driver has no address", () => {
     const profile = buildPlayerProfile(
       {
         _id: "champion-3",
         team_id: {
           team_name: "Iron Beast",
-          driver_id: {
-            name: "Tariq Mehmood",
-            occupation: "Automotive Workshop Owner",
-            address: "",
-            location: null,
-          },
+        },
+        driver: {
+          name: "Tariq Mehmood",
+          occupation: "Automotive Workshop Owner",
+          address: "",
+          location: null,
         },
       },
       {
@@ -115,29 +121,26 @@ describe("playerProfile utils", () => {
 
     const champion = {
       _id: "champion-2",
-      driver_name: "Umar Farooq",
       driver_image: "uploads/images/driver.png",
-      navigator_name: "Zubair Khan",
       navigator_image: "uploads/images/navigator.png",
-      navigator_occupation: "IT Consultant",
       team_id: {
         team_name: "Rally Masters",
         team_number: "RM-06",
-        driver_id: {
-          name: "Umar Farooq",
-          age: 30,
-          occupation: "Rally Driver",
-          address: "Lahore",
-          date_of_birth: "1992-04-20T00:00:00.000Z",
-        },
-        navigator_id: {
-          _id: "nav-1",
-          name: "Zubair Khan",
-          profile_image: "uploads/images/navigator-profile.png",
-          occupation: "Navigator",
-          location: "Islamabad",
-          date_of_birth: "1991-03-22T00:00:00.000Z",
-        },
+      },
+      driver: {
+        name: "Umar Farooq",
+        age: 30,
+        occupation: "Rally Driver",
+        address: "Lahore",
+        date_of_birth: "1992-04-20T00:00:00.000Z",
+      },
+      navigator: {
+        _id: "nav-1",
+        name: "Zubair Khan",
+        profile_image: "uploads/images/navigator-profile.png",
+        occupation: "Navigator",
+        location: "Islamabad",
+        date_of_birth: "1991-03-22T00:00:00.000Z",
       },
     };
 
@@ -145,7 +148,12 @@ describe("playerProfile utils", () => {
 
     expect(profile.hasNavigator).toBe(true);
     expect(profile.navigatorName).toBe("Zubair Khan");
-    expect(profile.navigatorImage).toBe("uploads/images/navigator.png");
+    expect(profile.hasNavigatorImage).toBe(true);
+    expect(profile.hasDriverImage).toBe(false);
+    expect(profile.driverImage).toBe("");
+    expect(profile.navigatorImage).toBe(
+      "uploads/images/navigator-profile.png",
+    );
     expect(profile.driverDetails).toEqual(
       expect.arrayContaining([
         { label: "AGE", value: "30" },
@@ -172,6 +180,10 @@ describe("playerProfile utils", () => {
       id: "fallback-1",
       driverName: "Fallback Driver",
       details: [{ label: "TEAM", value: "Fallback Team" }],
+      driverImage: "",
+      navigatorImage: "",
+      hasDriverImage: false,
+      hasNavigatorImage: false,
       hasNavigator: false,
       navigatorName: "",
       driverDetails: [{ label: "TEAM", value: "Fallback Team" }],
@@ -183,5 +195,67 @@ describe("playerProfile utils", () => {
     expect(formatChampionNumber("50")).toBe("#50");
     expect(formatChampionNumber("#22")).toBe("#22");
     expect(formatChampionNumber("")).toBe("—");
+  });
+
+  it("resolves driver user id from populated driver, not registration id", () => {
+    expect(
+      resolveDriverUserIdFromProfileRecord({
+        _id: "6a0339507bdb4b17c30579f2",
+        team_id: { driver_id: "69faf874cfae8d80f4ad3542" },
+        driver: { _id: "69f988d447844ddd29331289", name: "Hassan Malik" },
+      }),
+    ).toBe("69f988d447844ddd29331289");
+  });
+
+  it("builds profile from populated champions api records", () => {
+    const profile = buildPlayerProfile(
+      {
+        _id: "6a0339507bdb4b17c30579f2",
+        category: null,
+        image: null,
+        team_id: {
+          team_name: "Rizwan team",
+          team_number: "#22",
+          category: "stock_prepaid",
+        },
+        driver: {
+          _id: "69faf874cfae8d80f4ad3542",
+          name: "Hassan Malik",
+          age: 31,
+          location: "Lahore",
+          occupation: "Driver",
+          profile_image: null,
+        },
+        navigator: null,
+      },
+      {
+        id: "fallback",
+        number: "#1",
+        driverName: "Fallback",
+        teamName: "Team",
+        teamNumber: "1",
+        heroImage: "",
+        driverImage: "",
+        navigatorImage: "",
+        details: [],
+      },
+    );
+
+    expect(profile).toMatchObject({
+      id: "6a0339507bdb4b17c30579f2",
+      driverName: "Hassan Malik",
+      teamName: "Rizwan team",
+      number: "#22",
+      hasNavigator: false,
+      driverUserId: "69faf874cfae8d80f4ad3542",
+    });
+    expect(profile.driverDetails).toEqual(
+      expect.arrayContaining([
+        { label: "AGE", value: "31" },
+        { label: "OCCUPATION", value: "Driver" },
+        { label: "LOCATION", value: "Lahore" },
+        { label: "TEAM", value: "Rizwan team" },
+      ]),
+    );
   });
 });
